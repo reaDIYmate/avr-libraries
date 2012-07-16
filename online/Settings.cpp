@@ -68,6 +68,24 @@ Settings::~Settings() {
 }
 //------------------------------------------------------------------------------
 /**
+ * Return a pointer to a given setting.
+ *
+ * \param[in] settingName The Flash address of the setting name.
+ *
+ * return The SRAM address of the setting value is returned if the setting has
+ * valid content, otherwise NULL is returned.
+ */
+char* Settings::getByName(PGM_P target) {
+    for (uint8_t i = 0; i < nbSettings_; i++) {
+        PGM_P name = (PGM_P)pgm_read_word(&settingsNames_[i]);
+        if (name == target) {
+            return settings_[i];
+        }
+    }
+    return NULL;
+}
+//------------------------------------------------------------------------------
+/**
  * Fetch the application settings from the API and update the local values.
  *
  * \return The integer returned is the number of settings fetched from the API

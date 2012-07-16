@@ -39,8 +39,7 @@ public:
     int fetch();
     int restore();
     void save();
-    /** Return a pointer to a given setting */
-    char* getSettingByNumber(uint8_t n) {return settings_[n];}
+    char* getByName(PGM_P settingName);
     /** Return the number of settings */
     uint8_t getNbSettings() {return nbSettings_;}
 //------------------------------------------------------------------------------
