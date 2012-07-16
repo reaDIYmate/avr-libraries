@@ -1,0 +1,259 @@
+/* reaDIYmate AVR library
+ * Written by Pierre Bouchet
+ * Copyright (C) 2011-2012 reaDIYmate
+ *
+ * This file is part of the reaDIYmate library.
+ *
+ * This library is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+#include <Personality.h>
+#define DEBUG
+//------------------------------------------------------------------------------
+/** Name of the API method used to update the thing activity level. */
+const char PROGMEM METHOD_POST_ACTIVITY[] = "thing/activity";
+/** Key corresponding to the activity level in the API call. */
+const char PROGMEM KEY_ACTIVITY[] = "activity";
+//------------------------------------------------------------------------------
+// Timing constants
+/** Refresh interval (in ms) for the inbox messages. */
+const uint32_t POLL_INTERVAL = 20000;
+/** Refresh interval (in ms) to play song. */
+const uint32_t PLAY_INTERVAL = 60000;
+/** Timeout (in ms) for remote control mode */
+const uint32_t REMOTE_CONTROL_TIMEOUT = 30000;
+const uint8_t MAX_LEVEL = 1;
+//------------------------------------------------------------------------------
+/** Construct an instance of the Personality FSM */
+Personality::Personality(Api &api, Inbox &inbox, ServoControl &control,
+    PusherTrajectory &realtime) :
+    api_(&api),
+    inbox_(&inbox),
+    control_(&control),
+    realtime_(&realtime)
+{
+    internalTransition(Personality::asleep);
+}
+//------------------------------------------------------------------------------
+void Personality::initialize() {
+    pushModeDeadline_ = millis() + REMOTE_CONTROL_TIMEOUT;
+}
+//------------------------------------------------------------------------------
+/** Asleep */
+void Personality::asleep(const Event* e) {
+    switch (e->signal) {
+#ifdef DEBUG
+        case ENTRY :
+            Serial.println(F("Personality::asleep"));
+#endif
+            pushModeDeadline_ = millis() + REMOTE_CONTROL_TIMEOUT;
+            break;
+        case TICK :
+            if (millis() > pushModeDeadline_)
+                transition(Personality::enteringPushMode);
+            break;
+        case SUPERLONG_CLICK_ARMED :
+            transition(Personality::wakingUp);
+            emit(WAKE_UP);
+            break;
+    }
+}
+//------------------------------------------------------------------------------
+/** Regular active mode */
+void Personality::awake(const Event* e) {
+    switch (e->signal) {
+        case ENTRY :
+            resetDeadlines();
+#ifdef DEBUG
+            Serial.println(F("Personality::awake"));
+#endif
+            break;
+        case SUPERLONG_CLICK_ARMED :
+            transition(Personality::fallingAsleep);
+            emit(FALL_ASLEEP);
+            break;
+        case TICK :
+            if (millis() >= playSongDeadline_) {
+                emit(RANDOM);
+                transition(Personality::playing);
+                break;
+            }
+            else if (millis() >= pollInboxDeadline_) {
+                transition(Personality::pollingInbox);
+            }
+            break;
+    }
+}
+//------------------------------------------------------------------------------
+void Personality::enteringPushMode(const Event* e) {
+    switch (e->signal) {
+#ifdef DEBUG
+        case ENTRY :
+            Serial.println(F("Personality::enteringPushMode"));
+            break;
+#endif
+        case TICK :
+            if (inbox_->enterPushMode())
+                transition(Personality::pushMode);
+            else {
+                inbox_->leavePushMode();
+                transition(Personality::asleep);
+            }
+            break;
+    }
+}
+//------------------------------------------------------------------------------
+/** Substate when performing an action before going back to sleep */
+void Personality::fallingAsleep(const Event* e) {
+    switch (e->signal) {
+#ifdef DEBUG
+        case ENTRY :
+            Serial.println(F("Personality::fallingAsleep"));
+            break;
+#endif
+        case STOP :
+            transition(Personality::asleep);
+            break;
+    }
+}
+//------------------------------------------------------------------------------
+/** Playing song */
+void Personality::playing(const Event* e) {
+    switch (e->signal) {
+#ifdef DEBUG
+        case ENTRY :
+            Serial.println(F("Personality::playing"));
+            break;
+#endif
+        case STOP :
+            transition(Personality::awake);
+			break;
+    }
+}
+//------------------------------------------------------------------------------
+/** Substate when performing a self-triggered action */
+void Personality::pollingInbox(const Event* e) {
+    switch (e->signal) {
+#ifdef DEBUG
+        case ENTRY :
+            Serial.println(F("Personality::pollingInbox"));
+            break;
+#endif
+        case TICK :
+        {
+            int messageType = inbox_->getMessage();
+            if (messageType == INBOX_START_REMOTE) {
+                control_->begin(realtime_);
+                transition(Personality::remoteControl);
+            }
+            else {
+                internalTransition(Personality::awake);
+                Serial.println(F("Personality::awake"));
+                pollInboxDeadline_ = millis() + POLL_INTERVAL;
+            }
+        }
+        break;
+    }
+}
+//------------------------------------------------------------------------------
+/** Substate when performing a self-triggered action */
+void Personality::pushMode(const Event* e) {
+    switch (e->signal) {
+#ifdef DEBUG
+        case ENTRY :
+            Serial.println(F("Personality::pushMode"));
+            break;
+#endif
+        case TICK :
+        {
+            int messageType = inbox_->getMessage();
+            if (messageType == INBOX_START_REMOTE) {
+                control_->begin(realtime_);
+                transition(Personality::remoteControl);
+            }
+#ifdef DEBUG
+            else if (messageType == INBOX_PING) {
+                Serial.println(F("Ping event"));
+            }
+#endif
+            break;
+        }
+        case SUPERLONG_CLICK_ARMED :
+            inbox_->leavePushMode();
+            transition(Personality::wakingUp);
+            emit(WAKE_UP);
+            break;
+    }
+}
+//------------------------------------------------------------------------------
+/** Remote control mode */
+void Personality::remoteControl(const Event* e) {
+    switch (e->signal) {
+#ifdef DEBUG
+        case ENTRY :
+            Serial.println(F("Personality::remoteControl"));
+            break;
+#endif
+        case TICK :
+            control_->startNextMotion(millis());
+            if (control_->finishedStep())
+                control_->startNextStep();
+            break;
+        case SHORT_CLICK_RELEASED :
+            inbox_->leavePushMode();
+            transition(Personality::fallingAsleep);
+            emit(FALL_ASLEEP);
+            break;
+        case SUPERLONG_CLICK_ARMED :
+            inbox_->leavePushMode();
+            transition(Personality::wakingUp);
+            emit(WAKE_UP);
+            break;
+    }
+}
+//------------------------------------------------------------------------------
+/** Substate when performing a user-triggered action */
+void Personality::wakingUp(const Event* e) {
+    switch (e->signal) {
+        case ENTRY :
+#ifdef DEBUG
+            Serial.println(F("Personality::wakingUp"));
+#endif
+            postActivity(MAX_LEVEL);
+            break;
+        case STOP :
+            transition(Personality::awake);
+            break;
+        case SHORT_CLICK_RELEASED :
+            transition(Personality::awake);
+            emit(STOP);
+            break;
+    }
+}
+//------------------------------------------------------------------------------
+/** Send the current activity level to the reaDIYmate API */
+void Personality::postActivity(uint8_t level) {
+    char itoaBuffer[3];
+    itoa(level, itoaBuffer, 10);
+    api_->call(METHOD_POST_ACTIVITY, KEY_ACTIVITY, itoaBuffer);
+#ifdef DEBUG
+    Serial.print(F("Level: "));
+    Serial.println(level);
+#endif
+}
+//------------------------------------------------------------------------------
+/** Reset the timers for all recurring actions */
+void Personality::resetDeadlines() {
+    pollInboxDeadline_ = millis() + POLL_INTERVAL;
+    playSongDeadline_ = millis() + PLAY_INTERVAL;
+}
