@@ -172,6 +172,7 @@ void Dispatcher::setup() {
     Serial.println(credential);
     Serial.println(F("Object configuration restored from EEPROM."));
 
+    Serial.println(F("Connecting to the reaDIYmate server..."));
     led.colorOrange();
     bool restore = true;
     if (api.connect()) {

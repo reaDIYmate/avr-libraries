@@ -33,7 +33,7 @@ const char PROGMEM WIZARD_KEY_PASSPHRASE[] = "phrase";
 /** Connection mode */
 const char PROGMEM WIZARD_KEY_MODE[] = "mode";
 /** DHCP connection mode */
-const char PROGMEM WIZARD_KEY_DHCP[] = "dhcp";
+const char PROGMEM WIZARD_DHCP[] = "dhcp";
 /** Static IP address */
 const char PROGMEM WIZARD_KEY_IP[] = "ip";
 /** Gateway IP */
@@ -160,7 +160,7 @@ void Configuration::readWifiSettings(char* buffer, uint8_t bufferSize) {
     json.getStringByName_P(WIZARD_KEY_PASSPHRASE, passphrase, 64);
 
     // check the validity of the new settings
-    bool dhcp = (strcmp_P(mode, WIZARD_KEY_DHCP) == 0);
+    bool dhcp = (strcmp_P(mode, WIZARD_DHCP) == 0);
     if (ssid == NULL || passphrase == NULL)
         return;
     if (dhcp == false && (ip == NULL || mask == NULL || gateway == NULL))
