@@ -60,15 +60,17 @@ private:
     // Services
     Inbox inbox;
     Configuration config;
+    Resources resources;
+    Settings settings;
+    // Motion
+    PusherTrajectory realtime;
+    Motion motion;
+    ServoControl control;
     // Behavior
     Button button;
     Player player;
     Personality personality;
     PusherClient pusher;
-    PusherTrajectory realtime;
-    Motion motion;
-    Settings settings;
-    ServoControl control;
 };
 //------------------------------------------------------------------------------
 #endif // DISPATCHER_H

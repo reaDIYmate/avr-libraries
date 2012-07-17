@@ -26,13 +26,15 @@ const char PROGMEM METHOD_RESOURCE_SYNC[] = "resources/get_one";
 /** Name of the API method used to confirm resource synchronization */
 const char PROGMEM METHOD_RESOURCE_ACK[] = "resources/ack_one";
 /** Key corresponding to the resource ID in the API response */
-const char PROGMEM KEY_RESOURCE_ID[] = "resource";
+const char PROGMEM KEY_RESOURCE_ID_GET[] = "id";
+/** Key corresponding to the resource ID in the API call */
+const char PROGMEM KEY_RESOURCE_ID_ACK[] = "resource";
 /** Key corresponding to the resource name in the API response */
-const char PROGMEM KEY_RESOURCE_NAME[] = "ShortName";
+const char PROGMEM KEY_RESOURCE_NAME[] = "short_name";
 /** Key corresponding to the resource URL in the API response */
-const char PROGMEM KEY_RESOURCE_URL[] = "URL";
+const char PROGMEM KEY_RESOURCE_URL[] = "url";
 /** Key corresponding to the resource status flag in the API response */
-const char PROGMEM KEY_RESOURCE_FLAG[] = "DeleteFlag";
+const char PROGMEM KEY_RESOURCE_FLAG[] = "delete_pending";
 /** Content of an empty response */
 const char PROGMEM EMPTY_RESPONSE[] = "[]";
 /** Value of the status flag meaning the resource should be deleted */
@@ -83,7 +85,7 @@ bool Resources::synchronize() {
             return true;
 
         // extract resource information
-        int id = api_->getIntegerByName_P(KEY_RESOURCE_ID);
+        int id = api_->getIntegerByName_P(KEY_RESOURCE_ID_GET);
         if (id < 0)
             return false;
 
@@ -91,7 +93,10 @@ bool Resources::synchronize() {
 
         char name[32] = {0};
         api_->getStringByName_P(KEY_RESOURCE_NAME, name, 32);
-
+#ifdef DEBUG
+        Serial.print(F("Downloading "));
+        Serial.println(name);
+#endif
         char url[64] = {0};
         api_->getStringByName_P(KEY_RESOURCE_URL, url, 64);
 
@@ -103,7 +108,7 @@ bool Resources::synchronize() {
                 strlcat(url, name, 64);
                 if (!save(url, name)) {
 #ifdef DEBUG
-                    Serial.println(F("Download failed"));
+                    Serial.println(F("Download failed."));
 #endif
                     return false;
                 }
@@ -113,10 +118,13 @@ bool Resources::synchronize() {
             default :
                 return false;
         }
-         // request a resource to synchronize
+#ifdef DEBUG
+        Serial.println(F("Download complete."));
+#endif
+         // confirm resource synchronization
         char idBuffer[8] = {0};
         snprintf(idBuffer, 8, "%d", id);
-        if (api_->call(METHOD_RESOURCE_ACK, KEY_RESOURCE_ID, idBuffer) < 0)
+        if (api_->call(METHOD_RESOURCE_ACK, KEY_RESOURCE_ID_ACK, idBuffer) < 0)
             return false;
     } while (1);
 }

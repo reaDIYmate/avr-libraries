@@ -148,6 +148,15 @@ Dispatcher::Dispatcher() :
         inbox,
         control,
         realtime
+    ),
+    resources(
+        api,
+        wifly,
+        buffer,
+        BUFFER_SIZE,
+        STRING_API_HOST,
+        sd,
+        PIN_SD_CHIPSELECT
     )
 {
 }
@@ -192,6 +201,9 @@ void Dispatcher::setup() {
             Serial.println(F(" settings restored."));
         }
     }
+
+    Serial.println(F("Synchronizing resources..."));
+    resources.synchronize();
 
     led.colorGreen();
     randomSeed(analogRead(0));
