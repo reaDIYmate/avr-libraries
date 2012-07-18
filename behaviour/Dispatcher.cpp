@@ -117,6 +117,18 @@ Dispatcher::Dispatcher() :
         NB_SETTINGS,
         api
     ),
+    gmail(
+        api,
+        settings,
+		GMAIL_MOTION,
+		GMAIL_SOUND
+    ),
+	facebook(
+        api,
+        settings,
+		FACEBOOK_MOTION,
+		FACEBOOK_SOUND
+    ),
     audio(
         PIN_VS1011_DREQ,
         PIN_VS1011_RESET,
@@ -148,15 +160,6 @@ Dispatcher::Dispatcher() :
         inbox,
         control,
         realtime
-    ),
-    resources(
-        api,
-        wifly,
-        buffer,
-        BUFFER_SIZE,
-        STRING_API_HOST,
-        sd,
-        PIN_SD_CHIPSELECT
     )
 {
 }
@@ -202,9 +205,6 @@ void Dispatcher::setup() {
         }
     }
 
-    Serial.println(F("Synchronizing resources..."));
-    resources.synchronize();
-
     led.colorGreen();
     randomSeed(analogRead(0));
     Serial.println(F("Initialization done."));
@@ -239,6 +239,7 @@ void Dispatcher::loop() {
     }
 
     Event playerOut,motionOut;
+	
     switch (persoOut.signal) {
         case WAKE_UP :
             player.dispatch(PlayerEvent(PLAY, "JINGLE6.MP3"), playerOut);
@@ -246,9 +247,34 @@ void Dispatcher::loop() {
         case FALL_ASLEEP :
             player.dispatch(PlayerEvent(PLAY, "YAWN.MP3"), playerOut);
             break;
-        case RANDOM :
-            player.dispatch(PlayerEvent(RANDOM, "RANDOM", 34), playerOut);
-            motion.dispatch(MotionEvent(PLAY, "MOVE.TXT"), motionOut);
+        case GMAIL:
+            if(gmail.update()){
+				char* soundName;
+				char* motionName;
+                soundName = gmail.getSoundFilename();
+                motionName = gmail.getMotionFilename();
+                player.dispatch(PlayerEvent(PLAY, soundName), playerOut);
+                motion.dispatch(MotionEvent(PLAY, motionName), motionOut);
+            }
+            else{
+                playerOut.signal = END_OF_FILE;
+                motionOut.signal = END_OF_FILE;
+            }
+            break;
+		case FACEBOOK:
+            if(facebook.update()){
+				char* soundName;
+				char* motionName;
+                soundName = facebook.getSoundFilename();
+                motionName = facebook.getMotionFilename();
+                player.dispatch(PlayerEvent(PLAY, soundName), playerOut);
+                motion.dispatch(MotionEvent(PLAY, motionName), motionOut);
+            }
+            else{
+                playerOut.signal = END_OF_FILE;
+                motionOut.signal = END_OF_FILE;
+            }
+            break;
         case NOTHING :
             player.dispatch(Event(TICK), playerOut);
             motion.dispatch(Event(TICK), motionOut);

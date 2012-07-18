@@ -31,8 +31,9 @@
 #include <eepromAddresses.h>
 #include <Inbox.h>
 #include <Resources.h>
-#include <Settings.h>
 #include <Button.h>
+#include <Gmail.h>
+#include <Facebook.h>
 #include <Motion.h>
 #include <Personality.h>
 #include <Player.h>
@@ -55,22 +56,22 @@ private:
     Api api;
     Audio audio;
     SdFat sd;
+    Gmail gmail;
+	Facebook facebook;
     StatusLed led;
     Wifly wifly;
     // Services
     Inbox inbox;
     Configuration config;
-    Resources resources;
-    Settings settings;
-    // Motion
-    PusherTrajectory realtime;
-    Motion motion;
-    ServoControl control;
     // Behavior
     Button button;
     Player player;
     Personality personality;
     PusherClient pusher;
+    PusherTrajectory realtime;
+    Motion motion;
+    Settings settings;
+    ServoControl control;
 };
 //------------------------------------------------------------------------------
 #endif // DISPATCHER_H

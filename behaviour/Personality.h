@@ -55,7 +55,8 @@ private:
     void awake(const Event* e);
     void enteringPushMode(const Event* e);
     void fallingAsleep(const Event* e);
-    void playing(const Event* e);
+    void checkingGmail(const Event* e);
+	void checkingFacebook(const Event* e);
     void pollingInbox(const Event* e);
     void pushMode(const Event* e);
     void remoteControl(const Event* e);
@@ -65,8 +66,10 @@ private:
     void resetDeadlines();
     /** Timestamp used to trigger inbox refresh*/
     unsigned long pollInboxDeadline_;
-    /** Timestamp used to start play song*/
-    unsigned long playSongDeadline_;
+    /** Timestamp used to start checking Gmail*/
+    unsigned long checkingGmailDeadline_;
+	 /** Timestamp used to start checking Facebook*/
+    unsigned long checkingFacebookDeadline_;
     /** Timestamp used to leave remote control mode */
     unsigned long remoteControlDeadline_;
     /* Timestamp used to enter push mode when asleep */
