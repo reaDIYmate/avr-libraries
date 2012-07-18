@@ -239,7 +239,6 @@ void Dispatcher::loop() {
     }
 
     Event playerOut,motionOut;
-	
     switch (persoOut.signal) {
         case WAKE_UP :
             player.dispatch(PlayerEvent(PLAY, "JINGLE6.MP3"), playerOut);
@@ -248,29 +247,29 @@ void Dispatcher::loop() {
             player.dispatch(PlayerEvent(PLAY, "YAWN.MP3"), playerOut);
             break;
         case GMAIL:
-            if(gmail.update()){
-				char* soundName;
-				char* motionName;
+            if (gmail.update()) {
+                char* soundName;
+                char* motionName;
                 soundName = gmail.getSoundFilename();
                 motionName = gmail.getMotionFilename();
                 player.dispatch(PlayerEvent(PLAY, soundName), playerOut);
                 motion.dispatch(MotionEvent(PLAY, motionName), motionOut);
             }
-            else{
+            else {
                 playerOut.signal = END_OF_FILE;
                 motionOut.signal = END_OF_FILE;
             }
             break;
 		case FACEBOOK:
-            if(facebook.update()){
-				char* soundName;
-				char* motionName;
+            if (facebook.update()) {
+                char* soundName;
+                char* motionName;
                 soundName = facebook.getSoundFilename();
                 motionName = facebook.getMotionFilename();
                 player.dispatch(PlayerEvent(PLAY, soundName), playerOut);
                 motion.dispatch(MotionEvent(PLAY, motionName), motionOut);
             }
-            else{
+            else {
                 playerOut.signal = END_OF_FILE;
                 motionOut.signal = END_OF_FILE;
             }

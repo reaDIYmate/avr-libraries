@@ -85,7 +85,7 @@ void Personality::awake(const Event* e) {
             emit(FALL_ASLEEP);
             break;
         case TICK :
-			if (millis() >= checkingFacebookDeadline_) {
+            if (millis() >= checkingFacebookDeadline_) {
                 emit(FACEBOOK);
                 transition(Personality::checkingFacebook);
             }
@@ -96,6 +96,38 @@ void Personality::awake(const Event* e) {
             else if (millis() >= pollInboxDeadline_) {
                 transition(Personality::pollingInbox);
             }
+            break;
+    }
+}
+//------------------------------------------------------------------------------
+/** Checking Facebook */
+void Personality::checkingFacebook(const Event* e) {
+    switch (e->signal) {
+#ifdef DEBUG
+        case ENTRY :
+            Serial.println(F("Personality::checking Facebook"));
+            break;
+#endif
+        case STOP :
+            internalTransition(Personality::awake);
+            Serial.println(F("Personality::awake"));
+            checkingFacebookDeadline_ = millis() + CHECK_FACEBOOK_INTERVAL;
+            break;
+    }
+}
+//------------------------------------------------------------------------------
+/** Checking Gmail */
+void Personality::checkingGmail(const Event* e) {
+    switch (e->signal) {
+#ifdef DEBUG
+        case ENTRY :
+            Serial.println(F("Personality::checking Gmail"));
+            break;
+#endif
+        case STOP :
+            internalTransition(Personality::awake);
+            Serial.println(F("Personality::awake"));
+            checkingGmailDeadline_ = millis() + CHECK_GMAIL_INTERVAL;
             break;
     }
 }
@@ -129,38 +161,6 @@ void Personality::fallingAsleep(const Event* e) {
         case STOP :
             transition(Personality::asleep);
             break;
-    }
-}
-//------------------------------------------------------------------------------
-/** Checking Gmail */
-void Personality::checkingGmail(const Event* e) {
-    switch (e->signal) {
-#ifdef DEBUG
-        case ENTRY :
-            Serial.println(F("Personality::checking Gmail"));
-            break;
-#endif
-        case STOP :
-			internalTransition(Personality::awake);
-			Serial.println(F("Personality::awake"));
-			checkingGmailDeadline_ = millis() + CHECK_GMAIL_INTERVAL;
-			break;
-    }
-}
-//------------------------------------------------------------------------------
-/** Checking Facebook */
-void Personality::checkingFacebook(const Event* e) {
-    switch (e->signal) {
-#ifdef DEBUG
-        case ENTRY :
-            Serial.println(F("Personality::checking Facebook"));
-            break;
-#endif
-        case STOP :
-			internalTransition(Personality::awake);
-            Serial.println(F("Personality::awake"));
-			checkingFacebookDeadline_ = millis() + CHECK_FACEBOOK_INTERVAL;
-			break;
     }
 }
 //------------------------------------------------------------------------------
@@ -279,5 +279,5 @@ void Personality::postActivity(uint8_t level) {
 void Personality::resetDeadlines() {
     pollInboxDeadline_ = millis() + POLL_INTERVAL;
     checkingGmailDeadline_ = millis() + CHECK_GMAIL_INTERVAL;
-	checkingFacebookDeadline_ = millis() + CHECK_FACEBOOK_INTERVAL;
+    checkingFacebookDeadline_ = millis() + CHECK_FACEBOOK_INTERVAL;
 }

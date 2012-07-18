@@ -53,10 +53,10 @@ private:
     // States
     void asleep(const Event* e);
     void awake(const Event* e);
+    void checkingFacebook(const Event* e);
+    void checkingGmail(const Event* e);
     void enteringPushMode(const Event* e);
     void fallingAsleep(const Event* e);
-    void checkingGmail(const Event* e);
-	void checkingFacebook(const Event* e);
     void pollingInbox(const Event* e);
     void pushMode(const Event* e);
     void remoteControl(const Event* e);
@@ -68,7 +68,7 @@ private:
     unsigned long pollInboxDeadline_;
     /** Timestamp used to start checking Gmail*/
     unsigned long checkingGmailDeadline_;
-	 /** Timestamp used to start checking Facebook*/
+     /** Timestamp used to start checking Facebook*/
     unsigned long checkingFacebookDeadline_;
     /** Timestamp used to leave remote control mode */
     unsigned long remoteControlDeadline_;
