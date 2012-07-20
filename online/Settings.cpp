@@ -76,7 +76,7 @@ Settings::~Settings() {
  * valid content, otherwise NULL is returned.
  */
 char* Settings::getByName(PGM_P target) {
-    for (uint8_t i = 0; i < nbSettings_; i++) {
+    for (uint8_t i = 0; i < nbMaxSettings_; i++) {
         PGM_P name = (PGM_P)pgm_read_word(&settingsNames_[i]);
         if (name == target) {
             return settings_[i];

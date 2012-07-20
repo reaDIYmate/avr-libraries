@@ -44,9 +44,9 @@ public:
     uint8_t getNbSettings() {return nbSettings_;}
 //------------------------------------------------------------------------------
 private:
-    /** The maximum number of elements in the settings */
+    /** The maximum expected number of settings */
     const uint8_t nbMaxSettings_;
-    /** The number of elements in the settings */
+    /** The number of settings that were actually retrieved  */
     uint8_t nbSettings_;
     /** The individual names of the settings, stored in Flash */
     PGM_P* settingsNames_;
