@@ -19,20 +19,20 @@
  */
 #include <Vs1011.h>
 //------------------------------------------------------------------------------
-/** Send a byte over to the SPI bus */
+/** Send a byte over to the SPI bus. */
 static inline __attribute__((always_inline)) void sendByte(uint8_t data) {
 	SPDR = data;
 	while (!(SPSR & (1 << SPIF)));
 }
 //------------------------------------------------------------------------------
-/** Receive a byte from the SPI bus */
+/** Receive a byte from the SPI bus. */
 static inline __attribute__((always_inline)) uint8_t receiveByte() {
 	SPDR = 0xFF;
 	while (!(SPSR & (1 << SPIF)));
 	return SPDR;
 }
 //------------------------------------------------------------------------------
-/** Setup the hardware SPI registers of the AVR */
+/** Setup the hardware SPI registers of the AVR. */
 static inline __attribute__((always_inline)) void setupSpiRegisters() {
 	// set byte ordering to MSB first
 	SPCR &= ~(1 << DORD);
@@ -66,7 +66,7 @@ Vs1011::~Vs1011() {
 }
 //------------------------------------------------------------------------------
 /**
- * Initialize the VS1011 chip
+ * Initialize the VS1011 chip.
  *
  * \param[in] modeFlag Determines the initialization mode.
  *

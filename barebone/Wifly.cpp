@@ -42,18 +42,24 @@ uint8_t const WIFLY_REPLACE_CHAR = '\r';
 // WiFly commands
 /** Exit command mode */
 const char PROGMEM WIFLY_EXIT[] = "exit";
+/** Command to reset factory */
+const char PROGMEM WIFLY_FACTORY_RESET[] = "factory RESET";
+/** Command to update firmware */
+const char PROGMEM WIFLY_FTP_UPDATE[] = "ftp update\r";
+/** Get the WiFly MAC address */
+const char PROGMEM WIFLY_GET_MAC_ADDRESS[] = "get mac\r";
 /** Exit command mode */
 const char PROGMEM WIFLY_JOIN[] = "join";
 /** Open a TCP socket */
 const char PROGMEM WIFLY_OPEN[] = "open ";
+/** Save the configuration */
+const char PROGMEM WIFLY_SAVE_CONFIG[] = "save";
 /** Set the connexion close message */
 const char PROGMEM WIFLY_SET_COMM_CLOSE[] = "set comm close";
 /** Set the connexion open message */
 const char PROGMEM WIFLY_SET_COMM_OPEN[] = "set comm open";
 /** Set the connexion remote message */
 const char PROGMEM WIFLY_SET_COMM_REMOTE[] = "set comm remote";
-/** Save the configuration */
-const char PROGMEM WIFLY_SAVE_CONFIG[] = "save";
 /** Set the TCP host */
 const char PROGMEM WIFLY_SET_DNS_NAME[] = "set dns name";
 /** Set the IP address of the WiFly GSX module */
@@ -76,6 +82,8 @@ const char PROGMEM WIFLY_SET_OPT_REPLACE[] = "set opt replace";
 const char PROGMEM WIFLY_SET_SYS_IOFUNC[] = "set sys iofunc";
 /** Set the UART mode */
 const char PROGMEM WIFLY_SET_UART_MODE[] = "set uart mode";
+/** Set the UART baudrate value */
+const char PROGMEM WIFLY_SET_UART_RAW[] = "set uart raw";
 /** Set the WLAN join mode */
 const char PROGMEM WIFLY_SET_WLAN_JOIN[] = "set wlan join";
 /** Set the link monitor interval */
@@ -84,24 +92,24 @@ const char PROGMEM WIFLY_SET_WLAN_LINKMON[] = "set wlan linkmon";
 const char PROGMEM WIFLY_SET_WLAN_PHRASE[] = "set w phrase";
 /** Set the SSID to associate with - whitespaces must be replaced with '$' */
 const char PROGMEM WIFLY_SET_WLAN_SSID[] = "set w ssid";
-/** Set the UART baudrate value */
-const char PROGMEM WIFLY_SET_UART_RAW[] = "set uart raw";
-/** Get the WifLy MAC address */
-const char PROGMEM WIFLY_GET_MAC_ADDRESS[] = "get mac\r";
 //------------------------------------------------------------------------------
 // WiFly messages
 /** Command successfully executed */
 const char PROGMEM WIFLY_AOK[] = "AOK";
 /** Command mode successfully entered */
 const char PROGMEM WIFLY_CMD[] = "CMD";
+/** Saved configuration in memory */
+const char PROGMEM WIFLY_CONFIG_SAVED[] = "Storing in config";
 /** Enter command mode */
 const char PROGMEM WIFLY_ENTER_COMMAND[] = "$$$";
 /** Left command mode */
 const char PROGMEM WIFLY_EXITED[] = "EXIT";
+/** Set factory defaults */
+const char PROGMEM WIFLY_FACTORY_MESSAGE[] = "Set Factory Defaults";
 /** Joined WLAN */
 const char PROGMEM WIFLY_JOINED[] = "2000\r\n";
-/** Saved configuration in memory */
-const char PROGMEM WIFLY_CONFIG_SAVED[] = "Storing in config";
+/** FTP update successfully executed */
+const char PROGMEM WIFLY_UPDATE_OK[] = "UPDATE OK";
 //------------------------------------------------------------------------------
 /**
  * Construct an instance of SerialStream.
@@ -133,7 +141,7 @@ bool Wifly::associated() {
     return digitalReadFast(gpio4Pin_);
 }
 //------------------------------------------------------------------------------
-/** Check if the WiFly is connected to the access point
+/** Check if the WiFly is connected to the access point.
  *
  * \param[in] timeout The time limit for checking the association status.
  *
@@ -162,7 +170,7 @@ bool Wifly::awaitResponse() {
     return false;
 }
 //------------------------------------------------------------------------------
-/** Force the WiFly to close the TCP connection */
+/** Force the WiFly to close the TCP connection. */
 void Wifly::closeSocket() {
     digitalWriteFast(gpio5Pin_, LOW);
 }
@@ -323,7 +331,7 @@ bool Wifly::connectedTo_P(PGM_P host) {
     return (strcmp_P(host_, host) == 0);
 }
 //------------------------------------------------------------------------------
-/** Disconnect from host - close TCP socket */
+/** Disconnect from host - close TCP socket. */
 void Wifly::disconnect() {
     while (connected())
         closeSocket();
@@ -391,7 +399,7 @@ bool Wifly::executeCommand(PGM_P command, PGM_P expectedReturn,
 }
 //------------------------------------------------------------------------------
 /**
- * Get the WiFly MAC address
+ * Get the WiFly MAC address.
  *
  * \param[out] output The location the device ID will be written to.
  */
@@ -419,7 +427,7 @@ void Wifly::getDeviceId(char* output) {
     reset();
 }
 //------------------------------------------------------------------------------
-/** Initialize the WiFly module */
+/** Initialize the WiFly module. */
 void Wifly::initialize() {
     begin(9600);
     pinModeFast(resetPin_, OUTPUT);
@@ -429,7 +437,7 @@ void Wifly::initialize() {
     reset();
 }
 //------------------------------------------------------------------------------
-/* Command the WiFly to join the WLAN stored in memory */
+/* Command the WiFly to join the WLAN stored in memory. */
 void Wifly::join() {
     executeCommand(WIFLY_JOIN, WIFLY_JOINED);
 }
@@ -442,7 +450,7 @@ void Wifly::openSocket() {
     digitalWriteFast(gpio5Pin_, HIGH);
 }
 //------------------------------------------------------------------------------
-/** Perform a hardware reset of the WiFly module */
+/** Perform a hardware reset of the WiFly module. */
 void Wifly::reset() {
     digitalWriteFast(resetPin_, LOW);
     delay(1);
@@ -452,7 +460,7 @@ void Wifly::reset() {
 }
 //------------------------------------------------------------------------------
 /**
- * Setup the WiFly module to connect to a given access point
+ * Setup the WiFly module to connect to a given access point.
  *
  * \param[in] ssid The WLAN SSID.
  * \param[in] passphrase The security passphrase of the WLAN.
@@ -489,9 +497,7 @@ void Wifly::setConfig(const char* ssid, const char* passphrase, const char* ip,
     reset();
 }
 //------------------------------------------------------------------------------
-/**
- * Setup the WiFly module from the factory
- */
+/** Setup the RN171. */
 void Wifly::setFirstConfig() {
     reset();
     enterCommandMode();
@@ -526,7 +532,7 @@ void Wifly::setFirstConfig() {
 }
 //------------------------------------------------------------------------------
 /**
- * Set the TCP host
+ * Set the TCP host.
  *
  * \param[in] host A string representing the IP address or the DNS name of the
  * host.
