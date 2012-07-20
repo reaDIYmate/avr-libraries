@@ -113,34 +113,33 @@ int Settings::fetch() {
         // get the name of the next setting
         PGM_P key_P = (char*)pgm_read_word(&settingsNames_[i]);
         // get the corresponding value
-        char buffer[64] = {0};
+        char buffer[128] = {0};
         // detect nested setting names
         const char *dot = strchr_P(key_P, '.');
 
         // regular setting name
         if (dot == NULL) {
-            nBytes = api_->getStringByName_P(key_P, buffer, 64);
+            nBytes = api_->getStringByName_P(key_P, buffer, 128);
         }
         // nested setting name
         else {
             // copy key to SRAM
-            char key[17] = {0};
+            char key[32] = {0};
             strcpy_P(key, key_P);
 
             // key format is "service.property"
-            char service[11] = {0};
-            char property[7] = {0};
+            char service[16] = {0};
+            char property[16] = {0};
             sscanf(key, "%[^.].%s", service, property);
 
             // parse service
-            char objectString[64] = {0};
-            nBytes = api_->getObjectStringByName(service, objectString, 64);
+            char objectString[256] = {0};
+            nBytes = api_->getObjectStringByName(service, objectString, 256);
             if (nBytes < 0)
                 continue;
-
             // parse property
             JsonStream json(objectString);
-            nBytes = json.getStringByName(property, buffer, 64);
+            nBytes = json.getStringByName(property, buffer, 128);
         }
 
         if (nBytes <= 0)
