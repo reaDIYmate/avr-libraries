@@ -52,6 +52,8 @@ const char PROGMEM COMMAND_DEVICEID[] = "id";
 const char PROGMEM COMMAND_CONFIGURATION[] = "config";
 /** Factory mode */
 const char PROGMEM COMMAND_FACTORY[] = "factory";
+/** Update Wifly firmware mode */
+const char PROGMEM COMMAND_UPDATE[] = "update";
 /** Start-up signal */
 const char PROGMEM WIZARD_STARTUP[] = "reaDIYmate\n";
 //------------------------------------------------------------------------------
@@ -303,6 +305,11 @@ void Configuration::synchronize(uint16_t timeout) {
             wifly_->getDeviceId(deviceId_);
             saveDeviceId();
             Serial.println(F("Factory configuration"));
+            return;
+        }
+        else if (strcmp_P(cmd, COMMAND_UPDATE) == 0) {
+            wifly_->updateFirmware();
+            Serial.println(F("WiFly firmware updated"));
             return;
         }
     }

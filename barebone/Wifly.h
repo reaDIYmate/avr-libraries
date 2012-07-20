@@ -50,6 +50,7 @@ public:
         const char* ip = NULL, const char* mask = NULL,
         const char* gateway = NULL);
     void setFirstConfig();
+    void updateFirmware();
 //------------------------------------------------------------------------------
 private:
     bool associated();

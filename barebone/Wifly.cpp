@@ -62,6 +62,8 @@ const char PROGMEM WIFLY_SET_COMM_OPEN[] = "set comm open";
 const char PROGMEM WIFLY_SET_COMM_REMOTE[] = "set comm remote";
 /** Set the TCP host */
 const char PROGMEM WIFLY_SET_DNS_NAME[] = "set dns name";
+/** Set the IP address of the Roving FTP server */
+const char PROGMEM WIFLY_SET_FTP_ADDRESS[] = "set ftp address 208.109.14.133";
 /** Set the IP address of the WiFly GSX module */
 const char PROGMEM WIFLY_SET_IP_ADDRESS[] = "set ip address";
 /** Enable/disable DHCP mode */
@@ -349,6 +351,7 @@ bool Wifly::enterCommandMode() {
         delay(250);
         // request a new command prompt
         write_P(WIFLY_ENTER_COMMAND);
+        flush();
         // look for the command string
         if (find_P(WIFLY_CMD))
             return true;
@@ -405,7 +408,7 @@ bool Wifly::executeCommand(PGM_P command, PGM_P expectedReturn,
  */
 void Wifly::getDeviceId(char* output) {
     reset();
-    enterCommandMode();
+    while(!enterCommandMode());
     write_P(WIFLY_GET_MAC_ADDRESS);
 
     char buffer[30] = {0};
@@ -474,7 +477,7 @@ void Wifly::reset() {
 void Wifly::setConfig(const char* ssid, const char* passphrase, const char* ip,
     const char* mask, const char* gateway) {
     reset();
-    enterCommandMode();
+    while(!enterCommandMode());
 
     // setup the access point SSID and security phrase:
     executeCommand(WIFLY_SET_WLAN_SSID, WIFLY_AOK, ssid);
@@ -500,7 +503,11 @@ void Wifly::setConfig(const char* ssid, const char* passphrase, const char* ip,
 /** Setup the RN171. */
 void Wifly::setFirstConfig() {
     reset();
-    enterCommandMode();
+    while(!enterCommandMode());
+
+    // disable echo of RX data and replace the version string with a single CR
+    executeCommand(WIFLY_SET_UART_MODE, WIFLY_AOK, 0x21);
+    executeCommand(WIFLY_SET_OPT_REPLACE, WIFLY_AOK, WIFLY_REPLACE_CHAR);
 
     // enable the link monitor threshold with the recommended value
     executeCommand(WIFLY_SET_WLAN_LINKMON, WIFLY_AOK, 5);
@@ -512,10 +519,6 @@ void Wifly::setFirstConfig() {
     executeCommand(WIFLY_SET_COMM_OPEN, WIFLY_AOK, 0L);
     executeCommand(WIFLY_SET_COMM_CLOSE, WIFLY_AOK, 0L);
     executeCommand(WIFLY_SET_COMM_REMOTE, WIFLY_AOK, 0L);
-
-    // disable echo of RX data and replace the version string with a single CR
-    executeCommand(WIFLY_SET_UART_MODE, WIFLY_AOK, 0x21);
-    executeCommand(WIFLY_SET_OPT_REPLACE, WIFLY_AOK, WIFLY_REPLACE_CHAR);
 
     // close any open TCP connection when the WLAN link is lost
     executeCommand(WIFLY_SET_IP_FLAGS, WIFLY_AOK, 0x06);
@@ -547,4 +550,28 @@ bool Wifly::setHost(const char* host) {
         return false;
     else
         return true;
+}
+//------------------------------------------------------------------------------
+/** Update the RN171 firmware to the latest version. */
+void Wifly::updateFirmware() {
+    reset();
+    while(!enterCommandMode());
+
+    join();
+
+    // set ftp address
+    executeCommand(WIFLY_SET_FTP_ADDRESS, WIFLY_AOK);
+    executeCommand(WIFLY_SAVE_CONFIG, WIFLY_CONFIG_SAVED);
+
+    // ftp update
+    write_P(WIFLY_FTP_UPDATE);
+    while(!find_P(WIFLY_UPDATE_OK));
+
+    // factory reset
+    executeCommand(WIFLY_FACTORY_RESET, WIFLY_FACTORY_MESSAGE);
+
+    executeCommand(WIFLY_SAVE_CONFIG, WIFLY_CONFIG_SAVED);
+    executeCommand(WIFLY_EXIT, WIFLY_EXITED);
+
+    reset();
 }
