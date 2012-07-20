@@ -34,13 +34,16 @@
 #include <Button.h>
 #include <Gmail.h>
 #include <Facebook.h>
+#include <Foursquare.h>
 #include <Motion.h>
 #include <Personality.h>
 #include <Player.h>
 #include <PusherClient.h>
 #include <PusherTrajectory.h>
+#include <Rss.h>
 #include <Settings.h>
 #include <ServoControl.h>
+#include <Twitter.h>
 //------------------------------------------------------------------------------
 #define BUFFER_SIZE 4096
 //------------------------------------------------------------------------------
@@ -57,7 +60,10 @@ private:
     Audio audio;
     SdFat sd;
     Gmail gmail;
-	Facebook facebook;
+    Facebook facebook;
+    Twitter twitter;
+    Rss rss;
+    Foursquare foursquare;
     StatusLed led;
     Wifly wifly;
     // Services

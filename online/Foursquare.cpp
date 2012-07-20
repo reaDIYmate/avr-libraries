@@ -17,26 +17,29 @@
  * You should have received a copy of the GNU General Public License along
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "Gmail.h"
+#include "Foursquare.h"
 //------------------------------------------------------------------------------
-const char STRING_API_GMAIL[] PROGMEM = "gmail/search";
+const char STRING_API_FOURSQUARE[] PROGMEM = "foursquare/update";
+const char KEY_VENUEID[] PROGMEM = "venueId";
 //------------------------------------------------------------------------------
-Gmail::Gmail(Api &api, Settings &settings, PGM_P on, PGM_P motionName,
-    PGM_P soundName) :
+Foursquare::Foursquare(Api &api, Settings &settings, PGM_P on, PGM_P motionName,
+    PGM_P soundName, PGM_P venueId) :
     api_(&api),
     settings_(&settings),
     count_(-1),
     on_(on),
     motionName_(motionName),
-    soundName_(soundName)
+    soundName_(soundName),
+    venueId_(venueId)
 {
 }
 //------------------------------------------------------------------------------
-bool Gmail::update() {
-    if (strcmp("1",settings_->getByName(on_)) == 0) {
+bool Foursquare::update(){
+    if (strcmp("1", settings_->getByName(on_)) == 0) {
         int countCurrent;
-        api_->call(STRING_API_GMAIL);
-        countCurrent = api_->getIntegerByName("count");
+        api_->call(STRING_API_FOURSQUARE, KEY_VENUEID,
+            settings_->getByName(venueId_));
+        countCurrent = api_->getIntegerByName("checkins");
 
         if (countCurrent != count_ && count_ != -1) {
             if (countCurrent > count_ ) {
@@ -54,10 +57,10 @@ bool Gmail::update() {
     return false;
 }
 //------------------------------------------------------------------------------
-char* Gmail::getMotionFilename() {
+char* Foursquare::getMotionFilename() {
     return settings_->getByName(motionName_);
 }
 //------------------------------------------------------------------------------
-char* Gmail::getSoundFilename() {
+char* Foursquare::getSoundFilename() {
     return settings_->getByName(soundName_);
 }

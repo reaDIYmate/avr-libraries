@@ -54,7 +54,10 @@ private:
     void asleep(const Event* e);
     void awake(const Event* e);
     void checkingFacebook(const Event* e);
+    void checkingFoursquare(const Event* e);
     void checkingGmail(const Event* e);
+    void checkingRss(const Event* e);
+    void checkingTwitter(const Event* e);
     void enteringPushMode(const Event* e);
     void fallingAsleep(const Event* e);
     void pollingInbox(const Event* e);
@@ -68,8 +71,14 @@ private:
     unsigned long pollInboxDeadline_;
     /** Timestamp used to start checking Gmail*/
     unsigned long checkingGmailDeadline_;
-     /** Timestamp used to start checking Facebook*/
+    /** Timestamp used to start checking Facebook*/
     unsigned long checkingFacebookDeadline_;
+    /** Timestamp used to start checking Twitter*/
+    unsigned long checkingTwitterDeadline_;
+    /** Timestamp used to start checking Rss*/
+    unsigned long checkingRssDeadline_;
+    /** Timestamp used to start checking Foursquare*/
+    unsigned long checkingFoursquareDeadline_;
     /** Timestamp used to leave remote control mode */
     unsigned long remoteControlDeadline_;
     /* Timestamp used to enter push mode when asleep */

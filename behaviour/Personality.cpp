@@ -27,11 +27,17 @@ const char PROGMEM KEY_ACTIVITY[] = "activity";
 //------------------------------------------------------------------------------
 // Timing constants
 /** Refresh interval (in ms) for the inbox messages. */
-const uint32_t POLL_INTERVAL = 20000;
+const uint32_t POLL_INTERVAL = 480000;
 /** Refresh interval (in ms) to check Gmail. */
-const uint32_t CHECK_GMAIL_INTERVAL = 60000;
+const uint32_t CHECK_GMAIL_INTERVAL = 480000;
 /** Refresh interval (in ms) to check Facebook. */
-const uint32_t CHECK_FACEBOOK_INTERVAL = 120000;
+const uint32_t CHECK_FACEBOOK_INTERVAL = 480000;
+/** Refresh interval (in ms) to check Twitter. */
+const uint32_t CHECK_TWITTER_INTERVAL = 480000;
+/** Refresh interval (in ms) to check Rss. */
+const uint32_t CHECK_RSS_INTERVAL = 10000;
+/** Refresh interval (in ms) to check Foursquare. */
+const uint32_t CHECK_FOURSQUARE_INTERVAL = 480000;
 /** Timeout (in ms) for remote control mode */
 const uint32_t REMOTE_CONTROL_TIMEOUT = 30000;
 const uint8_t MAX_LEVEL = 1;
@@ -93,6 +99,18 @@ void Personality::awake(const Event* e) {
                 emit(GMAIL);
                 transition(Personality::checkingGmail);
             }
+            else if (millis() >= checkingTwitterDeadline_) {
+                emit(TWITTER);
+                transition(Personality::checkingTwitter);
+            }
+            else if (millis() >= checkingRssDeadline_) {
+                emit(RSS);
+                transition(Personality::checkingRss);
+            }
+            else if (millis() >= checkingFoursquareDeadline_) {
+                emit(FOURSQUARE);
+                transition(Personality::checkingFoursquare);
+            }
             else if (millis() >= pollInboxDeadline_) {
                 transition(Personality::pollingInbox);
             }
@@ -116,6 +134,22 @@ void Personality::checkingFacebook(const Event* e) {
     }
 }
 //------------------------------------------------------------------------------
+/** Checking Foursquare*/
+void Personality::checkingFoursquare(const Event* e) {
+    switch (e->signal) {
+#ifdef DEBUG
+        case ENTRY :
+            Serial.println(F("Personality::checking Foursquare"));
+            break;
+#endif
+        case STOP :
+            internalTransition(Personality::awake);
+            Serial.println(F("Personality::awake"));
+            checkingFoursquareDeadline_ = millis() + CHECK_FOURSQUARE_INTERVAL;
+            break;
+    }
+}
+//------------------------------------------------------------------------------
 /** Checking Gmail */
 void Personality::checkingGmail(const Event* e) {
     switch (e->signal) {
@@ -128,6 +162,38 @@ void Personality::checkingGmail(const Event* e) {
             internalTransition(Personality::awake);
             Serial.println(F("Personality::awake"));
             checkingGmailDeadline_ = millis() + CHECK_GMAIL_INTERVAL;
+            break;
+    }
+}
+//------------------------------------------------------------------------------
+/** Checking Rss*/
+void Personality::checkingRss(const Event* e) {
+    switch (e->signal) {
+#ifdef DEBUG
+        case ENTRY :
+            Serial.println(F("Personality::checking Rss"));
+            break;
+#endif
+        case STOP :
+            internalTransition(Personality::awake);
+            Serial.println(F("Personality::awake"));
+            checkingRssDeadline_ = millis() + CHECK_RSS_INTERVAL;
+            break;
+    }
+}
+//------------------------------------------------------------------------------
+/** Checking Twitter */
+void Personality::checkingTwitter(const Event* e) {
+    switch (e->signal) {
+#ifdef DEBUG
+        case ENTRY :
+            Serial.println(F("Personality::checking Twitter"));
+            break;
+#endif
+        case STOP :
+            internalTransition(Personality::awake);
+            Serial.println(F("Personality::awake"));
+            checkingTwitterDeadline_ = millis() + CHECK_TWITTER_INTERVAL;
             break;
     }
 }
@@ -280,4 +346,7 @@ void Personality::resetDeadlines() {
     pollInboxDeadline_ = millis() + POLL_INTERVAL;
     checkingGmailDeadline_ = millis() + CHECK_GMAIL_INTERVAL;
     checkingFacebookDeadline_ = millis() + CHECK_FACEBOOK_INTERVAL;
+    checkingTwitterDeadline_ = millis() + CHECK_TWITTER_INTERVAL;
+    checkingRssDeadline_ = millis() + CHECK_RSS_INTERVAL;
+    checkingFoursquareDeadline_ = millis() + CHECK_FOURSQUARE_INTERVAL;
 }

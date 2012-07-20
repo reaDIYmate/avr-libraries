@@ -17,25 +17,30 @@
  * You should have received a copy of the GNU General Public License along
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "Gmail.h"
+#include "Rss.h"
 //------------------------------------------------------------------------------
-const char STRING_API_GMAIL[] PROGMEM = "gmail/search";
+const char STRING_API_RSS[] PROGMEM = "rss/update";
+const char KEY_KEYWORD[] PROGMEM = "keyword";
+const char KEY_FEED_URL[] PROGMEM = "feed_url";
 //------------------------------------------------------------------------------
-Gmail::Gmail(Api &api, Settings &settings, PGM_P on, PGM_P motionName,
-    PGM_P soundName) :
+Rss::Rss(Api &api, Settings &settings, PGM_P on, PGM_P motionName,
+    PGM_P soundName, PGM_P keyword, PGM_P feed_url) :
     api_(&api),
     settings_(&settings),
     count_(-1),
     on_(on),
     motionName_(motionName),
-    soundName_(soundName)
+    soundName_(soundName),
+    keyword_(keyword),
+    feed_url_(feed_url)
 {
 }
 //------------------------------------------------------------------------------
-bool Gmail::update() {
+bool Rss::update(){
     if (strcmp("1",settings_->getByName(on_)) == 0) {
         int countCurrent;
-        api_->call(STRING_API_GMAIL);
+        api_->call(STRING_API_RSS, KEY_KEYWORD, settings_->getByName(keyword_),
+            KEY_FEED_URL, settings_->getByName(feed_url_));
         countCurrent = api_->getIntegerByName("count");
 
         if (countCurrent != count_ && count_ != -1) {
@@ -54,10 +59,10 @@ bool Gmail::update() {
     return false;
 }
 //------------------------------------------------------------------------------
-char* Gmail::getMotionFilename() {
+char* Rss::getMotionFilename() {
     return settings_->getByName(motionName_);
 }
 //------------------------------------------------------------------------------
-char* Gmail::getSoundFilename() {
+char* Rss::getSoundFilename() {
     return settings_->getByName(soundName_);
 }

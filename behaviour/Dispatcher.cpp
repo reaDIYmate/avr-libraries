@@ -37,7 +37,7 @@
 #define UART_COMPANION Serial
 //------------------------------------------------------------------------------
 // Settings
-const uint8_t NB_SETTINGS = 18;
+const uint8_t NB_SETTINGS = 21;
 
 const char FACEBOOK_ON[]        PROGMEM = "facebook.on";
 const char FACEBOOK_SOUND[]     PROGMEM = "facebook.sound";
@@ -54,10 +54,13 @@ const char TWITTER_MOTION[]     PROGMEM = "twitter.motion";
 const char RSS_ON[]             PROGMEM = "rss.on";
 const char RSS_SOUND[]          PROGMEM = "rss.sound";
 const char RSS_MOTION[]         PROGMEM = "rss.motion";
+const char RSS_KEYWORD[]        PROGMEM = "rss.keyword";
+const char RSS_FEED_URL[]       PROGMEM = "rss.feed_url";
 
 const char FOURSQUARE_ON[]      PROGMEM = "foursquare.on";
 const char FOURSQUARE_SOUND[]   PROGMEM = "foursquare.sound";
 const char FOURSQUARE_MOTION[]  PROGMEM = "foursquare.motion";
+const char FOURSQUARE_VENUEID[] PROGMEM = "foursquare.venueId";
 
 const char SOUNDCLOUD_ON[]      PROGMEM = "soundcloud.on";
 const char SOUNDCLOUD_SOUND[]   PROGMEM = "soundcloud.sound";
@@ -77,9 +80,12 @@ const char* SETTINGS_NAMES[] PROGMEM =
     RSS_ON,
     RSS_SOUND,
     RSS_MOTION,
+    RSS_KEYWORD,
+    RSS_FEED_URL,
     FOURSQUARE_ON,
     FOURSQUARE_SOUND,
     FOURSQUARE_MOTION,
+    FOURSQUARE_VENUEID,
     SOUNDCLOUD_ON,
     SOUNDCLOUD_SOUND,
     SOUNDCLOUD_MOTION
@@ -120,14 +126,40 @@ Dispatcher::Dispatcher() :
     gmail(
         api,
         settings,
-		GMAIL_MOTION,
-		GMAIL_SOUND
+        GMAIL_ON,
+        GMAIL_MOTION,
+        GMAIL_SOUND
     ),
-	facebook(
+    facebook(
         api,
         settings,
-		FACEBOOK_MOTION,
-		FACEBOOK_SOUND
+        FACEBOOK_ON,
+        FACEBOOK_MOTION,
+        FACEBOOK_SOUND
+    ),
+    twitter(
+        api,
+        settings,
+        TWITTER_ON,
+        TWITTER_MOTION,
+        TWITTER_SOUND
+    ),
+    rss(
+        api,
+        settings,
+        RSS_ON,
+        RSS_MOTION,
+        RSS_SOUND,
+        RSS_KEYWORD,
+        RSS_FEED_URL
+    ),
+    foursquare(
+        api,
+        settings,
+        FOURSQUARE_ON,
+        FOURSQUARE_MOTION,
+        FOURSQUARE_SOUND,
+        FOURSQUARE_VENUEID
     ),
     audio(
         PIN_VS1011_DREQ,
@@ -204,7 +236,6 @@ void Dispatcher::setup() {
             Serial.println(F(" settings restored."));
         }
     }
-
     led.colorGreen();
     randomSeed(analogRead(0));
     Serial.println(F("Initialization done."));
@@ -239,6 +270,8 @@ void Dispatcher::loop() {
     }
 
     Event playerOut,motionOut;
+    char* soundName;
+    char* motionName;
     switch (persoOut.signal) {
         case WAKE_UP :
             player.dispatch(PlayerEvent(PLAY, "JINGLE6.MP3"), playerOut);
@@ -248,8 +281,6 @@ void Dispatcher::loop() {
             break;
         case GMAIL:
             if (gmail.update()) {
-                char* soundName;
-                char* motionName;
                 soundName = gmail.getSoundFilename();
                 motionName = gmail.getMotionFilename();
                 player.dispatch(PlayerEvent(PLAY, soundName), playerOut);
@@ -260,12 +291,46 @@ void Dispatcher::loop() {
                 motionOut.signal = END_OF_FILE;
             }
             break;
-		case FACEBOOK:
+        case FACEBOOK:
             if (facebook.update()) {
-                char* soundName;
-                char* motionName;
                 soundName = facebook.getSoundFilename();
                 motionName = facebook.getMotionFilename();
+                player.dispatch(PlayerEvent(PLAY, soundName), playerOut);
+                motion.dispatch(MotionEvent(PLAY, motionName), motionOut);
+            }
+            else {
+                playerOut.signal = END_OF_FILE;
+                motionOut.signal = END_OF_FILE;
+            }
+            break;
+        case TWITTER:
+            if (twitter.update()) {
+                soundName = twitter.getSoundFilename();
+                motionName = twitter.getMotionFilename();
+                player.dispatch(PlayerEvent(PLAY, soundName), playerOut);
+                motion.dispatch(MotionEvent(PLAY, motionName), motionOut);
+            }
+            else {
+                playerOut.signal = END_OF_FILE;
+                motionOut.signal = END_OF_FILE;
+            }
+            break;
+        case RSS:
+            if (rss.update()) {
+                soundName = rss.getSoundFilename();
+                motionName = rss.getMotionFilename();
+                player.dispatch(PlayerEvent(PLAY, soundName), playerOut);
+                motion.dispatch(MotionEvent(PLAY, motionName), motionOut);
+            }
+            else {
+                playerOut.signal = END_OF_FILE;
+                motionOut.signal = END_OF_FILE;
+            }
+            break;
+        case FOURSQUARE:
+            if (foursquare.update()) {
+                soundName = foursquare.getSoundFilename();
+                motionName = foursquare.getMotionFilename();
                 player.dispatch(PlayerEvent(PLAY, soundName), playerOut);
                 motion.dispatch(MotionEvent(PLAY, motionName), motionOut);
             }

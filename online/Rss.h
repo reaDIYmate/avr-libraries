@@ -1,5 +1,5 @@
 /* reaDIYmate AVR library
- * Written by Pierre Bouchet
+ * Written by Christopher Schindler
  * Copyright (C) 2011-2012 reaDIYmate
  *
  * This file is part of the reaDIYmate library.
@@ -17,44 +17,29 @@
  * You should have received a copy of the GNU General Public License along
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef SIGNAL_H
-#define SIGNAL_H
-enum Signal {
-    NOTHING = 0x00,
-    ALERT,
-    CONTACT_DETECTED,
-    END_OF_FILE,
-    ENTRY,
-    EXIT,
-    FALL_ASLEEP,
-	FACEBOOK,
-    FOURSQUARE,
-	GMAIL,
-    INBOX_MESSAGE,
-    LONG_CLICK_ARMED,
-    LONG_CLICK_RELEASED,
-    POKE_NO,
-    POKE_RECEIVED,
-    POKE_SENT,
-    POKE_WARNING,
-    POKE_YES,
-    MOTION_PERFORMED,
-    NO_CONTACT_DETECTED,
-    PAUSE,
-    PLAY,
-    PLAY_ALERT,
-    POLL_ALERTS,
-    POLL_INBOX,
-    RANDOM,
-    RANDOM_ACTIVITY,
-    RSS,
-    SHORT_CLICK_RELEASED,
-    STOP,
-    SUPERLONG_CLICK_ARMED,
-    TICK,
-    TILT,
-    TWITTER,
-    WAKE_UP
+#ifndef RSS_H
+#define RSS_H
+
+#include <Api.h>
+#include <Settings.h>
+//------------------------------------------------------------------------------
+class Rss {
+public:
+    Rss(Api &api, Settings &settings, PGM_P on, PGM_P motionName,
+        PGM_P soundName, PGM_P keyword, PGM_P feed_url);
+    bool update();
+    char* getMotionFilename();
+    char* getSoundFilename();
+//------------------------------------------------------------------------------
+private:
+    Api *api_;
+    Settings *settings_;
+    int count_;
+    PGM_P on_;
+    PGM_P motionName_;
+    PGM_P soundName_;
+    PGM_P keyword_;
+    PGM_P feed_url_;
 };
 
-#endif // SIGNAL_H
+#endif // RSS_H

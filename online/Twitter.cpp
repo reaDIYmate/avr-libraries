@@ -21,38 +21,41 @@
 //------------------------------------------------------------------------------
 const char STRING_API_TWITTER[] PROGMEM = "twitter/update";
 //------------------------------------------------------------------------------
-Twitter::Twitter(Api &api, Settings &settings, PGM_P motionName,
+Twitter::Twitter(Api &api, Settings &settings, PGM_P on, PGM_P motionName,
     PGM_P soundName) :
     api_(&api),
     settings_(&settings),
     count_(-1),
+    on_(on),
     motionName_(motionName),
     soundName_(soundName)
 {
 }
 //------------------------------------------------------------------------------
-bool Twitter::update() {
-    int countCurrent;
-    int twitterMentionsCount;
-    int twitterFollowers;
+bool Twitter::update(){
+    if (strcmp("1",settings_->getByName(on_)) == 0) {
+        int countCurrent;
+        int mentions;
+        int followers;
 
-    api_->call(STRING_API_TWITTER);
-    twitterMentionsCount = api_->getIntegerByName("twitter_mentions_count");
-    twitterFollowers = api_->getIntegerByName("twitter_followers");
+        api_->call(STRING_API_TWITTER);
+        mentions = api_->getIntegerByName("mentions");
+        followers = api_->getIntegerByName("followers");
 
-    countCurrent = twitterFollowers + twitterMentionsCount;
+        countCurrent = followers + mentions;
 
-    if (countCurrent != count_ && count_ != -1) {
-        if (countCurrent > count_) {
-            count_ = countCurrent;
-            return true;
+        if (countCurrent != count_ && count_ != -1) {
+            if (countCurrent > count_ ) {
+                count_ = countCurrent;
+                return true;
+            }
+            else {
+                count_ = countCurrent;
+            }
         }
-        else {
+        if (count_ == -1) {
             count_ = countCurrent;
         }
-    }
-    if (count_ == -1) {
-        count_ = countCurrent;
     }
     return false;
 }
