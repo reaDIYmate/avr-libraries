@@ -20,6 +20,7 @@
 #include "Foursquare.h"
 //------------------------------------------------------------------------------
 const char STRING_API_FOURSQUARE[] PROGMEM = "foursquare/update";
+const char KEY_CHECKINS[] PROGMEM = "checkins";
 const char KEY_VENUEID[] PROGMEM = "venueId";
 //------------------------------------------------------------------------------
 Foursquare::Foursquare(Api &api, Settings &settings, PGM_P on, PGM_P motion,
@@ -32,5 +33,5 @@ Foursquare::Foursquare(Api &api, Settings &settings, PGM_P on, PGM_P motion,
 int Foursquare::fetch() {
 	api_->call(STRING_API_FOURSQUARE, KEY_VENUEID,
  		settings_->getByName(venueId_));
-    return api_->getIntegerByName("checkins");
+    return api_->getIntegerByName_P(KEY_CHECKINS);
 }

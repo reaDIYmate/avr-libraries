@@ -20,6 +20,9 @@
  #include "Facebook.h"
 //------------------------------------------------------------------------------
 const char STRING_API_FACEBOOK[] PROGMEM = "facebook/update";
+const char KEY_FRIEND_REQUESTS[] PROGMEM = "friendrequests";
+const char KEY_NOTIFICATIONS[] PROGMEM = "notifications";
+const char KEY_POKES[] PROGMEM = "pokes";
 //------------------------------------------------------------------------------
 Facebook::Facebook(Api &api, Settings &settings, PGM_P on, PGM_P motion,
     PGM_P sound) :
@@ -29,8 +32,8 @@ Facebook::Facebook(Api &api, Settings &settings, PGM_P on, PGM_P motion,
 //------------------------------------------------------------------------------
 int Facebook::fetch() {
     api_->call(STRING_API_FACEBOOK);
-    int pokes = api_->getIntegerByName("pokes");
-    int notifications = api_->getIntegerByName("notifications");
-    int friendRequests = api_->getIntegerByName("friendrequests");
+    int pokes = api_->getIntegerByName_P(KEY_POKES);
+    int notifications = api_->getIntegerByName_P(KEY_NOTIFICATIONS);
+    int friendRequests = api_->getIntegerByName_P(KEY_FRIEND_REQUESTS);
     return pokes + notifications + friendRequests;
 }

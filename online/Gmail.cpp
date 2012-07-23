@@ -20,6 +20,7 @@
 #include "Gmail.h"
 //------------------------------------------------------------------------------
 const char STRING_API_GMAIL[] PROGMEM = "gmail/search";
+const char KEY_COUNT[] PROGMEM = "count";
 //------------------------------------------------------------------------------
 Gmail::Gmail(Api &api, Settings &settings, PGM_P on, PGM_P motion,
     PGM_P sound) :
@@ -29,5 +30,5 @@ Gmail::Gmail(Api &api, Settings &settings, PGM_P on, PGM_P motion,
 //------------------------------------------------------------------------------
 int Gmail::fetch() {
     api_->call(STRING_API_GMAIL);
-    return api_->getIntegerByName("count");
+    return api_->getIntegerByName_P(KEY_COUNT);
 }

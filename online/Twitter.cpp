@@ -20,6 +20,9 @@
 #include "Twitter.h"
 //------------------------------------------------------------------------------
 const char STRING_API_TWITTER[] PROGMEM = "twitter/update";
+const char KEY_FOLLOWERS[] PROGMEM = "followers";
+const char KEY_MENTIONS[] PROGMEM = "mentions";
+
 //------------------------------------------------------------------------------
 Twitter::Twitter(Api &api, Settings &settings, PGM_P on, PGM_P motion,
     PGM_P sound) :
@@ -29,7 +32,7 @@ Twitter::Twitter(Api &api, Settings &settings, PGM_P on, PGM_P motion,
 //------------------------------------------------------------------------------
 int Twitter::fetch() {
     api_->call(STRING_API_TWITTER);
-    int mentions = api_->getIntegerByName("mentions");
-    int followers = api_->getIntegerByName("followers");
+    int mentions = api_->getIntegerByName_P(KEY_MENTIONS);
+    int followers = api_->getIntegerByName_P(KEY_FOLLOWERS);
     return mentions + followers;
 }

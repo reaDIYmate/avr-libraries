@@ -20,8 +20,9 @@
 #include "Rss.h"
 //------------------------------------------------------------------------------
 const char STRING_API_RSS[] PROGMEM = "rss/update";
-const char KEY_KEYWORD[] PROGMEM = "keyword";
+const char KEY_COUNT[] PROGMEM = "count";
 const char KEY_FEED_URL[] PROGMEM = "feed_url";
+const char KEY_KEYWORD[] PROGMEM = "keyword";
 //------------------------------------------------------------------------------
 Rss::Rss(Api &api, Settings &settings, PGM_P on, PGM_P motion,
     PGM_P sound, PGM_P keyword, PGM_P feedUrl) :
@@ -34,5 +35,5 @@ Rss::Rss(Api &api, Settings &settings, PGM_P on, PGM_P motion,
 int Rss::fetch(){
     api_->call(STRING_API_RSS, KEY_KEYWORD, settings_->getByName(keyword_),
         KEY_FEED_URL, settings_->getByName(feedUrl_));
-    return api_->getIntegerByName("count");
+    return api_->getIntegerByName_P(KEY_COUNT);
 }
