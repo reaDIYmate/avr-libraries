@@ -21,24 +21,14 @@
 #define GMAIL_H
 
 #include <Api.h>
+#include <Service.h>
 #include <Settings.h>
 //------------------------------------------------------------------------------
-class Gmail {
+class Gmail : public Service {
 public:
-    Gmail(Api &api, Settings &settings, PGM_P on, PGM_P motionName,
-        PGM_P soundName);
-
-    bool update();
-    char* getMotionFilename();
-    char* getSoundFilename();
-//------------------------------------------------------------------------------
-private:
-    Api *api_;
-    Settings *settings_;
-    int count_;
-    PGM_P on_;
-    PGM_P motionName_;
-    PGM_P soundName_;
+    Gmail(Api &api, Settings &settings, PGM_P on, PGM_P motion, PGM_P sound);
+     int fetch();
 };
+
 
 #endif // GMAIL_H

@@ -21,51 +21,16 @@
 //------------------------------------------------------------------------------
 const char STRING_API_FACEBOOK[] PROGMEM = "facebook/update";
 //------------------------------------------------------------------------------
-Facebook::Facebook(Api &api, Settings &settings, PGM_P on, PGM_P motionName,
-    PGM_P soundName) :
-    api_(&api),
-    settings_(&settings),
-    count_(-1),
-    on_(on),
-    motionName_(motionName),
-    soundName_(soundName)
+Facebook::Facebook(Api &api, Settings &settings, PGM_P on, PGM_P motion,
+    PGM_P sound) :
+    Service(api, settings, on, motion, sound)
 {
 }
 //------------------------------------------------------------------------------
-bool Facebook::update(){
-   if (strcmp("1",settings_->getByName(on_)) == 0) {
-        int countCurrent;
-        int pokes;
-        int notifications;
-        int friendRequests;
-
-        api_->call(STRING_API_FACEBOOK);
-        pokes = api_->getIntegerByName("pokes");
-        notifications = api_->getIntegerByName("notifications");
-        friendRequests = api_->getIntegerByName("friendrequests");
-
-        countCurrent = pokes + notifications + friendRequests;
-
-        if (countCurrent != count_ && count_ != -1) {
-            if (countCurrent > count_ ) {
-                count_ = countCurrent;
-                return true;
-            }
-            else {
-                count_ = countCurrent;
-            }
-        }
-        if (count_ == -1) {
-            count_ = countCurrent;
-        }
-    }
-    return false;
- }
-//------------------------------------------------------------------------------
-char* Facebook::getMotionFilename() {
-    return settings_->getByName(motionName_);
-}
-//------------------------------------------------------------------------------
-char* Facebook::getSoundFilename() {
-    return settings_->getByName(soundName_);
+int Facebook::fetch() {
+    api_->call(STRING_API_FACEBOOK);
+    int pokes = api_->getIntegerByName("pokes");
+    int notifications = api_->getIntegerByName("notifications");
+    int friendRequests = api_->getIntegerByName("friendrequests");
+    return pokes + notifications + friendRequests;
 }

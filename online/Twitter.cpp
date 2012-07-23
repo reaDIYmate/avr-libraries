@@ -21,49 +21,15 @@
 //------------------------------------------------------------------------------
 const char STRING_API_TWITTER[] PROGMEM = "twitter/update";
 //------------------------------------------------------------------------------
-Twitter::Twitter(Api &api, Settings &settings, PGM_P on, PGM_P motionName,
-    PGM_P soundName) :
-    api_(&api),
-    settings_(&settings),
-    count_(-1),
-    on_(on),
-    motionName_(motionName),
-    soundName_(soundName)
+Twitter::Twitter(Api &api, Settings &settings, PGM_P on, PGM_P motion,
+    PGM_P sound) :
+    Service(api, settings, on, motion, sound)
 {
 }
 //------------------------------------------------------------------------------
-bool Twitter::update(){
-    if (strcmp("1",settings_->getByName(on_)) == 0) {
-        int countCurrent;
-        int mentions;
-        int followers;
-
-        api_->call(STRING_API_TWITTER);
-        mentions = api_->getIntegerByName("mentions");
-        followers = api_->getIntegerByName("followers");
-
-        countCurrent = followers + mentions;
-
-        if (countCurrent != count_ && count_ != -1) {
-            if (countCurrent > count_ ) {
-                count_ = countCurrent;
-                return true;
-            }
-            else {
-                count_ = countCurrent;
-            }
-        }
-        if (count_ == -1) {
-            count_ = countCurrent;
-        }
-    }
-    return false;
-}
-//------------------------------------------------------------------------------
-char* Twitter::getMotionFilename() {
-    return settings_->getByName(motionName_);
-}
-//------------------------------------------------------------------------------
-char* Twitter::getSoundFilename() {
-    return settings_->getByName(soundName_);
+int Twitter::fetch() {
+    api_->call(STRING_API_TWITTER);
+    int mentions = api_->getIntegerByName("mentions");
+    int followers = api_->getIntegerByName("followers");
+    return mentions + followers;
 }

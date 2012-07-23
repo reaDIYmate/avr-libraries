@@ -23,46 +23,16 @@ const char STRING_API_RSS[] PROGMEM = "rss/update";
 const char KEY_KEYWORD[] PROGMEM = "keyword";
 const char KEY_FEED_URL[] PROGMEM = "feed_url";
 //------------------------------------------------------------------------------
-Rss::Rss(Api &api, Settings &settings, PGM_P on, PGM_P motionName,
-    PGM_P soundName, PGM_P keyword, PGM_P feed_url) :
-    api_(&api),
-    settings_(&settings),
-    count_(-1),
-    on_(on),
-    motionName_(motionName),
-    soundName_(soundName),
+Rss::Rss(Api &api, Settings &settings, PGM_P on, PGM_P motion,
+    PGM_P sound, PGM_P keyword, PGM_P feedUrl) :
+    Service(api, settings, on, motion, sound),
     keyword_(keyword),
-    feed_url_(feed_url)
+    feedUrl_(feedUrl)
 {
 }
 //------------------------------------------------------------------------------
-bool Rss::update(){
-    if (strcmp("1",settings_->getByName(on_)) == 0) {
-        int countCurrent;
-        api_->call(STRING_API_RSS, KEY_KEYWORD, settings_->getByName(keyword_),
-            KEY_FEED_URL, settings_->getByName(feed_url_));
-        countCurrent = api_->getIntegerByName("count");
-
-        if (countCurrent != count_ && count_ != -1) {
-            if (countCurrent > count_ ) {
-                count_ = countCurrent;
-                return true;
-            }
-            else {
-                count_ = countCurrent;
-            }
-        }
-        if (count_ == -1) {
-            count_ = countCurrent;
-        }
-    }
-    return false;
-}
-//------------------------------------------------------------------------------
-char* Rss::getMotionFilename() {
-    return settings_->getByName(motionName_);
-}
-//------------------------------------------------------------------------------
-char* Rss::getSoundFilename() {
-    return settings_->getByName(soundName_);
+int Rss::fetch(){
+    api_->call(STRING_API_RSS, KEY_KEYWORD, settings_->getByName(keyword_),
+        KEY_FEED_URL, settings_->getByName(feedUrl_));
+    return api_->getIntegerByName("count");
 }

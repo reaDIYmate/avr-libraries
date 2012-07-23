@@ -22,45 +22,15 @@
 const char STRING_API_FOURSQUARE[] PROGMEM = "foursquare/update";
 const char KEY_VENUEID[] PROGMEM = "venueId";
 //------------------------------------------------------------------------------
-Foursquare::Foursquare(Api &api, Settings &settings, PGM_P on, PGM_P motionName,
-    PGM_P soundName, PGM_P venueId) :
-    api_(&api),
-    settings_(&settings),
-    count_(-1),
-    on_(on),
-    motionName_(motionName),
-    soundName_(soundName),
+Foursquare::Foursquare(Api &api, Settings &settings, PGM_P on, PGM_P motion,
+    PGM_P sound, PGM_P venueId) :
+    Service(api, settings, on, motion, sound),
     venueId_(venueId)
 {
 }
 //------------------------------------------------------------------------------
-bool Foursquare::update(){
-    if (strcmp("1", settings_->getByName(on_)) == 0) {
-        int countCurrent;
-        api_->call(STRING_API_FOURSQUARE, KEY_VENUEID,
-            settings_->getByName(venueId_));
-        countCurrent = api_->getIntegerByName("checkins");
-
-        if (countCurrent != count_ && count_ != -1) {
-            if (countCurrent > count_ ) {
-                count_ = countCurrent;
-                return true;
-            }
-            else {
-                count_ = countCurrent;
-            }
-        }
-        if (count_ == -1) {
-            count_ = countCurrent;
-        }
-    }
-    return false;
-}
-//------------------------------------------------------------------------------
-char* Foursquare::getMotionFilename() {
-    return settings_->getByName(motionName_);
-}
-//------------------------------------------------------------------------------
-char* Foursquare::getSoundFilename() {
-    return settings_->getByName(soundName_);
+int Foursquare::fetch() {
+	api_->call(STRING_API_FOURSQUARE, KEY_VENUEID,
+ 		settings_->getByName(venueId_));
+    return api_->getIntegerByName("checkins");
 }
