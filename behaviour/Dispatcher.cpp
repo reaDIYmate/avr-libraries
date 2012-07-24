@@ -35,28 +35,6 @@
 #define PIN_SERVO 4
 #define UART_WIFLY Serial1
 #define UART_COMPANION Serial
-
-int freeMemory();
-
-extern unsigned int __data_start;
-extern unsigned int __data_end;
-extern unsigned int __bss_start;
-extern unsigned int __bss_end;
-extern unsigned int __heap_start;
-extern void *__brkval;
-
-
-int freeMemory()
-{
-    int free_memory;
-    
-    if((int)__brkval == 0)
-        free_memory = ((int)&free_memory) - ((int)&__bss_end);
-    else
-        free_memory = ((int)&free_memory) - ((int)__brkval);
-    
-    return free_memory;
-}
 //------------------------------------------------------------------------------
 // Settings
 const uint8_t NB_SETTINGS = 21;
@@ -250,7 +228,6 @@ void Dispatcher::setup() {
     Serial.println(F("Connecting to the reaDIYmate server..."));
     led.colorOrange();
     bool restore = true;
-    Serial.println(freeMemory());
     if (api.connect()) {
         Serial.println(F("Connection to the reaDIYmate server established."));
         if (settings.fetch() >= 0) {
@@ -268,7 +245,6 @@ void Dispatcher::setup() {
             Serial.println(F(" settings restored."));
         }
     }
-    Serial.println(freeMemory());
     led.colorGreen();
     randomSeed(analogRead(0));
     Serial.println(F("Initialization done."));

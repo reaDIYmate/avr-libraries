@@ -44,6 +44,12 @@ const char PROGMEM WIZARD_KEY_NETMASK[] = "mask";
 const char PROGMEM WIZARD_KEY_USER[] = "user";
 /** Password of the reaDIYmate website */
 const char PROGMEM WIZARD_KEY_PASSWORD[] = "token";
+/** Key for Pusher */
+const char PROGMEM WIZARD_KEY_KEY[] = "key";
+/** Secret key for Pusher */
+const char PROGMEM WIZARD_KEY_SECRET[] = "secret";
+/** Channel for Pusher */
+const char PROGMEM WIZARD_KEY_CHANNEL[] = "channel";
 /**  Key for the command */
 const char PROGMEM COMMAND_TYPE[] = "cmd";
 /** DeviceID mode */
@@ -54,6 +60,8 @@ const char PROGMEM COMMAND_CONFIGURATION[] = "config";
 const char PROGMEM COMMAND_FACTORY[] = "factory";
 /** Update Wifly firmware mode */
 const char PROGMEM COMMAND_UPDATE[] = "update";
+/** Pusher mode */
+const char PROGMEM COMMAND_PUSHER[] = "pusher";
 /** Start-up signal */
 const char PROGMEM WIZARD_STARTUP[] = "reaDIYmate\n";
 //------------------------------------------------------------------------------
@@ -122,6 +130,26 @@ void Configuration::getApiCredential(char* buffer, uint8_t bufferSize) {
         username_,
         password_
     );
+}
+//------------------------------------------------------------------------------
+/** Read the pusher key/secret/channel sent by the Companion */
+void Configuration::readPusher(char* buffer, uint8_t bufferSize) {
+    JsonStream json = JsonStream(buffer, bufferSize);
+
+    char key[22] = {0};
+    char secret[22] = {0};
+    char channel[22] = {0};
+
+    json.getStringByName_P(WIZARD_KEY_KEY, key, 22);
+    json.getStringByName_P(WIZARD_KEY_SECRET, secret, 22);
+    json.getStringByName_P(WIZARD_KEY_CHANNEL, channel, 22);
+
+    if (strcmp(key_, key) != 0 || strcmp(secret_, secret) != 0 || strcmp(channel_, channel) != 0) {
+        key_ = key;
+        secret_ = secret;
+        channel_ = channel;
+        savePusher();
+    }
 }
 //------------------------------------------------------------------------------
 /** Read the username and password sent by the Companion */
@@ -286,6 +314,7 @@ void Configuration::synchronize(uint16_t timeout) {
 
     uint32_t deadline = millis() + timeout;
     while (millis() < deadline) {
+        memset(buffer, 0x00, 512);
         int nbBytes = readBytesUntil(COMMAND_END_CHAR, buffer, 512);
         JsonStream json = JsonStream(buffer, nbBytes);
 
@@ -296,9 +325,17 @@ void Configuration::synchronize(uint16_t timeout) {
             sendDeviceId();
         }
         else if (strcmp_P(cmd, COMMAND_CONFIGURATION) == 0) {
+            memset(buffer, 0x00, 512);
+            nbBytes = readBytesUntil(COMMAND_END_CHAR, buffer, 512);
             readWifiSettings(buffer, nbBytes);
             readUserAndPass(buffer, nbBytes);
-            return;
+            deadline = millis() + timeout;
+        }
+        else if (strcmp_P(cmd, COMMAND_PUSHER) == 0) {
+            memset(buffer, 0x00, 512);
+            nbBytes = readBytesUntil(COMMAND_END_CHAR, buffer, 512);
+            readPusher(buffer, nbBytes);
+            deadline = millis() + timeout;
         }
         else if (strcmp_P(cmd, COMMAND_FACTORY) == 0) {
             wifly_->setFirstConfig();
