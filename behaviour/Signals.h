@@ -21,6 +21,7 @@
 #define SIGNAL_H
 enum Signal {
     NOTHING = 0x00,
+    ACTION,
     ALERT,
     CONTACT_DETECTED,
     END_OF_FILE,

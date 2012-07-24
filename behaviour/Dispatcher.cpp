@@ -35,6 +35,28 @@
 #define PIN_SERVO 4
 #define UART_WIFLY Serial1
 #define UART_COMPANION Serial
+
+int freeMemory();
+
+extern unsigned int __data_start;
+extern unsigned int __data_end;
+extern unsigned int __bss_start;
+extern unsigned int __bss_end;
+extern unsigned int __heap_start;
+extern void *__brkval;
+
+
+int freeMemory()
+{
+    int free_memory;
+    
+    if((int)__brkval == 0)
+        free_memory = ((int)&free_memory) - ((int)&__bss_end);
+    else
+        free_memory = ((int)&free_memory) - ((int)__brkval);
+    
+    return free_memory;
+}
 //------------------------------------------------------------------------------
 // Settings
 const uint8_t NB_SETTINGS = 21;
@@ -42,6 +64,7 @@ const uint8_t NB_SETTINGS = 21;
 const char FACEBOOK_ON[]        PROGMEM = "facebook.on";
 const char FACEBOOK_SOUND[]     PROGMEM = "facebook.sound";
 const char FACEBOOK_MOTION[]    PROGMEM = "facebook.motion";
+const char FACEBOOK_ACTION[]    PROGMEM = "facebook.action";
 
 const char GMAIL_ON[]           PROGMEM = "gmail.on";
 const char GMAIL_SOUND[]        PROGMEM = "gmail.sound";
@@ -50,6 +73,7 @@ const char GMAIL_MOTION[]       PROGMEM = "gmail.motion";
 const char TWITTER_ON[]         PROGMEM = "twitter.on";
 const char TWITTER_SOUND[]      PROGMEM = "twitter.sound";
 const char TWITTER_MOTION[]     PROGMEM = "twitter.motion";
+const char TWITTER_ACTION[]     PROGMEM = "twitter.action";
 
 const char RSS_ON[]             PROGMEM = "rss.on";
 const char RSS_SOUND[]          PROGMEM = "rss.sound";
@@ -61,6 +85,7 @@ const char FOURSQUARE_ON[]      PROGMEM = "foursquare.on";
 const char FOURSQUARE_SOUND[]   PROGMEM = "foursquare.sound";
 const char FOURSQUARE_MOTION[]  PROGMEM = "foursquare.motion";
 const char FOURSQUARE_VENUEID[] PROGMEM = "foursquare.venueId";
+const char FOURSQUARE_ACTION[] PROGMEM = "foursquare.action";
 
 const char SOUNDCLOUD_ON[]      PROGMEM = "soundcloud.on";
 const char SOUNDCLOUD_SOUND[]   PROGMEM = "soundcloud.sound";
@@ -71,12 +96,14 @@ const char* SETTINGS_NAMES[] PROGMEM =
     FACEBOOK_ON,
     FACEBOOK_SOUND,
     FACEBOOK_MOTION,
+    FACEBOOK_ACTION,
     GMAIL_ON,
     GMAIL_SOUND,
     GMAIL_MOTION,
     TWITTER_ON,
     TWITTER_SOUND,
     TWITTER_MOTION,
+    TWITTER_ACTION,
     RSS_ON,
     RSS_SOUND,
     RSS_MOTION,
@@ -86,6 +113,7 @@ const char* SETTINGS_NAMES[] PROGMEM =
     FOURSQUARE_SOUND,
     FOURSQUARE_MOTION,
     FOURSQUARE_VENUEID,
+    FOURSQUARE_ACTION,
     SOUNDCLOUD_ON,
     SOUNDCLOUD_SOUND,
     SOUNDCLOUD_MOTION
@@ -135,14 +163,16 @@ Dispatcher::Dispatcher() :
         settings,
         FACEBOOK_ON,
         FACEBOOK_MOTION,
-        FACEBOOK_SOUND
+        FACEBOOK_SOUND,
+        FACEBOOK_ACTION
     ),
     twitter(
         api,
         settings,
         TWITTER_ON,
         TWITTER_MOTION,
-        TWITTER_SOUND
+        TWITTER_SOUND,
+        TWITTER_ACTION
     ),
     rss(
         api,
@@ -159,7 +189,8 @@ Dispatcher::Dispatcher() :
         FOURSQUARE_ON,
         FOURSQUARE_MOTION,
         FOURSQUARE_SOUND,
-        FOURSQUARE_VENUEID
+        FOURSQUARE_VENUEID,
+        FOURSQUARE_ACTION
     ),
     audio(
         PIN_VS1011_DREQ,
@@ -219,6 +250,7 @@ void Dispatcher::setup() {
     Serial.println(F("Connecting to the reaDIYmate server..."));
     led.colorOrange();
     bool restore = true;
+    Serial.println(freeMemory());
     if (api.connect()) {
         Serial.println(F("Connection to the reaDIYmate server established."));
         if (settings.fetch() >= 0) {
@@ -236,6 +268,7 @@ void Dispatcher::setup() {
             Serial.println(F(" settings restored."));
         }
     }
+    Serial.println(freeMemory());
     led.colorGreen();
     randomSeed(analogRead(0));
     Serial.println(F("Initialization done."));
@@ -291,7 +324,7 @@ void Dispatcher::loop() {
                 motionOut.signal = END_OF_FILE;
             }
             break;
-        case FACEBOOK:
+        case FACEBOOK :
             if (facebook.update()) {
                 soundName = facebook.getSoundFilename();
                 motionName = facebook.getMotionFilename();
@@ -303,7 +336,7 @@ void Dispatcher::loop() {
                 motionOut.signal = END_OF_FILE;
             }
             break;
-        case TWITTER:
+        case TWITTER :
             if (twitter.update()) {
                 soundName = twitter.getSoundFilename();
                 motionName = twitter.getMotionFilename();
@@ -315,7 +348,7 @@ void Dispatcher::loop() {
                 motionOut.signal = END_OF_FILE;
             }
             break;
-        case RSS:
+        case RSS :
             if (rss.update()) {
                 soundName = rss.getSoundFilename();
                 motionName = rss.getMotionFilename();
@@ -327,7 +360,7 @@ void Dispatcher::loop() {
                 motionOut.signal = END_OF_FILE;
             }
             break;
-        case FOURSQUARE:
+        case FOURSQUARE :
             if (foursquare.update()) {
                 soundName = foursquare.getSoundFilename();
                 motionName = foursquare.getMotionFilename();
@@ -338,6 +371,18 @@ void Dispatcher::loop() {
                 playerOut.signal = END_OF_FILE;
                 motionOut.signal = END_OF_FILE;
             }
+            break;
+        case ACTION :
+            if(twitter.postStatus()){
+                Serial.println("Twitter OK");
+            }
+            if(facebook.postStatus()){
+                Serial.println("Facebook OK");
+            }
+            if(foursquare.checkin()){
+                Serial.println("Foursquare OK");
+            }
+            personality.dispatch(Event(STOP), persoOut);
             break;
         case NOTHING :
             player.dispatch(Event(TICK), playerOut);

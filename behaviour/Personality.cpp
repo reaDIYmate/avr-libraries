@@ -29,13 +29,13 @@ const char PROGMEM KEY_ACTIVITY[] = "activity";
 /** Refresh interval (in ms) for the inbox messages. */
 const uint32_t POLL_INTERVAL = 480000;
 /** Refresh interval (in ms) to check Gmail. */
-const uint32_t CHECK_GMAIL_INTERVAL = 480000;
+const uint32_t CHECK_GMAIL_INTERVAL = 10000;
 /** Refresh interval (in ms) to check Facebook. */
 const uint32_t CHECK_FACEBOOK_INTERVAL = 480000;
 /** Refresh interval (in ms) to check Twitter. */
 const uint32_t CHECK_TWITTER_INTERVAL = 480000;
 /** Refresh interval (in ms) to check Rss. */
-const uint32_t CHECK_RSS_INTERVAL = 10000;
+const uint32_t CHECK_RSS_INTERVAL = 480000;
 /** Refresh interval (in ms) to check Foursquare. */
 const uint32_t CHECK_FOURSQUARE_INTERVAL = 480000;
 /** Timeout (in ms) for remote control mode */
@@ -55,6 +55,21 @@ Personality::Personality(Api &api, Inbox &inbox, ServoControl &control,
 //------------------------------------------------------------------------------
 void Personality::initialize() {
     pushModeDeadline_ = millis() + REMOTE_CONTROL_TIMEOUT;
+}
+//------------------------------------------------------------------------------
+/** Action */
+void Personality::action(const Event* e) {
+    switch (e->signal) {
+#ifdef DEBUG
+        case ENTRY :
+            Serial.println(F("Personality::action"));
+#endif
+            break;
+        case STOP :
+            internalTransition(Personality::awake);
+            Serial.println(F("Personality::awake"));
+            break;
+    }
 }
 //------------------------------------------------------------------------------
 /** Asleep */
@@ -85,6 +100,10 @@ void Personality::awake(const Event* e) {
 #ifdef DEBUG
             Serial.println(F("Personality::awake"));
 #endif
+            break;
+        case SHORT_CLICK_RELEASED :
+            transition(Personality::action);
+            emit(ACTION);
             break;
         case SUPERLONG_CLICK_ARMED :
             transition(Personality::fallingAsleep);

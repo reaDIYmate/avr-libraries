@@ -19,20 +19,37 @@
  */
 #include "Twitter.h"
 //------------------------------------------------------------------------------
-const char STRING_API_TWITTER[] PROGMEM = "twitter/update";
+const char STRING_API_TWITTER_UPDATE[] PROGMEM = "twitter/update";
+const char STRING_API_TWITTER_POST[] PROGMEM = "twitter/post_status";
 const char KEY_FOLLOWERS[] PROGMEM = "followers";
 const char KEY_MENTIONS[] PROGMEM = "mentions";
-
+const char KEY_STATUS[] PROGMEM = "status";
 //------------------------------------------------------------------------------
 Twitter::Twitter(Api &api, Settings &settings, PGM_P on, PGM_P motion,
-    PGM_P sound) :
-    Service(api, settings, on, motion, sound)
+    PGM_P sound, PGM_P action) :
+    Service(api, settings, on, motion, sound),
+    action_(action)
 {
 }
 //------------------------------------------------------------------------------
 int Twitter::fetch() {
-    api_->call(STRING_API_TWITTER);
+    api_->call(STRING_API_TWITTER_UPDATE);
     int mentions = api_->getIntegerByName_P(KEY_MENTIONS);
     int followers = api_->getIntegerByName_P(KEY_FOLLOWERS);
+
     return mentions + followers;
+}
+//------------------------------------------------------------------------------
+bool Twitter::postStatus() {
+    //WORK IN PROGRESS
+    if (strcmp("1", settings_->getByName(action_)) == 0) {
+        api_->call(STRING_API_TWITTER_POST, KEY_STATUS, "reaDIYmate");
+        
+        char buffer[4];
+        api_->getStringByName_P(KEY_STATUS, buffer, 4);
+        if (strcmp("OK", buffer) == 0){
+            return true;
+        }
+    }
+    return false;
 }

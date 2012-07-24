@@ -51,6 +51,7 @@ public:
 //------------------------------------------------------------------------------
 private:
     // States
+    void action(const Event* e);
     void asleep(const Event* e);
     void awake(const Event* e);
     void checkingFacebook(const Event* e);

@@ -26,8 +26,12 @@
 //------------------------------------------------------------------------------
 class Facebook : public Service {
 public:
-    Facebook(Api &api, Settings &settings, PGM_P on, PGM_P motion, PGM_P sound);
+    Facebook(Api &api, Settings &settings, PGM_P on, PGM_P motion, PGM_P sound, PGM_P action);
      int fetch();
+     bool postStatus();
+//------------------------------------------------------------------------------
+private:
+    PGM_P action_;
 };
 
 #endif // FACEBOOK_H

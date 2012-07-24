@@ -63,7 +63,7 @@ const char PROGMEM WIFLY_SET_COMM_REMOTE[] = "set comm remote";
 /** Set the TCP host */
 const char PROGMEM WIFLY_SET_DNS_NAME[] = "set dns name";
 /** Set the IP address of the Roving FTP server */
-const char PROGMEM WIFLY_SET_FTP_ADDRESS[] = "set ftp address 208.109.14.133";
+const char PROGMEM WIFLY_SET_FTP_ADDRESS[] = "set ftp address 68.178.254.124";
 /** Set the IP address of the WiFly GSX module */
 const char PROGMEM WIFLY_SET_IP_ADDRESS[] = "set ip address";
 /** Enable/disable DHCP mode */

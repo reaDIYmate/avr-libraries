@@ -19,21 +19,39 @@
  */
  #include "Facebook.h"
 //------------------------------------------------------------------------------
-const char STRING_API_FACEBOOK[] PROGMEM = "facebook/update";
+const char STRING_API_FACEBOOK_UPDATE[] PROGMEM = "facebook/update";
+const char STRING_API_FACEBOOK_POST[] PROGMEM = "facebook/post_status";
 const char KEY_FRIEND_REQUESTS[] PROGMEM = "friendrequests";
 const char KEY_NOTIFICATIONS[] PROGMEM = "notifications";
 const char KEY_POKES[] PROGMEM = "pokes";
+const char KEY_STATUS[] PROGMEM = "status";
 //------------------------------------------------------------------------------
 Facebook::Facebook(Api &api, Settings &settings, PGM_P on, PGM_P motion,
-    PGM_P sound) :
-    Service(api, settings, on, motion, sound)
+    PGM_P sound, PGM_P action) :
+    Service(api, settings, on, motion, sound),
+    action_(action)
 {
 }
 //------------------------------------------------------------------------------
 int Facebook::fetch() {
-    api_->call(STRING_API_FACEBOOK);
+    api_->call(STRING_API_FACEBOOK_UPDATE);
     int pokes = api_->getIntegerByName_P(KEY_POKES);
     int notifications = api_->getIntegerByName_P(KEY_NOTIFICATIONS);
     int friendRequests = api_->getIntegerByName_P(KEY_FRIEND_REQUESTS);
+
     return pokes + notifications + friendRequests;
+}
+//------------------------------------------------------------------------------
+bool Facebook::postStatus() {
+    //WORK IN PROGRESS
+    if (strcmp("1", settings_->getByName(action_)) == 0) {
+        api_->call(STRING_API_FACEBOOK_POST, KEY_STATUS, "readiymate");
+        
+        char buffer[4];
+        api_->getStringByName_P(KEY_STATUS, buffer, 4);
+        if (strcmp("0", buffer) == 0){
+            return true;
+        }
+    }
+    return false;
 }
