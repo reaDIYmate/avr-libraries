@@ -431,11 +431,11 @@ void Wifly::getDeviceId(char* output) {
     clear();
 
     char buffer[30] = {0};
-    int nBytes = readBytes(buffer, 29);
+    int nBytes = readBytes(buffer, 30);
     BufferedStream bufferedStream = BufferedStream(buffer + 2, nBytes);
 
     bufferedStream.find('=');
-    char mac[18];
+    char mac[18] = {0};
     bufferedStream.readBytesUntil('\r', mac, 18);
 
     int n = 0;
