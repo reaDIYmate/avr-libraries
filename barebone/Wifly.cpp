@@ -356,6 +356,7 @@ bool Wifly::enterCommandMode() {
         // request a new command prompt
         write_P(WIFLY_ENTER_COMMAND);
         flush();
+        clear();
         // look for the command string
         if (find_P(WIFLY_CMD)) {
             timeout_ = UART_TIMEOUT;
@@ -387,6 +388,8 @@ bool Wifly::executeCommand(PGM_P command, PGM_P expectedReturn,
         print(parameter);
     }
     write('\r');
+    flush();
+    clear();
     return find_P(expectedReturn);
 }
 //------------------------------------------------------------------------------
@@ -405,6 +408,8 @@ bool Wifly::executeCommand(PGM_P command, PGM_P expectedReturn,
     write(' ');
     print(parameter);
     write('\r');
+    flush();
+    clear();
     return find_P(expectedReturn);
 }
 //------------------------------------------------------------------------------
@@ -419,6 +424,8 @@ void Wifly::getDeviceId(char* output) {
     if(!enterCommandMode()){
     }
     write_P(WIFLY_GET_MAC_ADDRESS);
+    flush();
+    clear();
 
     char buffer[30] = {0};
     int nBytes = readBytes(buffer, 29);
@@ -607,6 +614,8 @@ bool Wifly::updateFirmware() {
         return false;
     // ftp update
     write_P(WIFLY_FTP_UPDATE);
+    flush();
+    clear();
     while(!find_P(WIFLY_UPDATE_OK));
 
     // factory reset
