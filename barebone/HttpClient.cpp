@@ -248,6 +248,9 @@ bool HttpClient::getRange(char* buffer, size_t bufferSize, const char* host,
     // try to send the request and wait for a response from the host
     if (!wifly_->print(buffer))
         return false;
+    // clear the buffer since it still holds the HTTP request
+    memset(buffer, 0x00, bufferSize);
+
     if (!wifly_->awaitResponse())
         return false;
 
@@ -258,8 +261,6 @@ bool HttpClient::getRange(char* buffer, size_t bufferSize, const char* host,
     if (!wifly_->find_P(HTTP_END_OF_HEADER))
         return false;
 
-    // clear the buffer since it still holds the HTTP request
-    memset(buffer, 0x00, bufferSize);
     // write incoming data
     int nBytes = wifly_->readBytes(buffer, bufferSize);
     return (nBytes == (lastByte - firstByte + 1));
