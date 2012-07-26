@@ -210,14 +210,14 @@ int HttpClient::get(char* buffer, size_t bufferSize, const char* host,
 uint32_t HttpClient::getContentLength(char* buffer, size_t bufferSize,
     const char* host, const char* path) {
     if (!createRequest(buffer, bufferSize, host, path, (F_HEAD | F_KEEP_ALIVE)))
-        return false;
+        return 0;
     if (!wifly_->print(buffer))
-        return false;
+        return 0;
     memset(buffer, 0x00, bufferSize);
     if (!wifly_->awaitResponse())
-        return false;
+        return 0;
     if (!wifly_->findUntil_P(HTTP_CONTENT_LENGTH, HTTP_END_OF_HEADER))
-        return false;
+        return 0;
     uint8_t nBytes = wifly_->readBytesUntil_P(HTTP_CRLF, buffer, 32);
     return atol(buffer);
 }
