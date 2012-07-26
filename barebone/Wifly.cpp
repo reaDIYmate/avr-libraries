@@ -40,6 +40,8 @@ uint32_t const COMMAND_MODE_TIMEOUT = 3000;
 uint16_t const WLAN_TIMEOUT = 5000;
 /** Special character used for text communications with the WiFly */
 uint8_t const WIFLY_REPLACE_CHAR = '\r';
+/** Baudrate for regular operating mode */
+uint32_t const FULL_SPEED = 115200;
 //------------------------------------------------------------------------------
 // WiFly commands
 /** Exit command mode */
@@ -419,6 +421,7 @@ bool Wifly::executeCommand(PGM_P command, PGM_P expectedReturn,
  * \param[out] output The location the device ID will be written to.
  */
 void Wifly::getDeviceId(char* output) {
+    begin(FULL_SPEED);
     reset();
 
     if(!enterCommandMode()){
@@ -448,7 +451,7 @@ void Wifly::getDeviceId(char* output) {
 //------------------------------------------------------------------------------
 /** Initialize the WiFly module. */
 void Wifly::initialize() {
-    begin(115200);
+    begin(FULL_SPEED);
     pinModeFast(resetPin_, OUTPUT);
     pinModeFast(gpio4Pin_, INPUT);
     pinModeFast(gpio5Pin_, OUTPUT);
@@ -492,6 +495,7 @@ void Wifly::reset() {
 bool Wifly::setConfig(const char* ssid, const char* passphrase, const char* ip,
     const char* mask, const char* gateway) {
     reset();
+    begin(FULL_SPEED);
     if(!enterCommandMode()){
     }
 
@@ -527,6 +531,7 @@ bool Wifly::setConfig(const char* ssid, const char* passphrase, const char* ip,
 //------------------------------------------------------------------------------
 /** Setup the RN171. */
 bool Wifly::setFirstConfig() {
+    begin(9600);
     reset();
     if(!enterCommandMode()){
     }
@@ -600,6 +605,7 @@ bool Wifly::setHost(const char* host) {
 //------------------------------------------------------------------------------
 /** Update the RN171 firmware to the latest version. */
 bool Wifly::updateFirmware() {
+    begin(FULL_SPEED);
     reset();
 
     if(!enterCommandMode()){
