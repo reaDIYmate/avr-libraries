@@ -96,6 +96,8 @@ const char PROGMEM WIFLY_SET_WLAN_LINKMON[] = "set wlan linkmon";
 const char PROGMEM WIFLY_SET_WLAN_PHRASE[] = "set w phrase";
 /** Set the SSID to associate with - whitespaces must be replaced with '$' */
 const char PROGMEM WIFLY_SET_WLAN_SSID[] = "set w ssid";
+/** Set the flush size */
+const char PROGMEM WIFLY_SET_COMM_SIZE[] = "set comm size";
 //------------------------------------------------------------------------------
 // WiFly messages
 /** Command successfully executed */
@@ -413,7 +415,9 @@ bool Wifly::executeCommand(PGM_P command, PGM_P expectedReturn,
  */
 void Wifly::getDeviceId(char* output) {
     reset();
-    while(!enterCommandMode());
+
+    if(!enterCommandMode()){
+    }
     write_P(WIFLY_GET_MAC_ADDRESS);
 
     char buffer[30] = {0};
@@ -478,64 +482,95 @@ void Wifly::reset() {
  * \note The IP address, subnet mask and gateway address will be overriden when
  * using DHCP.
  */
-void Wifly::setConfig(const char* ssid, const char* passphrase, const char* ip,
+bool Wifly::setConfig(const char* ssid, const char* passphrase, const char* ip,
     const char* mask, const char* gateway) {
     reset();
-    while(!enterCommandMode());
+    if(!enterCommandMode()){
+    }
 
     // setup the access point SSID and security phrase:
-    executeCommand(WIFLY_SET_WLAN_SSID, WIFLY_AOK, ssid);
-    executeCommand(WIFLY_SET_WLAN_PHRASE, WIFLY_AOK, passphrase);
+    if(!executeCommand(WIFLY_SET_WLAN_SSID, WIFLY_AOK, ssid))
+        return false;
+    if(!executeCommand(WIFLY_SET_WLAN_PHRASE, WIFLY_AOK, passphrase))
+        return false;
 
     // setup static IP, gateway and netmask
     if (ip != NULL && mask != NULL && gateway != NULL) {
-        executeCommand(WIFLY_SET_IP_DHCP, WIFLY_AOK, 0L);
-        executeCommand(WIFLY_SET_IP_ADDRESS, WIFLY_AOK, ip);
-        executeCommand(WIFLY_SET_IP_GATEWAY, WIFLY_AOK, gateway);
-        executeCommand(WIFLY_SET_IP_NETMASK, WIFLY_AOK, mask);
+        if(!executeCommand(WIFLY_SET_IP_DHCP, WIFLY_AOK, 0L))
+            return false;
+        if(!executeCommand(WIFLY_SET_IP_ADDRESS, WIFLY_AOK, ip))
+            return false;
+        if(!executeCommand(WIFLY_SET_IP_GATEWAY, WIFLY_AOK, gateway))
+            return false;
+        if(!executeCommand(WIFLY_SET_IP_NETMASK, WIFLY_AOK, mask))
+            return false;
     }
     // enable DHCP in cache mode
     else {
-        executeCommand(WIFLY_SET_IP_DHCP, WIFLY_AOK, 3);
+        if(!executeCommand(WIFLY_SET_IP_DHCP, WIFLY_AOK, 3))
+            return false;
     }
 
     executeCommand(WIFLY_SAVE_CONFIG, WIFLY_CONFIG_SAVED);
     executeCommand(WIFLY_EXIT, WIFLY_EXITED);
     reset();
+
+    return true;
 }
 //------------------------------------------------------------------------------
 /** Setup the RN171. */
-void Wifly::setFirstConfig() {
+bool Wifly::setFirstConfig() {
     reset();
-    while(!enterCommandMode());
+    if(!enterCommandMode()){
+    }
 
     // disable echo of RX data and replace the version string with a single CR
-    executeCommand(WIFLY_SET_UART_MODE, WIFLY_AOK, 0x21);
-    executeCommand(WIFLY_SET_OPT_REPLACE, WIFLY_AOK, WIFLY_REPLACE_CHAR);
+    if(!executeCommand(WIFLY_SET_UART_MODE, WIFLY_AOK, 0x21))
+        return false;
+    if(!executeCommand(WIFLY_SET_OPT_REPLACE, WIFLY_AOK, WIFLY_REPLACE_CHAR))
+        return false;
+
+    // set baudrate to 250000
+    if(!executeCommand(WIFLY_SET_UART_RAW, WIFLY_AOK, FULL_SPEED))
+        return false;
 
     // enable the link monitor threshold with the recommended value
-    executeCommand(WIFLY_SET_WLAN_LINKMON, WIFLY_AOK, 5);
+    if(!executeCommand(WIFLY_SET_WLAN_LINKMON, WIFLY_AOK, 5))
+        return false;
 
     // disable access point autojoin
-    executeCommand(WIFLY_SET_WLAN_JOIN, WIFLY_AOK, 0L);
+    if(!executeCommand(WIFLY_SET_WLAN_JOIN, WIFLY_AOK, 0L))
+        return false;
 
     // disable the socket monitor strings
-    executeCommand(WIFLY_SET_COMM_OPEN, WIFLY_AOK, 0L);
-    executeCommand(WIFLY_SET_COMM_CLOSE, WIFLY_AOK, 0L);
-    executeCommand(WIFLY_SET_COMM_REMOTE, WIFLY_AOK, 0L);
+    if(!executeCommand(WIFLY_SET_COMM_OPEN, WIFLY_AOK, 0L))
+        return false;
+    if(!executeCommand(WIFLY_SET_COMM_CLOSE, WIFLY_AOK, 0L))
+        return false;
+    if(!executeCommand(WIFLY_SET_COMM_REMOTE, WIFLY_AOK, 0L))
+        return false;
 
     // close any open TCP connection when the WLAN link is lost
-    executeCommand(WIFLY_SET_IP_FLAGS, WIFLY_AOK, 0x06);
+    if(!executeCommand(WIFLY_SET_IP_FLAGS, WIFLY_AOK, 0x06))
+        return false;
 
     // force DNS
-    executeCommand(WIFLY_SET_IP_TCPMODE, WIFLY_AOK, 0x04);
+    if(!executeCommand(WIFLY_SET_IP_TCPMODE, WIFLY_AOK, 0x04))
+        return false;
 
     // enable the alternate functions of the LEDs
-    executeCommand(WIFLY_SET_SYS_IOFUNC, WIFLY_AOK, 0x70);
+    if(!executeCommand(WIFLY_SET_SYS_IOFUNC, WIFLY_AOK, 0x70))
+        return false;
+
+    // set the flush size
+    if(!executeCommand(WIFLY_SET_COMM_SIZE, WIFLY_AOK, 500))
+        return false;
 
     executeCommand(WIFLY_SAVE_CONFIG, WIFLY_CONFIG_SAVED);
     executeCommand(WIFLY_EXIT, WIFLY_EXITED);
     reset();
+
+    return true;
 }
 //------------------------------------------------------------------------------
 /**
@@ -557,25 +592,31 @@ bool Wifly::setHost(const char* host) {
 }
 //------------------------------------------------------------------------------
 /** Update the RN171 firmware to the latest version. */
-void Wifly::updateFirmware() {
+bool Wifly::updateFirmware() {
     reset();
-    while(!enterCommandMode());
+
+    if(!enterCommandMode()){
+    }
 
     join();
 
     // set ftp address
-    executeCommand(WIFLY_SET_FTP_ADDRESS, WIFLY_AOK);
-    executeCommand(WIFLY_SAVE_CONFIG, WIFLY_CONFIG_SAVED);
-
+    if(!executeCommand(WIFLY_SET_FTP_ADDRESS, WIFLY_AOK))
+        return false;
+    if (!executeCommand(WIFLY_SAVE_CONFIG, WIFLY_CONFIG_SAVED))
+        return false;
     // ftp update
     write_P(WIFLY_FTP_UPDATE);
     while(!find_P(WIFLY_UPDATE_OK));
 
     // factory reset
-    executeCommand(WIFLY_FACTORY_RESET, WIFLY_FACTORY_MESSAGE);
+    if(!executeCommand(WIFLY_FACTORY_RESET, WIFLY_FACTORY_MESSAGE))
+       return false;
 
     executeCommand(WIFLY_SAVE_CONFIG, WIFLY_CONFIG_SAVED);
     executeCommand(WIFLY_EXIT, WIFLY_EXITED);
 
     reset();
+
+    return true;
 }
