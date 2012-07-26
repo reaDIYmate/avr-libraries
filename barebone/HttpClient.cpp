@@ -151,6 +151,7 @@ int HttpClient::get(char* buffer, size_t bufferSize, const char* host,
         return -1;
 
     // try to send the request and wait for a response from the host
+    wifly_->clear();
     if (!wifly_->print(buffer))
         return -1;
     wifly_->flush();
@@ -212,6 +213,7 @@ uint32_t HttpClient::getContentLength(char* buffer, size_t bufferSize,
     const char* host, const char* path) {
     if (!createRequest(buffer, bufferSize, host, path, (F_HEAD | F_KEEP_ALIVE)))
         return 0;
+    wifly_->clear();
     if (!wifly_->print(buffer))
         return 0;
     wifly_->flush();
@@ -248,6 +250,7 @@ bool HttpClient::getRange(char* buffer, size_t bufferSize, const char* host,
         return false;
 
     // try to send the request and wait for a response from the host
+    wifly_->clear();
     if (!wifly_->print(buffer))
         return false;
     wifly_->flush();

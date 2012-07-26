@@ -43,6 +43,8 @@ public:
      * \return The number of available characters is returned.
      */
     virtual int available() {return serial_.available();}
+    /** Discard any unread data in the RX buffer */
+    virtual void clear() {return serial_.clear();}
     /** Make sure all outgoing data is sent */
     virtual void flush() {return serial_.flush();}
     /**
