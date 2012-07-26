@@ -18,6 +18,13 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <Wifly.h>
+#define DEBUG
+//------------------------------------------------------------------------------
+#ifdef DEBUG
+    #define DEBUG_LOG(str) Serial.print(F(str))
+#else
+    #define DEBUG_LOG(str)
+#endif
 //------------------------------------------------------------------------------
 // Numeric constants
 /** Number of attempts to get a command prompt before reset */
@@ -210,25 +217,19 @@ bool Wifly::connect(const char* host) {
     do {
         switch (state) {
             case RESETTING :
-#ifdef DEBUG
-                Serial.println(F("RESETTING"));
-#endif
+                DEBUG_LOG("RESETTING\r\n");
                 reset();
                 state = ENTERING_COMMAND_MODE;
                 break;
             case ENTERING_COMMAND_MODE :
-#ifdef DEBUG
-                Serial.println(F("ENTERING_COMMAND_MODE"));
-#endif
+                DEBUG_LOG("ENTERING_COMMAND_MODE\r\n");
                 if (enterCommandMode())
                     state = SETTING_HOST;
                 else
                     state = CRITICAL_ERROR;
                 break;
             case SETTING_HOST :
-#ifdef DEBUG
-                Serial.println(F("SETTING_HOST"));
-#endif
+                DEBUG_LOG("SETTING_HOST\r\n");
                 if (setHost(host)) {
                     state = JOINING_WLAN;
                     memset(host_, 0x00, WIFLY_HOST_BUFFER_SIZE);
@@ -238,9 +239,7 @@ bool Wifly::connect(const char* host) {
                     state = CRITICAL_ERROR;
                 break;
             case JOINING_WLAN :
-#ifdef DEBUG
-                Serial.println(F("JOINING_WLAN"));
-#endif
+                DEBUG_LOG("JOINING_WLAN\r\n");
                 if (!associated())
                     join();
                 if (associated(WLAN_TIMEOUT))
@@ -251,9 +250,7 @@ bool Wifly::connect(const char* host) {
                     delay(RETRY_INTERVAL);
                 break;
             case OPENING_SOCKET :
-#ifdef DEBUG
-                Serial.println(F("OPENING_SOCKET"));
-#endif
+                DEBUG_LOG("OPENING_SOCKET\r\n");
                 if (!associated()) {
                     state = RESETTING;
                     break;
@@ -278,9 +275,7 @@ bool Wifly::connect(const char* host) {
                 }
                 break;
             case CRITICAL_ERROR :
-#ifdef DEBUG
-                Serial.println(F("CRITICAL_ERROR"));
-#endif
+                DEBUG_LOG("CRITICAL_ERROR\r\n");
                 if (errors.critical == MAX_CRITICAL_ERRORS) {
                     disconnect();
                     return false;
@@ -424,18 +419,13 @@ void Wifly::getDeviceId(char* output) {
     begin(FULL_SPEED);
     reset();
 
-#ifdef DEBUG
-    Serial.print(F("Entering command mode..."));
-#endif
+    DEBUG_LOG("Entering command mode...");
     if(!enterCommandMode()){
-#ifdef DEBUG
-        Serial.print(F("FAILED"));
-#endif
+        DEBUG_LOG("FAILED\r\n");
         return;
     }
-#ifdef DEBUG
-    Serial.println(F("OK"));
-#endif
+    DEBUG_LOG("OK\r\n");
+
     write_P(WIFLY_GET_MAC_ADDRESS);
     flush();
     clear();
@@ -507,56 +497,42 @@ bool Wifly::setConfig(const char* ssid, const char* passphrase, const char* ip,
     reset();
     begin(FULL_SPEED);
 
-#ifdef DEBUG
-    Serial.print(F("Entering command mode..."));
-#endif
+    DEBUG_LOG("Entering command mode...");
     if(!enterCommandMode()){
-#ifdef DEBUG
-        Serial.print(F("FAILED"));
-#endif
-    return false;
+        DEBUG_LOG("FAILED\r\n");
+        return false;
     }
-#ifdef DEBUG
-    Serial.println(F("OK"));
-#endif
+    DEBUG_LOG("OK\r\n");
 
     // setup the access point SSID and security phrase:
-#ifdef DEBUG
-    Serial.println(F("set wlan ssid"));
-#endif
+    DEBUG_LOG("set wlan ssid\r\n");
     delay(200);
     if(!executeCommand(WIFLY_SET_WLAN_SSID, WIFLY_AOK, ssid))
         return false;
-#ifdef DEBUG
-    Serial.println(F("set wlan phrase"));
-#endif
+
+    DEBUG_LOG("set wlan phrase\r\n");
     delay(200);
     if(!executeCommand(WIFLY_SET_WLAN_PHRASE, WIFLY_AOK, passphrase))
         return false;
 
     // setup static IP, gateway and netmask
     if (ip != NULL && mask != NULL && gateway != NULL) {
-#ifdef DEBUG
-        Serial.println(F("set ip dhcp"));
-#endif
+        DEBUG_LOG("set ip dhcp\r\n");
         delay(200);
         if(!executeCommand(WIFLY_SET_IP_DHCP, WIFLY_AOK, 0L))
             return false;
-#ifdef DEBUG
-        Serial.println(F("set ip address"));
-#endif
+
+        DEBUG_LOG("set ip address\r\n");
         delay(200);
         if(!executeCommand(WIFLY_SET_IP_ADDRESS, WIFLY_AOK, ip))
             return false;
-#ifdef DEBUG
-        Serial.println(F("set ip gateway"));
-#endif
+
+        DEBUG_LOG("set ip gateway\r\n");
         delay(200);
         if(!executeCommand(WIFLY_SET_IP_GATEWAY, WIFLY_AOK, gateway))
             return false;
-#ifdef DEBUG
-        Serial.println(F("set ip netmask"));
-#endif
+
+        DEBUG_LOG("set ip netmask\r\n");
         delay(200);
         if(!executeCommand(WIFLY_SET_IP_NETMASK, WIFLY_AOK, mask))
             return false;
@@ -565,9 +541,8 @@ bool Wifly::setConfig(const char* ssid, const char* passphrase, const char* ip,
     else if(!executeCommand(WIFLY_SET_IP_DHCP, WIFLY_AOK, 3)) {
         return false;
     }
-#ifdef DEBUG
-    Serial.println(F("Save and exit"));
-#endif
+
+    DEBUG_LOG("Save and exit\r\n");
     executeCommand(WIFLY_SAVE_CONFIG, WIFLY_CONFIG_SAVED);
     delay(200);
     executeCommand(WIFLY_EXIT, WIFLY_EXITED);
@@ -581,112 +556,84 @@ bool Wifly::setFirstConfig() {
     begin(9600);
     reset();
 
-#ifdef DEBUG
-    Serial.print(F("Entering command mode..."));
-#endif
+    DEBUG_LOG("Entering command mode...");
     if(!enterCommandMode()){
-#ifdef DEBUG
-        Serial.print(F("FAILED"));
-#endif
+        DEBUG_LOG("FAILED\r\n");
         return false;
     }
-#ifdef DEBUG
-    Serial.println(F("OK"));
-#endif
+    DEBUG_LOG("OK\r\n");
 
     // disable echo of RX data and replace the version string with a single CR
-#ifdef DEBUG
-    Serial.println(F("set UART mode"));
-#endif
+
+    DEBUG_LOG("set UART mode\r\n");
     delay(200);
     if(!executeCommand(WIFLY_SET_UART_MODE, WIFLY_AOK, 0x21))
         return false;
-#ifdef DEBUG
-    Serial.println(F("set opt replace"));
-#endif
+
+    DEBUG_LOG("set opt replace\r\n");
     delay(200);
     if(!executeCommand(WIFLY_SET_OPT_REPLACE, WIFLY_AOK, WIFLY_REPLACE_CHAR))
         return false;
 
-#ifdef DEBUG
-    Serial.println(F("set baudate FULL_SPEED"));
-#endif
+    DEBUG("set baudate FULL_SPEED\r\n");
     delay(200);
     // set baudrate to 250000
     if(!executeCommand(WIFLY_SET_UART_RAW, WIFLY_AOK, FULL_SPEED))
         return false;
 
-#ifdef DEBUG
-    Serial.println(F("set wlan linkmon"));
-#endif
+    DEBUG_LOG("set wlan linkmon\r\n");
     delay(200);
     // enable the link monitor threshold with the recommended value
     if(!executeCommand(WIFLY_SET_WLAN_LINKMON, WIFLY_AOK, 5))
         return false;
 
-#ifdef DEBUG
-    Serial.println(F("set wlan join"));
-#endif
+    DEBUG_LOG("set wlan join\r\n");
     delay(200);
     // disable access point autojoin
     if(!executeCommand(WIFLY_SET_WLAN_JOIN, WIFLY_AOK, 0L))
         return false;
 
-#ifdef DEBUG
-    Serial.println(F("set comm open"));
-#endif
+    DEBUG_LOG("set comm open\r\n");
     delay(200);
     // disable the socket monitor strings
     if(!executeCommand(WIFLY_SET_COMM_OPEN, WIFLY_AOK, 0L))
         return false;
-#ifdef DEBUG
-    Serial.println(F("set comm close"));
-#endif
+
+    DEBUG_LOG("set comm close\r\n");
     delay(200);
     if(!executeCommand(WIFLY_SET_COMM_CLOSE, WIFLY_AOK, 0L))
         return false;
-#ifdef DEBUG
-    Serial.println(F("set comm remote"));
-#endif
+
+    DEBUG_LOG("set comm remote\r\n");
     delay(200);
     if(!executeCommand(WIFLY_SET_COMM_REMOTE, WIFLY_AOK, 0L))
         return false;
 
-#ifdef DEBUG
-    Serial.println(F("set ip flags"));
-#endif
+    DEBUG_LOG("set ip flags\r\n");
     delay(200);
     // close any open TCP connection when the WLAN link is lost
     if(!executeCommand(WIFLY_SET_IP_FLAGS, WIFLY_AOK, 0x06))
         return false;
 
-#ifdef DEBUG
-    Serial.println(F("set ip tcp mode"));
-#endif
+    DEBUG_LOG("set ip tcp mode\r\n");
     delay(200);
     // force DNS
     if(!executeCommand(WIFLY_SET_IP_TCPMODE, WIFLY_AOK, 0x04))
         return false;
 
-#ifdef DEBUG
-    Serial.println(F("set sys iofunc"));
-#endif
+    DEBUG_LOG("set sys iofunc\r\n");
     delay(200);
     // enable the alternate functions of the LEDs
     if(!executeCommand(WIFLY_SET_SYS_IOFUNC, WIFLY_AOK, 0x70))
         return false;
 
-#ifdef DEBUG
-    Serial.println(F("set comm size"));
-#endif
+    DEBUG("set comm size\r\n");
     delay(200);
     // set the flush size
     if(!executeCommand(WIFLY_SET_COMM_SIZE, WIFLY_AOK, 500))
         return false;
 
-#ifdef DEBUG
-    Serial.println(F("save and exit"));
-#endif
+    DEBUG_LOG("save and exit\r\n");
     delay(200);
     executeCommand(WIFLY_SAVE_CONFIG, WIFLY_CONFIG_SAVED);
     delay(200);
@@ -719,48 +666,45 @@ bool Wifly::updateFirmware() {
     begin(FULL_SPEED);
     reset();
 
-#ifdef DEBUG
-    Serial.print(F("Entering command mode..."));
-#endif
+    DEBUG_LOG("Entering command mode...");
     if(!enterCommandMode()){
-#ifdef DEBUG
-        Serial.print(F("FAILED"));
-#endif
+        DEBUG_LOG("FAILED\r\n");
         return false;
     }
-#ifdef DEBUG
-    Serial.println(F("OK"));
-#endif
+    DEBUG_LOG("OK\r\n");
+
     delay(200);
 
     join();
+    if(!associated(WLAN_TIMEOUT)){
+        DEBUG_LOG("Association FAILED\r\n");
+        return false;
+    }
 
+    delay(200);
     // set ftp address
-#ifdef DEBUG
-    Serial.print(F("set ftp address"));
-#endif
+    DEBUG_LOG("set ftp address\r\n");
     if(!executeCommand(WIFLY_SET_FTP_ADDRESS, WIFLY_AOK))
         return false;
     delay(200);
-#ifdef DEBUG
-    Serial.print(F("save"));
-#endif
+
+    DEBUG_LOG("save\r\n");
     if (!executeCommand(WIFLY_SAVE_CONFIG, WIFLY_CONFIG_SAVED))
         return false;
     delay(200);
-#ifdef DEBUG
-    Serial.print(F("Downloading firmware image..."));
-#endif
+
+    DEBUG_LOG("Downloading firmware image...\r\n");
     // ftp update
+    DEBUG_LOG("ftp update\r\n");
     write_P(WIFLY_FTP_UPDATE);
     flush();
     clear();
     while(!find_P(WIFLY_UPDATE_OK));
-#ifdef DEBUG
-    Serial.println(F("OK"));
-#endif
+    DEBUG_LOG("OK\r\n");
+
     // factory reset
     delay(200);
+    DEBUG_LOG("factory RESET\r\n");
     if(!executeCommand(WIFLY_FACTORY_RESET, WIFLY_FACTORY_MESSAGE))
        return false;
 
