@@ -64,8 +64,6 @@ public:
 //------------------------------------------------------------------------------
 protected:
     int timedRead();
-//------------------------------------------------------------------------------
-private:
     /**
      * Number of milliseconds to wait for the next char before aborting timed
      * reads.

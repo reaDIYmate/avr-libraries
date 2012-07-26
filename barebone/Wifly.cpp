@@ -34,6 +34,8 @@ uint32_t const RETRY_INTERVAL = 2000;
 uint16_t const SOCKET_TIMEOUT = 5000;
 /** UART timeout (in ms) */
 uint32_t const UART_TIMEOUT = 500;
+/** UART timeout (in ms) for command mode */
+uint32_t const COMMAND_MODE_TIMEOUT = 3000;
 /** WLAN timeout (in ms) */
 uint16_t const WLAN_TIMEOUT = 5000;
 /** Special character used for text communications with the WiFly */
@@ -345,6 +347,7 @@ void Wifly::disconnect() {
  */
 bool Wifly::enterCommandMode() {
     uint8_t attemptCount = 0;
+    timeout_ = COMMAND_MODE_TIMEOUT;
     do {
         // there is a 250ms buffer before the escape sequence
         delay(250);
@@ -352,10 +355,13 @@ bool Wifly::enterCommandMode() {
         write_P(WIFLY_ENTER_COMMAND);
         flush();
         // look for the command string
-        if (find_P(WIFLY_CMD))
+        if (find_P(WIFLY_CMD)) {
+            timeout_ = UART_TIMEOUT;
             return true;
+        }
         // if the error threshold has been reached, give up
         if (++attemptCount == MAX_COMMAND_ERRORS) {
+            timeout_ = UART_TIMEOUT;
             return false;
         }
     } while (1);
