@@ -119,8 +119,10 @@ bool PusherClient::connect() {
         key_,
         PUSHER_HOST
     );
+    wifly_->clear();
     if (!wifly_->print(buffer_))
         goto fail;
+    wifly_->flush();
     // read server response
     if (!wifly_->awaitResponse())
         goto fail;
@@ -249,6 +251,7 @@ void PusherClient::send(const char* data) {
     wifly_->write(PUSHER_STARTCHAR);
     wifly_->print(data);
     wifly_->write(PUSHER_ENDCHAR);
+    wifly_->flush();
 }
 //------------------------------------------------------------------------------
 /*
@@ -260,6 +263,7 @@ void PusherClient::send_P(PGM_P data) {
     wifly_->write(PUSHER_STARTCHAR);
     wifly_->write_P(data);
     wifly_->write(PUSHER_ENDCHAR);
+    wifly_->flush();
 }
 //------------------------------------------------------------------------------
 /*
@@ -294,6 +298,7 @@ bool PusherClient::subscribe(const char* channel, char* auth) {
         channel,
         auth
     );
+    wifly_->clear();
     send(buffer_);
     if (!wifly_->awaitResponse())
         return false;
