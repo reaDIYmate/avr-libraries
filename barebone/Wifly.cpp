@@ -49,7 +49,7 @@ const char PROGMEM WIFLY_FTP_UPDATE[] = "ftp update\r";
 /** Get the WiFly MAC address */
 const char PROGMEM WIFLY_GET_MAC_ADDRESS[] = "get mac\r";
 /** Exit command mode */
-const char PROGMEM WIFLY_JOIN[] = "join";
+const char PROGMEM WIFLY_JOIN[] = "join\r";
 /** Open a TCP socket */
 const char PROGMEM WIFLY_OPEN[] = "open ";
 /** Save the configuration */
@@ -108,8 +108,6 @@ const char PROGMEM WIFLY_ENTER_COMMAND[] = "$$$";
 const char PROGMEM WIFLY_EXITED[] = "EXIT";
 /** Set factory defaults */
 const char PROGMEM WIFLY_FACTORY_MESSAGE[] = "Set Factory Defaults";
-/** Joined WLAN */
-const char PROGMEM WIFLY_JOINED[] = "2000\r\n";
 /** FTP update successfully executed */
 const char PROGMEM WIFLY_UPDATE_OK[] = "UPDATE OK";
 //------------------------------------------------------------------------------
@@ -166,8 +164,9 @@ bool Wifly::associated(uint16_t timeout) {
 bool Wifly::awaitResponse() {
     uint32_t start = millis();
     while (millis() < start + SOCKET_TIMEOUT) {
-        if (connected() && available())
+        if (connected() && available()) {
             return true;
+        }
     }
     return false;
 }
@@ -432,17 +431,16 @@ void Wifly::getDeviceId(char* output) {
 //------------------------------------------------------------------------------
 /** Initialize the WiFly module. */
 void Wifly::initialize() {
-    begin(9600);
+    begin(115200);
     pinModeFast(resetPin_, OUTPUT);
     pinModeFast(gpio4Pin_, INPUT);
     pinModeFast(gpio5Pin_, OUTPUT);
     pinModeFast(gpio6Pin_, INPUT);
-    reset();
 }
 //------------------------------------------------------------------------------
 /* Command the WiFly to join the WLAN stored in memory. */
 void Wifly::join() {
-    executeCommand(WIFLY_JOIN, WIFLY_JOINED);
+    write_P(WIFLY_JOIN);
 }
 //------------------------------------------------------------------------------
 /**

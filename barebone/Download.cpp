@@ -89,7 +89,6 @@ bool Download::save(const char* path, const char* localName) {
         while (!getRange(buffer_, bufferSize_, host, path, firstByte, lastByte));
         write(buffer_, lastByte - firstByte + 1);
         sync();
-        Serial.println(fileSize - lastByte);
     }
 
     // close the file
