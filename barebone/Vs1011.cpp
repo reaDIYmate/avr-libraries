@@ -165,8 +165,11 @@ void Vs1011::sendBytes(const uint8_t* sourceBuffer, uint16_t nBytes) {
 void Vs1011::sendZeros(uint16_t nBytes) {
 	deselectControl();
 	selectData();
-	for (uint16_t i = 0; i < nBytes; i++) {
-		sendByte(0xFF);
+	for (uint16_t i = 0; i < nBytes/32; i++) {
+		while (digitalReadFast(dataRequestPin_) == LOW);
+		for (uint16_t i = 0; i < 32; i++) {
+			sendByte(0x00);
+		}
 	}
 	deselectData();
 }
