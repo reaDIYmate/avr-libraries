@@ -18,7 +18,6 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <Wifly.h>
-#define DEBUG
 //------------------------------------------------------------------------------
 #ifdef DEBUG
     #define DEBUG_LOG(str) Serial.print(F(str))
@@ -575,7 +574,7 @@ bool Wifly::setFirstConfig() {
     if(!executeCommand(WIFLY_SET_OPT_REPLACE, WIFLY_AOK, WIFLY_REPLACE_CHAR))
         return false;
 
-    DEBUG("set baudate FULL_SPEED\r\n");
+    DEBUG_LOG("set baudate FULL_SPEED\r\n");
     delay(200);
     // set baudrate to 250000
     if(!executeCommand(WIFLY_SET_UART_RAW, WIFLY_AOK, FULL_SPEED))
@@ -627,7 +626,7 @@ bool Wifly::setFirstConfig() {
     if(!executeCommand(WIFLY_SET_SYS_IOFUNC, WIFLY_AOK, 0x70))
         return false;
 
-    DEBUG("set comm size\r\n");
+    DEBUG_LOG("set comm size\r\n");
     delay(200);
     // set the flush size
     if(!executeCommand(WIFLY_SET_COMM_SIZE, WIFLY_AOK, 500))

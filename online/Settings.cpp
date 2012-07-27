@@ -176,10 +176,9 @@ int Settings::fetch() {
  */
 int Settings::restore() {
     uint16_t addr = EEPROM_SETTINGS;
-    
+
     nbSettings_ = 0;
     for (uint8_t i = 0; i < nbMaxSettings_; i++) {
-        Serial.flush();
         // read the setting size
         uint8_t lowByte = eeprom_read_byte((uint8_t*)addr);
         uint8_t highByte = eeprom_read_byte((uint8_t*)(addr + 1));
