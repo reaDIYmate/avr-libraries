@@ -418,7 +418,7 @@ void Wifly::getDeviceId(char* output) {
     begin(FULL_SPEED);
     reset();
 
-    DEBUG_LOG("Entering command mode...");
+    DEBUG_LOG("Entering command mode...\r\n");
     if(!enterCommandMode()){
         DEBUG_LOG("FAILED\r\n");
         return;
@@ -496,7 +496,7 @@ bool Wifly::setConfig(const char* ssid, const char* passphrase, const char* ip,
     reset();
     begin(FULL_SPEED);
 
-    DEBUG_LOG("Entering command mode...");
+    DEBUG_LOG("Entering command mode...\r\n");
     if(!enterCommandMode()){
         DEBUG_LOG("FAILED\r\n");
         return false;
@@ -555,7 +555,7 @@ bool Wifly::setFirstConfig() {
     begin(9600);
     reset();
 
-    DEBUG_LOG("Entering command mode...");
+    DEBUG_LOG("Entering command mode...\r\n");
     if(!enterCommandMode()){
         DEBUG_LOG("FAILED\r\n");
         return false;
@@ -665,7 +665,7 @@ bool Wifly::updateFirmware() {
     begin(FULL_SPEED);
     reset();
 
-    DEBUG_LOG("Entering command mode...");
+    DEBUG_LOG("Entering command mode...\r\n");
     if(!enterCommandMode()){
         DEBUG_LOG("FAILED\r\n");
         return false;
