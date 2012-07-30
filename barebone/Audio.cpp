@@ -89,11 +89,9 @@ bool Audio::openRandom(const char* directory, uint16_t count) {
     uint16_t target = random(count);
     uint16_t nbFiles = 0;
     index = 0;
-    while (nbFiles < target) {
+    while (nbFiles < target + 1) {
         if (!SdFile::open(sd_->vwd(), ++index, O_READ))
             continue;
-        char name[32];
-        getFilename(name);
         if (!isFile())
             continue;
         ++nbFiles;
