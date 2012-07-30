@@ -43,6 +43,7 @@
 #include <Rss.h>
 #include <Settings.h>
 #include <ServoControl.h>
+#include <SoundCloud.h>
 #include <Twitter.h>
 //------------------------------------------------------------------------------
 #define BUFFER_SIZE 4096
@@ -59,16 +60,18 @@ private:
     Api api;
     Audio audio;
     SdFat sd;
-    Gmail gmail;
-    Facebook facebook;
-    Twitter twitter;
-    Rss rss;
-    Foursquare foursquare;
     StatusLed led;
     Wifly wifly;
     // Services
-    Inbox inbox;
     Configuration config;
+    Facebook facebook;
+    Foursquare foursquare;
+    Gmail gmail;
+    Inbox inbox;
+    Rss rss;
+    Settings settings;
+    SoundCloud soundcloud;
+    Twitter twitter;
     // Behavior
     Button button;
     Player player;
@@ -76,7 +79,6 @@ private:
     PusherClient pusher;
     PusherTrajectory realtime;
     Motion motion;
-    Settings settings;
     ServoControl control;
 };
 //------------------------------------------------------------------------------

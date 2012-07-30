@@ -37,7 +37,7 @@
 #define UART_COMPANION Serial
 //------------------------------------------------------------------------------
 // Settings
-const uint8_t NB_SETTINGS = 21;
+const uint8_t NB_SETTINGS = 23;
 
 const char FACEBOOK_ON[]        PROGMEM = "facebook.on";
 const char FACEBOOK_SOUND[]     PROGMEM = "facebook.sound";
@@ -66,8 +66,7 @@ const char FOURSQUARE_VENUEID[] PROGMEM = "foursquare.venueId";
 const char FOURSQUARE_ACTION[] PROGMEM = "foursquare.action";
 
 const char SOUNDCLOUD_ON[]      PROGMEM = "soundcloud.on";
-const char SOUNDCLOUD_SOUND[]   PROGMEM = "soundcloud.sound";
-const char SOUNDCLOUD_MOTION[]  PROGMEM = "soundcloud.motion";
+const char SOUNDCLOUD_OWNER[]   PROGMEM = "soundcloud.owner";
 
 const char* SETTINGS_NAMES[] PROGMEM =
 {
@@ -93,8 +92,7 @@ const char* SETTINGS_NAMES[] PROGMEM =
     FOURSQUARE_VENUEID,
     FOURSQUARE_ACTION,
     SOUNDCLOUD_ON,
-    SOUNDCLOUD_SOUND,
-    SOUNDCLOUD_MOTION
+    SOUNDCLOUD_OWNER
 };
 //------------------------------------------------------------------------------
 const char STRING_API_HOST[] PROGMEM = "dev.readiymate.com";
@@ -201,6 +199,16 @@ Dispatcher::Dispatcher() :
         inbox,
         control,
         realtime
+    ),
+    soundcloud(
+        api,
+        wifly,
+        buffer,
+        BUFFER_SIZE,
+        sd,
+        PIN_SD_CHIPSELECT,
+        settings,
+        SOUNDCLOUD_OWNER
     )
 {
 }
