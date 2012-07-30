@@ -144,11 +144,13 @@ Dispatcher::Dispatcher() :
     ),
     twitter(
         api,
+        sd,
         settings,
         TWITTER_ON,
         TWITTER_MOTION,
         TWITTER_SOUND,
-        TWITTER_ACTION
+        TWITTER_ACTION,
+        PIN_SD_CHIPSELECT
     ),
     rss(
         api,
@@ -214,7 +216,7 @@ Dispatcher::Dispatcher() :
 }
 //------------------------------------------------------------------------------
 void Dispatcher::setup() {
-    Serial.begin(9600);
+    Serial.begin(115200);
 
     button.initialize();
     led.initialize();
@@ -358,13 +360,13 @@ void Dispatcher::loop() {
             break;
         case ACTION :
             if(twitter.postStatus()){
-                Serial.println("Twitter OK");
+                Serial.println(F("Twitter OK"));
             }
             if(facebook.postStatus()){
-                Serial.println("Facebook OK");
+                Serial.println(F("Facebook OK"));
             }
             if(foursquare.checkin()){
-                Serial.println("Foursquare OK");
+                Serial.println(F("Foursquare OK"));
             }
             personality.dispatch(Event(STOP), persoOut);
             break;

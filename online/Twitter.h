@@ -21,17 +21,21 @@
 #define TWITTER_H
 
 #include <Api.h>
+#include <SdFat.h>
 #include <Service.h>
 #include <Settings.h>
 //------------------------------------------------------------------------------
-class Twitter : public Service {
+class Twitter : public Service, public SdFile {
 public:
-    Twitter(Api &api, Settings &settings, PGM_P on, PGM_P motion, PGM_P sound, PGM_P action);
+    Twitter(Api &api, SdFat &sd, Settings &settings, PGM_P on, PGM_P motion, 
+        PGM_P sound, PGM_P action, uint8_t sdChipSelectPin);
      int fetch();
      bool postStatus();
 //------------------------------------------------------------------------------
 private:
     PGM_P action_;
+    SdFat *sd_;
+    const uint8_t sdChipSelectPin_;
 };
 
 
