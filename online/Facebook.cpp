@@ -25,11 +25,14 @@ const char KEY_FRIEND_REQUESTS[] PROGMEM = "friendrequests";
 const char KEY_NOTIFICATIONS[] PROGMEM = "notifications";
 const char KEY_POKES[] PROGMEM = "pokes";
 const char KEY_STATUS[] PROGMEM = "status";
+const char SD_FILE[] = "FBSTATUS.TXT";
 //------------------------------------------------------------------------------
-Facebook::Facebook(Api &api, Settings &settings, PGM_P on, PGM_P motion,
-    PGM_P sound, PGM_P action) :
+Facebook::Facebook(Api &api, SdFat &sd, Settings &settings, PGM_P on, 
+    PGM_P motion, PGM_P sound, PGM_P action, uint8_t sdChipSelectPin) :
     Service(api, settings, on, motion, sound),
-    action_(action)
+    action_(action),
+    sd_(&sd),
+    sdChipSelectPin_(sdChipSelectPin)
 {
 }
 //------------------------------------------------------------------------------
@@ -43,15 +46,25 @@ int Facebook::fetch() {
 }
 //------------------------------------------------------------------------------
 bool Facebook::postStatus() {
-    //WORK IN PROGRESS
+    char status[140] = {0};
+    if (!sd_->init(SPI_EIGHTH_SPEED, sdChipSelectPin_)) {
+        sd_->initErrorHalt();
+        return false;
+    }
+    if (!open(SD_FILE, O_READ)) {
+        return false;
+    }
+    rewind();
+    read(status, 140);
     if (strcmp("1", settings_->getByName(action_)) == 0) {
-        api_->call(STRING_API_FACEBOOK_POST, KEY_STATUS, "readiymate");
-        
+        api_->call(STRING_API_FACEBOOK_POST, KEY_STATUS, status);
         char buffer[4];
         api_->getStringByName_P(KEY_STATUS, buffer, 4);
         if (strcmp("0", buffer) == 0){
+            close();
             return true;
         }
     }
+    close();
     return false;
 }

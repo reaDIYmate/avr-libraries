@@ -21,17 +21,21 @@
 #define FACEBOOK_H
 
 #include <Api.h>
+#include <SdFat.h>
 #include <Service.h>
 #include <Settings.h>
 //------------------------------------------------------------------------------
-class Facebook : public Service {
+class Facebook : public Service, public SdFile {
 public:
-    Facebook(Api &api, Settings &settings, PGM_P on, PGM_P motion, PGM_P sound, PGM_P action);
+    Facebook(Api &api, SdFat &sd, Settings &settings, PGM_P on, PGM_P motion, 
+        PGM_P sound, PGM_P action, uint8_t sdChipSelectPin);
      int fetch();
      bool postStatus();
 //------------------------------------------------------------------------------
 private:
     PGM_P action_;
+    SdFat *sd_;
+    const uint8_t sdChipSelectPin_;
 };
 
 #endif // FACEBOOK_H

@@ -136,11 +136,13 @@ Dispatcher::Dispatcher() :
     ),
     facebook(
         api,
+        sd,
         settings,
         FACEBOOK_ON,
         FACEBOOK_MOTION,
         FACEBOOK_SOUND,
-        FACEBOOK_ACTION
+        FACEBOOK_ACTION,
+        PIN_SD_CHIPSELECT
     ),
     twitter(
         api,
