@@ -40,9 +40,9 @@ int Foursquare::fetch() {
 }
 //------------------------------------------------------------------------------
 bool Foursquare::checkin() {
-    //WORK IN POGRESS
     if (strcmp("1", settings_->getByName(action_)) == 0) {
-        api_->call(STRING_API_FOURSQUARE_CHECKIN, KEY_VENUEID, "50083438582f1a69ad75701a");
+        api_->call(STRING_API_FOURSQUARE_CHECKIN, KEY_VENUEID, 
+            settings_->getByName(venueId_));
         
         char buffer[4];
         api_->getStringByName_P(KEY_STATUS, buffer, 4);
