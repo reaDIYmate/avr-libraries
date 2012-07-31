@@ -21,7 +21,7 @@
 //------------------------------------------------------------------------------
 // Buffer sizes
 /** Size of the temporary buffer used to read API path */
-uint16_t const API_PATH_BUFFER_SIZE = 384;
+uint16_t const API_PATH_BUFFER_SIZE = 512;
 /** Size of the temporary buffer used to read API host */
 uint8_t const API_HOST_BUFFER_SIZE = WIFLY_HOST_BUFFER_SIZE;
 //------------------------------------------------------------------------------

@@ -29,6 +29,7 @@
 #include <Wifly.h>
 #include <Configuration.h>
 #include <eepromAddresses.h>
+#include <Email.h>
 #include <Inbox.h>
 #include <Resources.h>
 #include <Button.h>
@@ -46,7 +47,7 @@
 #include <SoundCloud.h>
 #include <Twitter.h>
 //------------------------------------------------------------------------------
-#define BUFFER_SIZE 4096
+#define BUFFER_SIZE 2048
 //------------------------------------------------------------------------------
 class Dispatcher {
 public:
@@ -66,6 +67,7 @@ private:
     Configuration config;
     Facebook facebook;
     Foursquare foursquare;
+    Email email;
     Gmail gmail;
     Inbox inbox;
     Rss rss;

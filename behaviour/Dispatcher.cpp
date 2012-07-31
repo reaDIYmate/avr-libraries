@@ -127,6 +127,11 @@ Dispatcher::Dispatcher() :
         NB_SETTINGS,
         api
     ),
+    email(
+        api,
+        sd,
+        PIN_SD_CHIPSELECT
+    ),
     gmail(
         api,
         settings,
@@ -370,6 +375,8 @@ void Dispatcher::loop() {
             if(foursquare.checkin()){
                 Serial.println(F("Foursquare OK"));
             }
+            email.sendEmail();
+            Serial.println(F("Email OK"));
             personality.dispatch(Event(STOP), persoOut);
             break;
         case NOTHING :
