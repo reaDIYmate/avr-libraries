@@ -56,22 +56,32 @@ bool SoundCloud::download(PGM_P folder) {
         return false;
     api_->call(SOUNDCLOUD_API_METHOD, SOUNDCLOUD_OWNER_KEY,
         settings_->getByName(owner_));
+    // parse track name
+    char filename[16] = {0};
+    if (api_->getStringByName_P(SOUNDCLOUD_NAME_KEY, filename, 16) <= 0)
+        return false;
+    // construct local path
+    char filepath[32] = {0};
+    snprintf(filepath, 32, "%S/%s", folder, filename);
+
+    if (!sd_->init(SPI_EIGHTH_SPEED, sdChipSelectPin_)) {
+        sd_->initErrorHalt();
+        return false;
+    }
+
+    // if the file already exists, cancel the download
+    if (sd_->exists(filepath)) {
+        return false;
+    }
+
+    // parse file host and path
     char host[DOWNLOAD_HOST_BUFFER_SIZE] = {0};
     if (api_->getStringByName_P(SOUNDCLOUD_HOST_KEY, host,
         DOWNLOAD_HOST_BUFFER_SIZE) <= 0)
         return false;
-    char filename[16] = {0};
-    if (api_->getStringByName_P(SOUNDCLOUD_NAME_KEY, filename, 16) <= 0)
-        return false;
-    char filepath[32] = {0};
-    snprintf(filepath, 32, "%S/%s", folder, filename);
     char path[256] = {0};
     if (api_->getStringByName_P(SOUNDCLOUD_URL_KEY, path, 256) <= 0)
         return false;
-
-    Serial.println(host);
-    Serial.println(filepath);
-    Serial.println(path);
 
     // connect to file host
     if (!connect(host))
@@ -81,16 +91,9 @@ bool SoundCloud::download(PGM_P folder) {
     uint32_t fileSize = getContentLength(buffer_, bufferSize_, host, path);
     if (fileSize == 0)
         return false;
-
     uint16_t nbPieces = (fileSize - 1)/bufferSize_ + 1;
 
     // create the local file
-    if (!sd_->init(SPI_EIGHTH_SPEED, sdChipSelectPin_)) {
-        sd_->initErrorHalt();
-        return false;
-    }
-    if (exists(filepath))
-        remove(this, filepath);
     if (!open(filepath, O_CREAT | O_WRITE)) {
         return false;
     }
