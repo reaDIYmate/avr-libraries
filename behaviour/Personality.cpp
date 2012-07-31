@@ -29,7 +29,7 @@ const char PROGMEM KEY_ACTIVITY[] = "activity";
 /** Refresh interval (in ms) for the inbox messages. */
 const uint32_t POLL_INTERVAL = 480000;
 /** Refresh interval (in ms) to check Gmail. */
-const uint32_t CHECK_GMAIL_INTERVAL = 10000;
+const uint32_t CHECK_GMAIL_INTERVAL = 480000;
 /** Refresh interval (in ms) to check Facebook. */
 const uint32_t CHECK_FACEBOOK_INTERVAL = 480000;
 /** Refresh interval (in ms) to check Twitter. */
