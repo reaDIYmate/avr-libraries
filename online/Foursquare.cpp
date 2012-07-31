@@ -43,10 +43,8 @@ bool Foursquare::checkin() {
     if (strcmp("1", settings_->getByName(action_)) == 0) {
         api_->call(STRING_API_FOURSQUARE_CHECKIN, KEY_VENUEID, 
             settings_->getByName(venueId_));
-        
-        char buffer[4];
-        api_->getStringByName_P(KEY_STATUS, buffer, 4);
-        if (strcmp("OK", buffer) == 0){
+
+        if (api_->getIntegerByName_P(KEY_STATUS) == 0){
             return true;
         }
     }

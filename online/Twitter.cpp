@@ -57,9 +57,7 @@ bool Twitter::postStatus() {
     read(status, 140);
     if (strcmp("1", settings_->getByName(action_)) == 0) {
         api_->call(STRING_API_TWITTER_POST, KEY_STATUS, status);
-        char buffer[4];
-        api_->getStringByName_P(KEY_STATUS, buffer, 4);
-        if (strcmp("OK", buffer) == 0){
+        if (api_->getIntegerByName_P(KEY_STATUS) == 0){
             close();
             return true;
         }
