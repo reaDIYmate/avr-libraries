@@ -21,9 +21,7 @@
 //------------------------------------------------------------------------------
 // Buffer sizes
 /** Size of the temporary buffer used to read API path */
-uint16_t const API_PATH_BUFFER_SIZE = 512;
-/** Size of the temporary buffer used to read API host */
-uint8_t const API_HOST_BUFFER_SIZE = WIFLY_HOST_BUFFER_SIZE;
+uint16_t const API_PATH_BUFFER_SIZE = 384;
 //------------------------------------------------------------------------------
 // API path format strings
 /** Format string for an API call with the base URL and fixed arguments */
@@ -102,8 +100,8 @@ int Api::call(PGM_P method) {
         method,
         fixedArgs_
     );
-    char host[API_HOST_BUFFER_SIZE] = {0};
-    strlcpy_P(host, host_, API_HOST_BUFFER_SIZE);
+    char host[WIFLY_HOST_BUFFER_SIZE] = {0};
+    strlcpy_P(host, host_, WIFLY_HOST_BUFFER_SIZE);
     int nBytes = get(buffer_, bufferSize_, host, path);
     return nBytes;
 }
@@ -245,8 +243,8 @@ int Api::call(PGM_P method, PGM_P key1, const char* value1, PGM_P key2,
  * Otherwise, false is returned.
  */
 bool Api::connect() {
-    char host[API_HOST_BUFFER_SIZE] = {0};
-    strlcpy_P(host, host_, API_HOST_BUFFER_SIZE);
+    char host[WIFLY_HOST_BUFFER_SIZE] = {0};
+    strlcpy_P(host, host_, WIFLY_HOST_BUFFER_SIZE);
     return HttpClient::connect(host);
 }
 //------------------------------------------------------------------------------
