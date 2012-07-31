@@ -44,6 +44,23 @@ Download::Download(Wifly &wifly, char* buffer, size_t bufferSize,
 }
 //------------------------------------------------------------------------------
 /**
+ * Open a connection to the host.
+ *
+ * \return true is returned if a connection is successfully opened to the host.
+ * Otherwise, false is returned.
+ */
+bool Download::connect() {
+    char host[WIFLY_HOST_BUFFER_SIZE] = {0};
+    strlcpy_P(host, host_, WIFLY_HOST_BUFFER_SIZE);
+    return HttpClient::connect(host);
+}
+//------------------------------------------------------------------------------
+/** Check whether the client is connected to the host */
+bool Download::connected() {
+    return wifly_->connectedTo_P(host_);
+}
+//------------------------------------------------------------------------------
+/**
  * Save the file located at the given path to the SD card with the provided
  * local name.
  *

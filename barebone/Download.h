@@ -34,6 +34,8 @@ class Download : public HttpClient, public SdFile {
 public:
     Download(Wifly &wifly, char* buffer, size_t bufferSize, PGM_P host,
         SdFat &sd, uint8_t sdChipSelectPin);
+    bool connect();
+    bool connected();
     bool save(const char* path, const char* localName);
 //------------------------------------------------------------------------------
 protected:
