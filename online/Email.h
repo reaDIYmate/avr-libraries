@@ -26,11 +26,14 @@
 //------------------------------------------------------------------------------
 class Email : public SdFile {
 public:
-    Email(Api &api, SdFat &sd, uint8_t sdChipSelectPin);
+    Email(Api &api, SdFat &sd, Settings &settings, PGM_P on,
+        uint8_t sdChipSelectPin);
     bool sendEmail();
 private:
     Api *api_;
     SdFat *sd_;
+    Settings *settings_;
+    PGM_P on_;
     const uint8_t sdChipSelectPin_;
 };
 #endif // EMAIL_H

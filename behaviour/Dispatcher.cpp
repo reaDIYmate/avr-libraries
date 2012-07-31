@@ -37,7 +37,7 @@
 #define UART_COMPANION Serial
 //------------------------------------------------------------------------------
 // Settings
-const uint8_t NB_SETTINGS = 23;
+const uint8_t NB_SETTINGS = 24;
 
 const char FACEBOOK_ON[]        PROGMEM = "facebook.on";
 const char FACEBOOK_SOUND[]     PROGMEM = "facebook.sound";
@@ -68,6 +68,8 @@ const char FOURSQUARE_ACTION[] PROGMEM = "foursquare.action";
 const char SOUNDCLOUD_ON[]      PROGMEM = "soundcloud.on";
 const char SOUNDCLOUD_OWNER[]   PROGMEM = "soundcloud.owner";
 
+const char EMAIL_ON[]            PROGMEM = "email.on";
+
 const char* SETTINGS_NAMES[] PROGMEM =
 {
     FACEBOOK_ON,
@@ -92,7 +94,8 @@ const char* SETTINGS_NAMES[] PROGMEM =
     FOURSQUARE_VENUEID,
     FOURSQUARE_ACTION,
     SOUNDCLOUD_ON,
-    SOUNDCLOUD_OWNER
+    SOUNDCLOUD_OWNER,
+    EMAIL_ON
 };
 //------------------------------------------------------------------------------
 const char STRING_API_HOST[] PROGMEM = "dev.readiymate.com";
@@ -130,6 +133,8 @@ Dispatcher::Dispatcher() :
     email(
         api,
         sd,
+        settings,
+        EMAIL_ON,
         PIN_SD_CHIPSELECT
     ),
     gmail(
@@ -376,18 +381,18 @@ void Dispatcher::loop() {
             }
             break;
         case ACTION :
-            if(twitter.postStatus()){
+            if (twitter.postStatus()) {
                 Serial.println(F("Twitter OK"));
             }
-            if(facebook.postStatus()){
+            if (facebook.postStatus()) {
                 Serial.println(F("Facebook OK"));
             }
-            if(foursquare.checkin()){
+            if (foursquare.checkin()) {
                 Serial.println(F("Foursquare OK"));
+            } 
+            if (email.sendEmail()) {
+                Serial.println(F("Email OK"));
             }
-            email.sendEmail();
-            Serial.println(F("Email OK"));
-
             player.dispatch(PlayerEvent(RANDOM, "SNDCLD", 1), playerOut);
             personality.dispatch(Event(SOUNDCLOUD), persoOut);
             personality.dispatch(Event(STOP), persoOut);
