@@ -89,8 +89,9 @@ bool Download::save(const char* path, const char* localName) {
         sd_->initErrorHalt();
         return false;
     }
-    if (exists(localName))
-        remove(this, localName);
+    if (sd_->exists(localName))
+        sd_->remove(localName);
+
     if (!open(localName, O_CREAT | O_WRITE)) {
         return false;
     }
