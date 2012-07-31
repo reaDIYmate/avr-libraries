@@ -70,15 +70,13 @@ bool Audio::openRandom(const char* directory, uint16_t count) {
         return false;
     rewind();
 
+    uint16_t nbEntries = sd_->vwd()->fileSize()/32;
     uint16_t index = 0;
+    // count files
     if (count == 0) {
-        // count files
-        uint16_t nbEntries = sd_->vwd()->fileSize()/32;
         while (index < nbEntries) {
             if (!SdFile::open(sd_->vwd(), ++index, O_READ))
                 continue;
-            char name[32];
-            getFilename(name);
             if (!isFile())
                 continue;
             ++count;
@@ -89,7 +87,7 @@ bool Audio::openRandom(const char* directory, uint16_t count) {
     uint16_t target = random(count);
     uint16_t nbFiles = 0;
     index = 0;
-    while (nbFiles < target + 1) {
+    while (nbFiles < target + 1 && index < nbEntries) {
         if (!SdFile::open(sd_->vwd(), ++index, O_READ))
             continue;
         if (!isFile())
