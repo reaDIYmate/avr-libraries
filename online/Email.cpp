@@ -53,5 +53,12 @@ bool Email::sendEmail() {
     json.getStringByName_P(KEY_SUBJECT, subject, 32);
     json.getStringByName_P(KEY_BODY, body, 140);
     api_->call(STRING_API_EMAIL_SEND, KEY_TO, to, KEY_SUBJECT, subject, KEY_BODY, body);
+    char buffer[4];
+    api_->getStringByName_P(KEY_STATUS, buffer, 4);
+    if (strcmp("0", buffer) == 0){
+        close();
+        return true;
+    }
+    close();
     return false;
 }
