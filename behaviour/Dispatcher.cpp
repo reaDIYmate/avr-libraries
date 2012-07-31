@@ -365,6 +365,16 @@ void Dispatcher::loop() {
                 motionOut.signal = END_OF_FILE;
             }
             break;
+        case SOUNDCLOUD :
+            if (soundcloud.download(PSTR("SNDCLD"))) {
+                personality.dispatch(Event(SOUNDCLOUD), persoOut);
+                player.dispatch(PlayerEvent(RANDOM, "SNDCLD", 1), playerOut);
+            }
+            else {
+                playerOut.signal = END_OF_FILE;
+                motionOut.signal = END_OF_FILE;
+            }
+            break;
         case ACTION :
             if(twitter.postStatus()){
                 Serial.println(F("Twitter OK"));
@@ -377,6 +387,9 @@ void Dispatcher::loop() {
             }
             email.sendEmail();
             Serial.println(F("Email OK"));
+
+            player.dispatch(PlayerEvent(RANDOM, "SNDCLD", 1), playerOut);
+            personality.dispatch(Event(SOUNDCLOUD), persoOut);
             personality.dispatch(Event(STOP), persoOut);
             break;
         case NOTHING :

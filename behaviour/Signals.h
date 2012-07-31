@@ -50,6 +50,7 @@ enum Signal {
     RANDOM_ACTIVITY,
     RSS,
     SHORT_CLICK_RELEASED,
+    SOUNDCLOUD,
     STOP,
     SUPERLONG_CLICK_ARMED,
     TICK,

@@ -59,6 +59,8 @@ private:
     void checkingGmail(const Event* e);
     void checkingRss(const Event* e);
     void checkingTwitter(const Event* e);
+    void checkingSoundCloud(const Event* e);
+    void playingSoundCloud(const Event* e);
     void enteringPushMode(const Event* e);
     void fallingAsleep(const Event* e);
     void pollingInbox(const Event* e);
@@ -80,6 +82,8 @@ private:
     unsigned long checkingRssDeadline_;
     /** Timestamp used to start checking Foursquare*/
     unsigned long checkingFoursquareDeadline_;
+    /** Timestamp used to start checking SoundCloud*/
+    unsigned long checkingSoundCloudDeadline_;
     /** Timestamp used to leave remote control mode */
     unsigned long remoteControlDeadline_;
     /* Timestamp used to enter push mode when asleep */

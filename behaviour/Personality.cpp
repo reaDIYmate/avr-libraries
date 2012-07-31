@@ -38,6 +38,8 @@ const uint32_t CHECK_TWITTER_INTERVAL = 480000;
 const uint32_t CHECK_RSS_INTERVAL = 480000;
 /** Refresh interval (in ms) to check Foursquare. */
 const uint32_t CHECK_FOURSQUARE_INTERVAL = 480000;
+/** Refresh interval (in ms) to check SoundCloud. */
+const uint32_t CHECK_SOUNDCLOUD_INTERVAL = 3600000;
 /** Timeout (in ms) for remote control mode */
 const uint32_t REMOTE_CONTROL_TIMEOUT = 30000;
 const uint8_t MAX_LEVEL = 1;
@@ -68,6 +70,9 @@ void Personality::action(const Event* e) {
         case STOP :
             internalTransition(Personality::awake);
             Serial.println(F("Personality::awake"));
+            break;
+        case SOUNDCLOUD :
+            transition(Personality::playingSoundCloud);
             break;
     }
 }
@@ -130,6 +135,10 @@ void Personality::awake(const Event* e) {
                 emit(FOURSQUARE);
                 transition(Personality::checkingFoursquare);
             }
+            else if (millis() >= checkingSoundCloudDeadline_) {
+                emit(SOUNDCLOUD);
+                transition(Personality::checkingSoundCloud);
+            }
             else if (millis() >= pollInboxDeadline_) {
                 transition(Personality::pollingInbox);
             }
@@ -165,6 +174,40 @@ void Personality::checkingFoursquare(const Event* e) {
             internalTransition(Personality::awake);
             Serial.println(F("Personality::awake"));
             checkingFoursquareDeadline_ = millis() + CHECK_FOURSQUARE_INTERVAL;
+            break;
+    }
+}
+//------------------------------------------------------------------------------
+/** Checking SoundCloud*/
+void Personality::checkingSoundCloud(const Event* e) {
+    switch (e->signal) {
+#ifdef DEBUG
+        case ENTRY :
+            Serial.println(F("Personality::checkingSoundcloud"));
+            break;
+#endif
+        case STOP :
+            internalTransition(Personality::awake);
+            Serial.println(F("Personality::awake"));
+            checkingSoundCloudDeadline_ = millis() + CHECK_SOUNDCLOUD_INTERVAL;
+            break;
+        case SOUNDCLOUD :
+            transition(Personality::playingSoundCloud);
+            break;
+    }
+}//------------------------------------------------------------------------------
+/** Playing a sond from SoundCloud*/
+void Personality::playingSoundCloud(const Event* e) {
+    switch (e->signal) {
+#ifdef DEBUG
+        case ENTRY :
+            Serial.println(F("Personality::playingSoundcloud"));
+            break;
+#endif
+        case STOP :
+            internalTransition(Personality::awake);
+            Serial.println(F("Personality::awake"));
+            checkingSoundCloudDeadline_ = millis() + CHECK_SOUNDCLOUD_INTERVAL;
             break;
     }
 }
@@ -368,4 +411,5 @@ void Personality::resetDeadlines() {
     checkingTwitterDeadline_ = millis() + CHECK_TWITTER_INTERVAL;
     checkingRssDeadline_ = millis() + CHECK_RSS_INTERVAL;
     checkingFoursquareDeadline_ = millis() + CHECK_FOURSQUARE_INTERVAL;
+    checkingSoundCloudDeadline_ = millis() + CHECK_SOUNDCLOUD_INTERVAL;
 }
