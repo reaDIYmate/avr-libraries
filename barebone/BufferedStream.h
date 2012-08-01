@@ -34,6 +34,7 @@ public:
     BufferedStream(char* buffer, size_t bufferSize = 0);
     virtual int available();
     virtual int read();
+    virtual void rewind() { index_ = 0; }
     virtual size_t write(uint8_t);
 //------------------------------------------------------------------------------
 protected:
