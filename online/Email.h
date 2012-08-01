@@ -29,6 +29,7 @@ public:
     Email(Api &api, SdFat &sd, Settings &settings, PGM_P on,
         uint8_t sdChipSelectPin);
     bool sendEmail();
+    bool saveSettings();
 private:
     Api *api_;
     SdFat *sd_;

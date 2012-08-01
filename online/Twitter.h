@@ -31,6 +31,7 @@ public:
         PGM_P sound, PGM_P action, uint8_t sdChipSelectPin);
      int fetch();
      bool postStatus();
+     bool saveSettings();
 //------------------------------------------------------------------------------
 private:
     PGM_P action_;

@@ -252,6 +252,9 @@ void Dispatcher::setup() {
     bool restore = true;
     if (api.connect()) {
         Serial.println(F("Connection to the reaDIYmate server established."));
+        facebook.saveSettings();
+        twitter.saveSettings();
+        email.saveSettings();
         if (settings.fetch() >= 0) {
             settings.save();
             restore = false;
