@@ -116,7 +116,8 @@ Dispatcher::Dispatcher() :
     config(
         UART_COMPANION,
         wifly,
-        led
+        led,
+        PIN_SD_CHIPSELECT
     ),
     api(
         wifly,
@@ -392,7 +393,7 @@ void Dispatcher::loop() {
             }
             if (foursquare.checkin()) {
                 Serial.println(F("Foursquare OK"));
-            } 
+            }
             if (email.sendEmail()) {
                 Serial.println(F("Email OK"));
             }

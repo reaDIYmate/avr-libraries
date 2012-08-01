@@ -62,6 +62,8 @@ const char PROGMEM COMMAND_FACTORY[] = "factory";
 const char PROGMEM COMMAND_UPDATE[] = "update";
 /** Pusher mode */
 const char PROGMEM COMMAND_PUSHER[] = "pusher";
+/** Format SD card */
+const char PROGMEM COMMAND_FORMAT[] = "format";
 /** Start-up signal */
 const char PROGMEM WIZARD_STARTUP[] = "reaDIYmate\n";
 //------------------------------------------------------------------------------
@@ -74,10 +76,12 @@ const char API_CREDENTIAL_FORMAT[] PROGMEM = "id=%s&user=%s&token=%s";
  * \param[in] companion The serial port that is connected to the companion.
  * \param[in] wifly The Wifly object to use for communications.
  */
-Configuration::Configuration(HardwareSerial &companion, Wifly &wifly, StatusLed &led) :
+Configuration::Configuration(HardwareSerial &companion, Wifly &wifly,
+    StatusLed &led, uint8_t sdChipSelectPin) :
     SerialStream(companion, WIZARD_TIMEOUT),
     wifly_(&wifly),
     led_(&led),
+    sdChipSelectPin_(sdChipSelectPin),
     username_(NULL),
     password_(NULL),
     key_(NULL),
@@ -113,6 +117,216 @@ Configuration::~Configuration() {
     }
 }
 //------------------------------------------------------------------------------
+bool Configuration::formatSdCard() {
+    Sd2Card card;
+    cache_t cache;
+    uint32_t cardSizeBlocks;
+    uint16_t cardCapacityMB;
+    // initialize SD card
+    if (!card.init(SPI_HALF_SPEED, sdChipSelectPin_))
+      return false;
+    cardSizeBlocks = card.cardSize();
+    if (cardSizeBlocks == 0)
+      return false;
+    cardCapacityMB = (cardSizeBlocks + 2047)/2048;
+
+    Serial.println(F("Erasing..."));
+
+    uint32_t const ERASE_SIZE = 262144L;
+    uint32_t firstBlock = 0;
+    uint32_t lastBlock;
+    uint16_t n = 0;
+    // flash erase all data
+    do {
+        lastBlock = firstBlock + ERASE_SIZE - 1;
+        if (lastBlock >= cardSizeBlocks)
+            lastBlock = cardSizeBlocks - 1;
+        if (!card.erase(firstBlock, lastBlock))
+            return false;
+        firstBlock += ERASE_SIZE;
+    } while (firstBlock < cardSizeBlocks);
+    if (!card.readBlock(0, cache.data))
+      return false;
+
+    Serial.println(F("Formatting..."));
+
+    uint8_t numberOfHeads;
+    uint8_t sectorsPerTrack;
+    uint16_t reservedSectors;
+    uint8_t sectorsPerCluster;
+    uint32_t fatStart;
+    uint32_t fatSize;
+    uint32_t dataStart;
+    // initialize appropriate sizes for SD capacity
+    if (cardCapacityMB <= 6)
+        return false;
+    else if (cardCapacityMB <= 16)
+        sectorsPerCluster = 2;
+    else if (cardCapacityMB <= 32)
+        sectorsPerCluster = 4;
+    else if (cardCapacityMB <= 64)
+        sectorsPerCluster = 8;
+    else if (cardCapacityMB <= 128)
+        sectorsPerCluster = 16;
+    else if (cardCapacityMB <= 1024)
+        sectorsPerCluster = 32;
+    else
+        sectorsPerCluster = 64;
+
+    Serial.print(F("Blocks/Cluster: "));
+    Serial.println(sectorsPerCluster);
+
+    // set fake disk geometry
+    sectorsPerTrack = cardCapacityMB <= 256 ? 32 : 63;
+    if (cardCapacityMB <= 16)
+        numberOfHeads = 2;
+    else if (cardCapacityMB <= 32)
+        numberOfHeads = 4;
+    else if (cardCapacityMB <= 128)
+        numberOfHeads = 8;
+    else if (cardCapacityMB <= 504)
+        numberOfHeads = 16;
+    else if (cardCapacityMB <= 1008)
+        numberOfHeads = 32;
+    else if (cardCapacityMB <= 2016)
+        numberOfHeads = 64;
+    else if (cardCapacityMB <= 4032)
+        numberOfHeads = 128;
+    else
+        numberOfHeads = 255;
+
+    // check card type
+    if (card.type() == SD_CARD_TYPE_SDHC)
+        return false;
+
+    uint16_t const BU16 = 128;
+    uint16_t const BU32 = 8192;
+    uint8_t partType;
+    uint32_t relSector;
+    uint32_t partSize;
+    uint32_t nc;
+    // make FAT16 volume
+    for (dataStart = 2 * BU16;; dataStart += BU16) {
+        nc = (cardSizeBlocks - dataStart)/sectorsPerCluster;
+        fatSize = (nc + 2 + 255)/256;
+        uint32_t r = BU16 + 1 + 2 * fatSize + 32;
+        if (dataStart < r)
+            continue;
+        relSector = dataStart - r + BU16;
+        break;
+    }
+
+    // check valid cluster count for FAT16 volume
+    if (nc < 4085 || nc >= 65525)
+        return false;
+    reservedSectors = 1;
+    fatStart = relSector + reservedSectors;
+    partSize = nc * sectorsPerCluster + 2 * fatSize + reservedSectors + 32;
+    if (partSize < 32680)
+        partType = 0X01;
+    else if (partSize < 65536)
+        partType = 0X04;
+    else
+        partType = 0X06;
+
+    // format the Master Boot Record
+    memset(&cache, 0, sizeof(cache));
+    cache.mbr.mbrSig0 = BOOTSIG0;
+    cache.mbr.mbrSig1 = BOOTSIG1;
+    part_t* p = cache.mbr.part;
+    p->boot = 0;
+    uint16_t c = relSector / (numberOfHeads * sectorsPerTrack);
+    if (c > 1023)
+        return false;
+    p->beginCylinderHigh = c >> 8;
+    p->beginCylinderLow = c & 0XFF;
+    p->beginHead = (relSector % (numberOfHeads * sectorsPerTrack)) /
+        sectorsPerTrack;
+    p->beginSector = (relSector % sectorsPerTrack) + 1;
+    p->type = partType;
+    uint32_t endLbn = relSector + partSize - 1;
+    c = endLbn / (numberOfHeads * sectorsPerTrack);
+    if (c <= 1023) {
+        p->endCylinderHigh = c >> 8;
+        p->endCylinderLow = c & 0XFF;
+        p->endHead = (endLbn % (numberOfHeads * sectorsPerTrack)) /
+            sectorsPerTrack;
+        p->endSector = (endLbn % sectorsPerTrack) + 1;
+    }
+    else {
+        // Too big flag, c = 1023, h = 254, s = 63
+        p->endCylinderHigh = 3;
+        p->endCylinderLow = 255;
+        p->endHead = 254;
+        p->endSector = 63;
+    }
+    p->firstSector = relSector;
+    p->totalSectors = partSize;
+    if (!card.writeBlock(0, cache.data))
+        return false;
+
+    //  strings needed in file system structures
+    char noName[] = "NO NAME    ";
+    char fat16str[] = "FAT16   ";
+
+    // write the Master Boot Record
+    memset(&cache, 0, sizeof(cache));
+    cache.mbr.mbrSig0 = BOOTSIG0;
+    cache.mbr.mbrSig1 = BOOTSIG1;
+    fat_boot_t* pb = &cache.fbs;
+    pb->jump[0] = 0XEB;
+    pb->jump[1] = 0X00;
+    pb->jump[2] = 0X90;
+    for (uint8_t i = 0; i < sizeof(pb->oemId); i++) {
+        pb->oemId[i] = ' ';
+    }
+    pb->bytesPerSector = 512;
+    pb->sectorsPerCluster = sectorsPerCluster;
+    pb->reservedSectorCount = reservedSectors;
+    pb->fatCount = 2;
+    pb->rootDirEntryCount = 512;
+    pb->mediaType = 0XF8;
+    pb->sectorsPerFat16 = fatSize;
+    pb->sectorsPerTrack = sectorsPerTrack;
+    pb->headCount = numberOfHeads;
+    pb->hidddenSectors = relSector;
+    pb->totalSectors32 = partSize;
+    pb->driveNumber = 0X80;
+    pb->bootSignature = EXTENDED_BOOT_SIG;
+    pb->volumeSerialNumber = (cardSizeBlocks << 8) + micros();
+    memcpy(pb->volumeLabel, noName, sizeof(pb->volumeLabel));
+    memcpy(pb->fileSystemType, fat16str, sizeof(pb->fileSystemType));
+
+    // write partition boot sector
+    if (!card.writeBlock(relSector, cache.data))
+        return false;
+
+    // clear FAT and root directory
+    uint32_t count = dataStart - fatStart;
+    memset(&cache, 0, sizeof(cache));
+    if (!card.writeStart(fatStart, count)) {
+        return false;
+    }
+    for (uint32_t i = 0; i < count; i++) {
+        if (!card.writeData(cache.data))
+            return false;
+    }
+    if (!card.writeStop())
+        return false;
+    memset(&cache, 0, sizeof(cache));
+    cache.fat16[0] = 0XFFF8;
+    cache.fat16[1] = 0XFFFF;
+
+    // write first block of FAT and backup for reserved clusters
+    if (!card.writeBlock(fatStart, cache.data)
+    || !card.writeBlock(fatStart + fatSize, cache.data)) {
+        return false;
+    }
+
+    Serial.println(F("Format done"));
+    return true;
+}
+//------------------------------------------------------------------------------
 /**
  * Using the device ID, the username and the password, generate a string that
  * will be appended to every request sent to the reaDIYmate API.
@@ -144,7 +358,9 @@ void Configuration::readPusher(char* buffer, uint8_t bufferSize) {
     json.getStringByName_P(WIZARD_KEY_SECRET, secret, 22);
     json.getStringByName_P(WIZARD_KEY_CHANNEL, channel, 22);
 
-    if (strcmp(key_, key) != 0 || strcmp(secret_, secret) != 0 || strcmp(channel_, channel) != 0) {
+    if (strcmp(key_, key) != 0
+    || strcmp(secret_, secret) != 0
+    || strcmp(channel_, channel) != 0) {
         key_ = key;
         secret_ = secret;
         channel_ = channel;
@@ -162,7 +378,8 @@ void Configuration::readUserAndPass(char* buffer, uint8_t bufferSize) {
     json.getStringByName_P(WIZARD_KEY_USER, newUsername, 64);
     json.getStringByName_P(WIZARD_KEY_PASSWORD, newPassword, 128);
 
-    if (strcmp(username_, newUsername) != 0 || strcmp(password_, newPassword) != 0) {
+    if (strcmp(username_, newUsername) != 0
+    || strcmp(password_, newPassword) != 0) {
         username_ = newUsername;
         password_ = newPassword;
         saveUserAndPass();
@@ -347,6 +564,11 @@ void Configuration::synchronize(uint16_t timeout) {
         else if (strcmp_P(cmd, COMMAND_UPDATE) == 0) {
             wifly_->updateFirmware();
             Serial.println(F("WiFly firmware updated"));
+            return;
+        }
+        else if (strcmp_P(cmd, COMMAND_FORMAT) == 0) {
+            formatSdCard();
+            Serial.println(F("SD card formatted"));
             return;
         }
     }

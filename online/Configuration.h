@@ -29,6 +29,7 @@
 #include <JsonStream.h>
 #include <SerialStream.h>
 #include <Wifly.h>
+#include <SdFat.h>
 #include <StatusLed.h>
 //------------------------------------------------------------------------------
 /**
@@ -37,7 +38,8 @@
  */
 class Configuration : public SerialStream {
 public:
-    Configuration(HardwareSerial &companion, Wifly &wifly, StatusLed &led);
+    Configuration(HardwareSerial &companion, Wifly &wifly, StatusLed &led,
+        uint8_t sdChipSelectPin);
     ~Configuration();
     void getApiCredential(char* buffer, uint8_t bufferSize);
     const char* getPusherKey() {return key_;}
@@ -46,6 +48,7 @@ public:
     void synchronize(uint16_t timeout);
 //------------------------------------------------------------------------------
 private:
+    bool formatSdCard();
     void readPusher(char* buffer, uint8_t bufferSize);
     void readUserAndPass(char* buffer, uint8_t bufferSize);
     void readWifiSettings(char* buffer, uint8_t bufferSize);
@@ -72,6 +75,7 @@ private:
     Wifly* wifly_;
     /** The dual-color LED wrapper */
     StatusLed* led_;
+    uint8_t sdChipSelectPin_;
 };
 
 #endif // CONFIGURATION_H
