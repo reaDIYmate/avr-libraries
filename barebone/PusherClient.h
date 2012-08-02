@@ -42,7 +42,25 @@ public:
     bool hasNextEvent();
     bool ping();
     void pong();
-    void setConfig(const char* key, const char* secret, const char* channel);
+    //------------------------------------------------------------------------------
+    /*
+     * Update the channel.
+     *
+     * \param[in] channel The channel name.
+     */
+    void setChannel(const char* channel) {channel_ = channel;}
+    /*
+     * Update the public key.
+     *
+     * \param[in] key The public key of the Pusher application.
+     */
+    void setKey(const char* key) {key_ = key;}
+    /*
+     * Update the secret key.
+     *
+     * \param[in] secret The secret key of the Pusher application.
+     */
+     void setSecret(const char* secret) {secret_ = secret;}
     using JsonStream::getIntegerByName;
 //------------------------------------------------------------------------------
 private:

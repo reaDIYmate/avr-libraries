@@ -264,21 +264,6 @@ void PusherClient::send_P(PGM_P data) {
     wifly_->flush();
 }
 //------------------------------------------------------------------------------
-/*
- * Update the Pusher parameters
- *
- * \param[in] key The public key of the Pusher application.
- * \param[in] secret The secret key of the Pusher application.
- * \param[in] channel The channel name.
- */
-void PusherClient::setConfig(const char* key, const char* secret,
-    const char* channel) {
-    key_ = key;
-    secret_ = secret;
-    channel_ = channel;
-}
-
-//------------------------------------------------------------------------------
 /**
  * Subscribe to a channel using authentication
  *
