@@ -49,7 +49,7 @@ const char PROGMEM PUSHER_SUBSCRIBE[] =
     "\"event\": \"pusher:subscribe\","
     "\"data\": {\"channel\": \"%s\"}"
     "}";
-    /** Pusher channel subscription format string */
+/** Pusher channel subscription format string with authentication */
 const char PROGMEM PUSHER_SUBSCRIBE_AUTH[] =
     "{"
     "\"event\": \"pusher:subscribe\","
@@ -291,13 +291,23 @@ void PusherClient::setConfig(const char* key, const char* secret,
  */
 bool PusherClient::subscribe(const char* channel, char* auth) {
     memset(buffer_, 0x00, bufferSize_);
-    snprintf_P(
-        buffer_,
-        bufferSize_,
-        PUSHER_SUBSCRIBE_AUTH,
-        channel,
-        auth
-    );
+    if (auth == NULL) {
+        snprintf_P(
+            buffer_,
+            bufferSize_,
+            PUSHER_SUBSCRIBE,
+            channel
+        );
+    }
+    else {
+        snprintf_P(
+            buffer_,
+            bufferSize_,
+            PUSHER_SUBSCRIBE_AUTH,
+            channel,
+            auth
+        );
+    }
     wifly_->clear();
     send(buffer_);
     if (!wifly_->awaitResponse())
