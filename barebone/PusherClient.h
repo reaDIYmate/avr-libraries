@@ -35,7 +35,7 @@
 class PusherClient : public JsonStream {
 public:
     PusherClient(Wifly &wifly, char* buffer, size_t bufferSize);
-    bool authenticate(const char* channel = NULL);
+    bool authenticate();
     bool connect();
     bool connected();
     void disconnect();

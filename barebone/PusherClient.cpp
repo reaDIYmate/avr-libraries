@@ -87,9 +87,7 @@ PusherClient::PusherClient(Wifly &wifly, char* buffer, size_t bufferSize) :
  *
  * \return true is returned if the authentication is accepted, false if it fails.
  */
-bool PusherClient::authenticate(const char* channel) {
-    if (channel != NULL)
-        channel_ = channel;
+bool PusherClient::authenticate() {
     if (key_ == NULL || secret_ == NULL || channel_ == NULL)
         return false;
     if (!connected())
@@ -285,7 +283,7 @@ void PusherClient::setConfig(const char* key, const char* secret,
  * Subscribe to a channel using authentication
  *
  * \param[in] channel The name of the desired channel.
- * \param[in] auth The authentication token to use.
+ * \param[in] auth The authentication token to use (optional).
  *
  * \return true is returned if the subscription is successfull, false otherwise.
  */
