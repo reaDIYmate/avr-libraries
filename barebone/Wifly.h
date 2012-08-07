@@ -46,6 +46,7 @@ public:
     void getDeviceId(char* output);
     void initialize();
     void reset();
+    bool resetBaudrate();
     bool setConfig(const char* ssid, const char* passphrase,
         const char* ip = NULL, const char* mask = NULL,
         const char* gateway = NULL);

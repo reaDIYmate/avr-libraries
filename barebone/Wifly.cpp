@@ -716,3 +716,25 @@ bool Wifly::updateFirmware() {
 
     return true;
 }
+/** Reset the baudrate of the wifly module to 9600 */
+bool Wifly::resetBaudrate() {
+
+    begin(9600);
+    reset();
+    if (enterCommandMode()) {
+        DEBUG_LOG("Baudrate already to 9600\r\n");
+        reset();
+        return true;
+    }
+    else {
+        DEBUG_LOG("Change baudrate to 9600\r\n");
+        begin(115200);
+        reset();
+        enterCommandMode();
+        executeCommand(WIFLY_FACTORY_RESET, WIFLY_FACTORY_MESSAGE);
+        executeCommand(WIFLY_SAVE_CONFIG, WIFLY_CONFIG_SAVED);
+        executeCommand(WIFLY_EXIT, WIFLY_EXITED);
+        reset();
+        return false;
+    }
+}
