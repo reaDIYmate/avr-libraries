@@ -407,7 +407,7 @@ void Dispatcher::loop() {
             break;
     }
 
-    if (playerOut.signal == END_OF_FILE || motionOut.signal == END_OF_FILE) {
+    if (playerOut.signal == END_OF_FILE) {
         motion.dispatch(Event(STOP));
         player.dispatch(Event(STOP));
         personality.dispatch(Event(STOP), persoOut);
