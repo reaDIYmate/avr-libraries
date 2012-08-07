@@ -56,7 +56,8 @@ Personality::Personality(Api &api, Inbox &inbox, ServoControl &control,
 }
 //------------------------------------------------------------------------------
 void Personality::initialize() {
-    pushModeDeadline_ = millis() + REMOTE_CONTROL_TIMEOUT;
+    postActivity(MAX_LEVEL);
+    transition(Personality::awake);
 }
 //------------------------------------------------------------------------------
 /** Action */
