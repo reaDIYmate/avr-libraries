@@ -48,6 +48,7 @@ public:
     void synchronize(uint16_t timeout);
 //------------------------------------------------------------------------------
 private:
+    void firstBoot();
     bool formatSdCard();
     void readPusher(char* buffer, uint8_t bufferSize);
     void readUserAndPass(char* buffer, uint8_t bufferSize);

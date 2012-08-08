@@ -117,6 +117,10 @@ Configuration::~Configuration() {
     }
 }
 //------------------------------------------------------------------------------
+void Configuration::firstBoot() {
+    eeprom_write_word((uint16_t*)(0xFFF - 1), 0x232e);
+}
+//------------------------------------------------------------------------------
 bool Configuration::formatSdCard() {
     Sd2Card card;
     cache_t cache;
@@ -546,6 +550,7 @@ void Configuration::synchronize(uint16_t timeout) {
             nbBytes = readBytesUntil(COMMAND_END_CHAR, buffer, 512);
             readWifiSettings(buffer, nbBytes);
             readUserAndPass(buffer, nbBytes);
+            firstBoot();
             deadline = millis() + timeout;
         }
         else if (strcmp_P(cmd, COMMAND_PUSHER) == 0) {
