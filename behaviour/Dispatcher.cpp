@@ -223,7 +223,8 @@ Dispatcher::Dispatcher() :
         sd,
         PIN_SD_CHIPSELECT,
         settings,
-        SOUNDCLOUD_OWNER
+        SOUNDCLOUD_OWNER,
+        SOUNDCLOUD_ON
     )
 {
 }

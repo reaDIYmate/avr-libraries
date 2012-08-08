@@ -38,7 +38,8 @@ const char PROGMEM SOUNDCLOUD_URL_KEY[] = "url";
  * \param[in] sdChipSelectPin The AVR pin connected to CS on the SD card.
  */
 SoundCloud::SoundCloud(Api &api, Wifly &wifly, char* buffer, size_t bufferSize,
-    SdFat &sd, uint8_t sdChipSelectPin, Settings &settings, PGM_P owner) :
+    SdFat &sd, uint8_t sdChipSelectPin, Settings &settings, PGM_P owner,
+    PGM_P action) :
     HttpClient(wifly),
     api_(&api),
     buffer_(buffer),
@@ -46,11 +47,16 @@ SoundCloud::SoundCloud(Api &api, Wifly &wifly, char* buffer, size_t bufferSize,
     sd_(&sd),
     sdChipSelectPin_(sdChipSelectPin),
     settings_(&settings),
-    owner_(owner)
+    owner_(owner),
+    action_(action)
 {
 }
 //------------------------------------------------------------------------------
 bool SoundCloud::download(PGM_P folder) {
+    if (strcmp("1", settings_->getByName(action_)) != 0) {
+        Serial.println(F("SoundCloud disabled"));
+        return false;
+    }
     // fetch file information from API
     if (!api_->connect())
         return false;

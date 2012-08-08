@@ -35,7 +35,8 @@
 class SoundCloud : public HttpClient, public SdFile {
 public:
     SoundCloud(Api &api, Wifly &wifly, char* buffer, size_t bufferSize,
-        SdFat &sd, uint8_t sdChipSelectPin, Settings &settings_, PGM_P owner);
+        SdFat &sd, uint8_t sdChipSelectPin, Settings &settings_, PGM_P owner,
+        PGM_P action);
     bool download(PGM_P folder);
 //------------------------------------------------------------------------------
 protected:
@@ -52,6 +53,7 @@ private:
     Settings* settings_;
     /** The name of the parameter to pass to API calls */
     PGM_P owner_;
+    PGM_P action_;
     /** SD card Chip Select pin */
     const uint8_t sdChipSelectPin_;
 };
