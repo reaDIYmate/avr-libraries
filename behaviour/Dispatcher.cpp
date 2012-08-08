@@ -394,6 +394,9 @@ void Dispatcher::loop() {
                 playerOut.signal = END_OF_FILE;
                 motionOut.signal = END_OF_FILE;
             }
+            if (!api.connected()) {
+                api.connect();
+            }
             led.colorNothing();
             break;
         case ACTION :
