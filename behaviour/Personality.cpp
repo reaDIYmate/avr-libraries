@@ -188,9 +188,7 @@ void Personality::checkingSoundCloud(const Event* e) {
             break;
 #endif
         case STOP :
-            internalTransition(Personality::awake);
-            Serial.println(F("Personality::awake"));
-            checkingSoundCloudDeadline_ = millis() + CHECK_SOUNDCLOUD_INTERVAL;
+            transition(Personality::awake);
             break;
         case SOUNDCLOUD :
             transition(Personality::playingSoundCloud);
@@ -206,9 +204,7 @@ void Personality::playingSoundCloud(const Event* e) {
             break;
 #endif
         case STOP :
-            internalTransition(Personality::awake);
-            Serial.println(F("Personality::awake"));
-            checkingSoundCloudDeadline_ = millis() + CHECK_SOUNDCLOUD_INTERVAL;
+            transition(Personality::awake);
             break;
     }
 }
