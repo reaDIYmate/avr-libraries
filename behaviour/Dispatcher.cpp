@@ -315,6 +315,7 @@ void Dispatcher::loop() {
             player.dispatch(PlayerEvent(PLAY, "YAWN.MP3"), playerOut);
             break;
         case GMAIL:
+            led.colorOrange();
             if (gmail.update()) {
                 soundName = gmail.getSoundFilename();
                 motionName = gmail.getMotionFilename();
@@ -325,8 +326,10 @@ void Dispatcher::loop() {
                 playerOut.signal = END_OF_FILE;
                 motionOut.signal = END_OF_FILE;
             }
+            led.colorNothing();
             break;
         case FACEBOOK :
+            led.colorOrange();
             if (facebook.update()) {
                 soundName = facebook.getSoundFilename();
                 motionName = facebook.getMotionFilename();
@@ -337,8 +340,10 @@ void Dispatcher::loop() {
                 playerOut.signal = END_OF_FILE;
                 motionOut.signal = END_OF_FILE;
             }
+            led.colorNothing();
             break;
         case TWITTER :
+            led.colorOrange();
             if (twitter.update()) {
                 soundName = twitter.getSoundFilename();
                 motionName = twitter.getMotionFilename();
@@ -349,8 +354,10 @@ void Dispatcher::loop() {
                 playerOut.signal = END_OF_FILE;
                 motionOut.signal = END_OF_FILE;
             }
+            led.colorNothing();
             break;
         case RSS :
+            led.colorOrange();
             if (rss.update()) {
                 soundName = rss.getSoundFilename();
                 motionName = rss.getMotionFilename();
@@ -361,8 +368,10 @@ void Dispatcher::loop() {
                 playerOut.signal = END_OF_FILE;
                 motionOut.signal = END_OF_FILE;
             }
+            led.colorNothing();
             break;
         case FOURSQUARE :
+            led.colorOrange();
             if (foursquare.update()) {
                 soundName = foursquare.getSoundFilename();
                 motionName = foursquare.getMotionFilename();
@@ -373,8 +382,10 @@ void Dispatcher::loop() {
                 playerOut.signal = END_OF_FILE;
                 motionOut.signal = END_OF_FILE;
             }
+            led.colorNothing();
             break;
         case SOUNDCLOUD :
+            led.colorOrange();
             if (soundcloud.download(PSTR("SNDCLD"))) {
                 personality.dispatch(Event(SOUNDCLOUD), persoOut);
                 player.dispatch(PlayerEvent(RANDOM, "SNDCLD", 1), playerOut);
@@ -383,8 +394,10 @@ void Dispatcher::loop() {
                 playerOut.signal = END_OF_FILE;
                 motionOut.signal = END_OF_FILE;
             }
+            led.colorNothing();
             break;
         case ACTION :
+            led.colorOrange();
             if (twitter.postStatus()) {
                 Serial.println(F("Twitter OK"));
             }
@@ -397,6 +410,7 @@ void Dispatcher::loop() {
             if (email.sendEmail()) {
                 Serial.println(F("Email OK"));
             }
+            led.colorNothing();
             player.dispatch(PlayerEvent(RANDOM, "SNDCLD", 1), playerOut);
             personality.dispatch(Event(SOUNDCLOUD), persoOut);
             personality.dispatch(Event(STOP), persoOut);
