@@ -256,7 +256,7 @@ void Dispatcher::setup() {
     char* credential = (char*)calloc(strlen(buf) + 1,sizeof(char));
     strcpy(credential, buf);
     api.setFixedArgs(credential);
-    pusher.setConfig(config.getPusherKey(), config.getPusherSecret(), config.getPusherChannel());
+    pusher.setKey(config.getPusherKey());
     Serial.print(F("API credential: "));
     Serial.println(credential);
     Serial.println(F("Object configuration restored from EEPROM."));

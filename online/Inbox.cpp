@@ -22,8 +22,12 @@
  // reaDIYmate API strings
 /** Name of the API method used to retrieve inbox messages */
 const char PROGMEM METHOD_INBOX_READ[] = "inbox/read";
+/** Name of the API method used to generate the Pusher channel */
+const char PROGMEM METHOD_PUSHER_CHANNEL[] = "pusher/generate";
 /** Key corresponding to the message type in the API response */
-const char PROGMEM KEY_MESSAGE_TYPE[] = "Type";
+const char PROGMEM KEY_MESSAGE_TYPE[] = "type";
+/** Key corresponding to the channel name in the API response */
+const char PROGMEM KEY_CHANNEL_NAME[] = "channel";
 //------------------------------------------------------------------------------
 /**
  * Construct an instance of Inbox.
@@ -42,7 +46,9 @@ bool Inbox::enterPushMode() {
     if (stream_ == pusher_ && pusher_->connected()) {
         return true;
     }
-
+    api_->call(METHOD_PUSHER_CHANNEL);
+    char channel[21] = {0};
+    api_->getStringByName_P(KEY_CHANNEL_NAME, channel, 21);
     api_->disconnect();
     stream_ = pusher_;
 
@@ -50,8 +56,8 @@ bool Inbox::enterPushMode() {
     if (!pusher_->connect()) {
         return false;
     }
-    // authenticate and subscribe to channel
-    if (!pusher_->authenticate()) {
+    // subscribe to channel
+    if (!pusher_->subscribe(channel)) {
         pusher_->disconnect();
         return false;
     }

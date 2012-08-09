@@ -42,6 +42,7 @@ public:
     bool hasNextEvent();
     bool ping();
     void pong();
+    bool subscribe(const char* channel, char* auth = NULL);
     //------------------------------------------------------------------------------
     /*
      * Update the channel.
@@ -66,7 +67,6 @@ public:
 private:
     void generateAuth(const char* key, const char* secret, const char* channel,
         char* auth);
-    bool subscribe(const char* channel, char* auth = NULL);
     void send(const char* data);
     void send_P(PGM_P data);
     /** Public key for the Pusher application */

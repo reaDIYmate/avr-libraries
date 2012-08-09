@@ -32,14 +32,8 @@
 int const INBOX_NOTHING = -1;
 /** Ping request from the server - no actual message */
 int const INBOX_PING = 0;
-/** Remote reaDIYmate accepted poke request */
-int const INBOX_POKE_ACCEPTED = 2;
-/** New poke request received */
-int const INBOX_POKE_RECEIVED = 1;
-/** Remote reaDIYmate refused poke request */
-int const INBOX_POKE_REFUSED = 3;
 /** Start remote control mode */
-int const INBOX_START_REMOTE = 4;
+int const INBOX_START_REMOTE = 1;
 //------------------------------------------------------------------------------
 /**
  * \class Inbox
