@@ -225,6 +225,15 @@ Dispatcher::Dispatcher() :
         settings,
         SOUNDCLOUD_OWNER,
         SOUNDCLOUD_ON
+    ),
+    resources(
+        api,
+        wifly,
+        buffer,
+        BUFFER_SIZE,
+        STRING_API_HOST,
+        sd,
+        PIN_SD_CHIPSELECT
     )
 {
 }
@@ -272,6 +281,7 @@ void Dispatcher::setup() {
             Serial.println(F(" settings restored."));
         }
     }
+    resources.synchronize();
     led.colorGreen();
     randomSeed(analogRead(0));
     Serial.println(F("Initialization done."));
