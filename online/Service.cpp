@@ -33,7 +33,7 @@ Service::Service(Api &api, Settings &settings, PGM_P on, PGM_P motion,
 bool Service::update() {
    if (strcmp("1", settings_->getByName(on_)) == 0) {
         int countCurrent = fetch();
-        if (countCurrent != count_ && count_ != -1) {
+        if (countCurrent != count_ && count_ != -1 && countCurrent >=0) {
             if (countCurrent > count_ ) {
                 count_ = countCurrent;
                 return true;
