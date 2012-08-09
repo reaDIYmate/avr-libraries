@@ -37,7 +37,7 @@
 #define UART_COMPANION Serial
 //------------------------------------------------------------------------------
 // Settings
-const uint8_t NB_SETTINGS = 24;
+const uint8_t NB_SETTINGS = 25;
 
 const char FACEBOOK_ON[]        PROGMEM = "facebook.on";
 const char FACEBOOK_SOUND[]     PROGMEM = "facebook.sound";
@@ -47,6 +47,7 @@ const char FACEBOOK_ACTION[]    PROGMEM = "facebook.action";
 const char GMAIL_ON[]           PROGMEM = "gmail.on";
 const char GMAIL_SOUND[]        PROGMEM = "gmail.sound";
 const char GMAIL_MOTION[]       PROGMEM = "gmail.motion";
+const char GMAIL_KEYWORD[]       PROGMEM = "gmail.keyword";
 
 const char TWITTER_ON[]         PROGMEM = "twitter.on";
 const char TWITTER_SOUND[]      PROGMEM = "twitter.sound";
@@ -79,6 +80,7 @@ const char* SETTINGS_NAMES[] PROGMEM =
     GMAIL_ON,
     GMAIL_SOUND,
     GMAIL_MOTION,
+    GMAIL_KEYWORD,
     TWITTER_ON,
     TWITTER_SOUND,
     TWITTER_MOTION,
@@ -143,7 +145,8 @@ Dispatcher::Dispatcher() :
         settings,
         GMAIL_ON,
         GMAIL_MOTION,
-        GMAIL_SOUND
+        GMAIL_SOUND,
+        GMAIL_KEYWORD
     ),
     facebook(
         api,

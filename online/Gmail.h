@@ -26,8 +26,11 @@
 //------------------------------------------------------------------------------
 class Gmail : public Service {
 public:
-    Gmail(Api &api, Settings &settings, PGM_P on, PGM_P motion, PGM_P sound);
+    Gmail(Api &api, Settings &settings, PGM_P on, PGM_P motion, PGM_P sound,
+        PGM_P keyword);
      int fetch();
+private:
+    PGM_P keyword_;
 };
 
 
