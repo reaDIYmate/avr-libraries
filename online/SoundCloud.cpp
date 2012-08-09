@@ -54,7 +54,6 @@ SoundCloud::SoundCloud(Api &api, Wifly &wifly, char* buffer, size_t bufferSize,
 //------------------------------------------------------------------------------
 bool SoundCloud::download(PGM_P folder) {
     if (strcmp("1", settings_->getByName(action_)) != 0) {
-        Serial.println(F("SoundCloud disabled"));
         return false;
     }
     // fetch file information from API
