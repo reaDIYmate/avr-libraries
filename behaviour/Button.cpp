@@ -43,7 +43,7 @@ void Button::initialize() {
 void Button::notPushed(const Event* e) {
     switch (e->signal) {
         case ENTRY :
-            led_->colorNothing();
+            led_->colorGreen();
             break;
         case CONTACT_DETECTED :
             transition(Button::maybePushed);
@@ -76,7 +76,7 @@ void Button::pushedShort(const Event* e) {
     switch (e->signal) {
         case ENTRY :
             longClickDeadline = millis() + LONG_CLICK_DEBOUNCE;
-            led_->colorGreen();
+            led_->colorOrange();
             break;
         case NO_CONTACT_DETECTED :
             emit(SHORT_CLICK_RELEASED);

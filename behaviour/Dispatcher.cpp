@@ -289,8 +289,8 @@ void Dispatcher::setup() {
     randomSeed(analogRead(0));
     Serial.println(F("Initialization done."));
     Serial.print(F("----------------------------------------\r\n"));
-    audio.play("JINGLE6B.MP3");
-    led.colorNothing();
+    audio.play("START.MP3");
+    led.colorGreen();
     personality.initialize();
 }
 //------------------------------------------------------------------------------
@@ -340,7 +340,7 @@ void Dispatcher::loop() {
                 playerOut.signal = END_OF_FILE;
                 motionOut.signal = END_OF_FILE;
             }
-            led.colorNothing();
+            led.colorGreen();
             break;
         case FACEBOOK :
             led.colorOrange();
@@ -354,7 +354,7 @@ void Dispatcher::loop() {
                 playerOut.signal = END_OF_FILE;
                 motionOut.signal = END_OF_FILE;
             }
-            led.colorNothing();
+            led.colorGreen();
             break;
         case TWITTER :
             led.colorOrange();
@@ -368,7 +368,7 @@ void Dispatcher::loop() {
                 playerOut.signal = END_OF_FILE;
                 motionOut.signal = END_OF_FILE;
             }
-            led.colorNothing();
+            led.colorGreen();
             break;
         case RSS :
             led.colorOrange();
@@ -382,7 +382,7 @@ void Dispatcher::loop() {
                 playerOut.signal = END_OF_FILE;
                 motionOut.signal = END_OF_FILE;
             }
-            led.colorNothing();
+            led.colorGreen();
             break;
         case FOURSQUARE :
             led.colorOrange();
@@ -396,7 +396,7 @@ void Dispatcher::loop() {
                 playerOut.signal = END_OF_FILE;
                 motionOut.signal = END_OF_FILE;
             }
-            led.colorNothing();
+            led.colorGreen();
             break;
         case SOUNDCLOUD :
             led.colorOrange();
@@ -411,7 +411,7 @@ void Dispatcher::loop() {
             if (!api.connected()) {
                 api.connect();
             }
-            led.colorNothing();
+            led.colorGreen();
             break;
         case ACTION :
             led.colorOrange();
@@ -427,7 +427,8 @@ void Dispatcher::loop() {
             if (email.sendEmail()) {
                 Serial.println(F("Email OK"));
             }
-            led.colorNothing();
+
+            led.colorGreen();
             player.dispatch(PlayerEvent(RANDOM, "SNDCLD", 1), playerOut);
             personality.dispatch(Event(SOUNDCLOUD), persoOut);
             personality.dispatch(Event(STOP), persoOut);
