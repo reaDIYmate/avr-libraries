@@ -24,6 +24,9 @@
  * \brief Trajectory interface.
  */
 //------------------------------------------------------------------------------
+ /** Value used to represent the end of a trajectory */
+int16_t const END_OF_TRAJECTORY = -1;
+//------------------------------------------------------------------------------
 /**
  * \class Trajectory
  * \brief Interface for trajectory planners with various input sources.

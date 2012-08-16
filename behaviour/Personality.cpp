@@ -354,8 +354,12 @@ void Personality::remoteControl(const Event* e) {
 #endif
         case TICK :
             control_->startNextMotion(millis());
-            if (control_->finishedStep())
+            if (control_->finishedTrajectory()) {
+                transition(Personality::pushMode);
+            }
+            else if (control_->finishedStep()) {
                 control_->startNextStep();
+            }
             break;
         case SHORT_CLICK_RELEASED :
             inbox_->leavePushMode();

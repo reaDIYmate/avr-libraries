@@ -51,6 +51,7 @@ bool ServoControl::begin(const char* source) {
     attach(servoPin_);
     // consider instant 0 to be right before opening the file
     motion_.deadline = millis();
+    motion_.target = 0;
     return (trajectory_->begin(source));
 }
 //------------------------------------------------------------------------------
@@ -91,6 +92,15 @@ bool ServoControl::finishedMotion() {
  */
 bool ServoControl::finishedStep() {
     return (millis() >= step_.deadline);
+}
+//------------------------------------------------------------------------------
+/**
+ * Check whether the END_OF_TRAJECTORY value has been found.
+ *
+ * \return true if the value is found.
+ */
+bool ServoControl::finishedTrajectory() {
+    return (motion_.target == END_OF_TRAJECTORY);
 }
 //------------------------------------------------------------------------------
 /**

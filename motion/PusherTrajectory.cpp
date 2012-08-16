@@ -102,6 +102,10 @@ bool PusherTrajectory::getNextMotion(int* dest, int* dur, uint8_t pos) {
     if (!pusher_->hasNextEvent())
         return false;
     int tilt = pusher_->getIntegerByName("tilt");
+    if (tilt == END_OF_TRAJECTORY) {
+        *dest = END_OF_TRAJECTORY;
+        return true;
+    }
     if (tilt < THETA_MIN || tilt > THETA_MAX)
         return false;
     else {

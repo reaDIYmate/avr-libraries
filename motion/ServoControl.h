@@ -52,6 +52,7 @@ public:
     void end();
     bool finishedMotion();
     bool finishedStep();
+    bool finishedTrajectory();
     bool startNextMotion(uint32_t timestamp = 0);
     bool startNextStep();
 //------------------------------------------------------------------------------
