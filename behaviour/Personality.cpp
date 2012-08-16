@@ -106,8 +106,10 @@ void Personality::awake(const Event* e) {
 #ifdef DEBUG
             Serial.println(F("Personality::awake"));
 #endif
+            inbox_->enterPushMode();
             break;
         case SHORT_CLICK_RELEASED :
+            inbox_->leavePushMode();
             transition(Personality::action);
             emit(ACTION);
             break;
@@ -117,31 +119,50 @@ void Personality::awake(const Event* e) {
             break;
         case TICK :
             if (millis() >= checkingFacebookDeadline_) {
+                inbox_->leavePushMode();
                 emit(FACEBOOK);
                 transition(Personality::checkingFacebook);
             }
             else if (millis() >= checkingGmailDeadline_) {
+                inbox_->leavePushMode();
                 emit(GMAIL);
                 transition(Personality::checkingGmail);
             }
             else if (millis() >= checkingTwitterDeadline_) {
+                inbox_->leavePushMode();
                 emit(TWITTER);
                 transition(Personality::checkingTwitter);
             }
             else if (millis() >= checkingRssDeadline_) {
+                inbox_->leavePushMode();
                 emit(RSS);
                 transition(Personality::checkingRss);
             }
             else if (millis() >= checkingFoursquareDeadline_) {
+                inbox_->leavePushMode();
                 emit(FOURSQUARE);
                 transition(Personality::checkingFoursquare);
             }
             else if (millis() >= checkingSoundCloudDeadline_) {
+                inbox_->leavePushMode();
                 emit(SOUNDCLOUD);
                 transition(Personality::checkingSoundCloud);
             }
             else if (millis() >= pollInboxDeadline_) {
+                inbox_->leavePushMode();
                 transition(Personality::pollingInbox);
+            }
+            else if(inbox_->enterPushMode()){
+                int messageType = inbox_->getMessage();
+                if (messageType == INBOX_START_REMOTE) {
+                    control_->begin(realtime_);
+                    transition(Personality::remoteControlAwake);
+                }
+#ifdef DEBUG
+                else if (messageType == INBOX_PING) {
+                    Serial.println(F("Ping event"));
+                }
+#endif
             }
             break;
     }
@@ -302,7 +323,7 @@ void Personality::pollingInbox(const Event* e) {
             int messageType = inbox_->getMessage();
             if (messageType == INBOX_START_REMOTE) {
                 control_->begin(realtime_);
-                transition(Personality::remoteControl);
+                transition(Personality::remoteControlAsleep);
             }
             else {
                 internalTransition(Personality::awake);
@@ -327,7 +348,7 @@ void Personality::pushMode(const Event* e) {
             int messageType = inbox_->getMessage();
             if (messageType == INBOX_START_REMOTE) {
                 control_->begin(realtime_);
-                transition(Personality::remoteControl);
+                transition(Personality::remoteControlAsleep);
             }
 #ifdef DEBUG
             else if (messageType == INBOX_PING) {
@@ -345,7 +366,7 @@ void Personality::pushMode(const Event* e) {
 }
 //------------------------------------------------------------------------------
 /** Remote control mode */
-void Personality::remoteControl(const Event* e) {
+void Personality::remoteControlAwake(const Event* e) {
     switch (e->signal) {
 #ifdef DEBUG
         case ENTRY :
@@ -363,13 +384,29 @@ void Personality::remoteControl(const Event* e) {
             break;
         case SHORT_CLICK_RELEASED :
             inbox_->leavePushMode();
-            transition(Personality::fallingAsleep);
-            emit(FALL_ASLEEP);
-            break;
-        case SUPERLONG_CLICK_ARMED :
-            inbox_->leavePushMode();
             transition(Personality::wakingUp);
             emit(WAKE_UP);
+            break;
+    }
+}
+//------------------------------------------------------------------------------
+/** Remote control mode */
+void Personality::remoteControlAsleep(const Event* e) {
+    switch (e->signal) {
+#ifdef DEBUG
+        case ENTRY :
+            Serial.println(F("Personality::remoteControl"));
+            break;
+#endif
+        case TICK :
+            control_->startNextMotion(millis());
+            if (control_->finishedStep())
+                control_->startNextStep();
+            break;
+        case SHORT_CLICK_RELEASED :
+            inbox_->leavePushMode();
+            transition(Personality::fallingAsleep);
+            emit(FALL_ASLEEP);
             break;
     }
 }

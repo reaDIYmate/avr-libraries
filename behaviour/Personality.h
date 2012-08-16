@@ -65,7 +65,8 @@ private:
     void fallingAsleep(const Event* e);
     void pollingInbox(const Event* e);
     void pushMode(const Event* e);
-    void remoteControl(const Event* e);
+    void remoteControlAsleep(const Event* e);
+    void remoteControlAwake(const Event* e);
     void wakingUp(const Event* e);
     // Helper methods
     void postActivity(uint8_t level);
