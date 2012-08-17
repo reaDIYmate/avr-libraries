@@ -38,6 +38,8 @@ public:
         SdFat &sd, uint8_t sdChipSelectPin, Settings &settings_, PGM_P owner,
         PGM_P action);
     bool download(PGM_P folder);
+    bool enabled() { return strcmp("1", settings_->getByName(action_)) == 0; }
+
 //------------------------------------------------------------------------------
 protected:
     /** Buffer to use during downloads */

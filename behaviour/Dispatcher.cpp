@@ -430,8 +430,13 @@ void Dispatcher::loop() {
                 Serial.println(F("Email OK"));
             }
             led.colorGreen();
-            player.dispatch(PlayerEvent(RANDOM, "SNDCLD", 1), playerOut);
-            personality.dispatch(Event(SOUNDCLOUD), persoOut);
+            if (soundcloud.enabled()) {
+                player.dispatch(PlayerEvent(RANDOM, "SNDCLD", 1), playerOut);
+                personality.dispatch(Event(SOUNDCLOUD), persoOut);
+            }
+            else {
+                personality.dispatch(Event(STOP), persoOut);
+            }
             break;
         case NOTHING :
             player.dispatch(Event(TICK), playerOut);
