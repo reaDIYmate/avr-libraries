@@ -26,6 +26,7 @@
 #include <Fsm.h>
 #include <Inbox.h>
 #include <ServoControl.h>
+#include <StatusLed.h>
 #include <PusherTrajectory.h>
 //------------------------------------------------------------------------------
 /**
@@ -45,7 +46,7 @@ class Personality : public Fsm {
  * \brief State machine for interaction management.
  */
 public:
-    Personality(Api &api, Inbox &inbox, ServoControl &control,
+    Personality(Api &api, StatusLed &led, Inbox &inbox, ServoControl &control,
         PusherTrajectory &realtime);
     void initialize();
 //------------------------------------------------------------------------------
@@ -85,6 +86,8 @@ private:
     unsigned long remoteControlDeadline_;
     /** Instance of Api used to access the reaDIYmate API */
     Api* api_;
+    /** Instance of StatusLed*/
+    StatusLed* led_;
     /** Output controller */
     ServoControl* control_;
     /** Input handler */

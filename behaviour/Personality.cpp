@@ -41,9 +41,10 @@ const uint32_t CHECK_SOUNDCLOUD_INTERVAL = 3600000;
 const uint8_t MAX_LEVEL = 1;
 //------------------------------------------------------------------------------
 /** Construct an instance of the Personality FSM */
-Personality::Personality(Api &api, Inbox &inbox, ServoControl &control,
-    PusherTrajectory &realtime) :
+Personality::Personality(Api &api, StatusLed &led, Inbox &inbox,
+    ServoControl &control, PusherTrajectory &realtime) :
     api_(&api),
+    led_(&led),
     inbox_(&inbox),
     control_(&control),
     realtime_(&realtime)
@@ -62,6 +63,7 @@ void Personality::action(const Event* e) {
 #ifdef DEBUG
             Serial.println(F("Personality::action"));
 #endif
+            led_->colorOrange();
             inbox_->leavePushMode();
             break;
         case STOP :
@@ -97,6 +99,7 @@ void Personality::awake(const Event* e) {
             Serial.println(F("Personality::awake"));
 #endif
             resetDeadlines();
+            led_->colorGreen();
             break;
         case SHORT_CLICK_RELEASED :
             transition(Personality::action);
@@ -198,6 +201,7 @@ void Personality::checkingServices(const Event* e) {
 #ifdef DEBUG
             Serial.println(F("Personality::checkingServices"));
 #endif
+            led_->colorOrange();
             inbox_->leavePushMode();
             break;
         case TICK :
@@ -271,12 +275,14 @@ void Personality::enteringPushMode(const Event* e) {
             Serial.println(F("Personality::enteringPushMode"));
             break;
 #endif
+            led_->colorOrange();
         case TICK :
             if (inbox_->enterPushMode())
                 transition(Personality::awake);
             else {
                 inbox_->leavePushMode();
                 transition(Personality::awake);
+                led_->colorRed();
             }
             break;
     }
@@ -317,6 +323,7 @@ void Personality::remoteControl(const Event* e) {
         case ENTRY :
             Serial.println(F("Personality::remoteControl"));
             break;
+            led_->colorOrange();
 #endif
         case TICK :
             control_->startNextMotion(millis());

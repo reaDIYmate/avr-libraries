@@ -216,6 +216,7 @@ Dispatcher::Dispatcher() :
     ),
     personality(
         api,
+        led,
         inbox,
         control,
         realtime
@@ -248,7 +249,6 @@ void Dispatcher::setup() {
 
     button.initialize();
     led.initialize();
-    led.colorRed();
 
     wifly.initialize();
     config.synchronize(3000);
@@ -264,7 +264,6 @@ void Dispatcher::setup() {
     Serial.println(F("Object configuration restored from EEPROM."));
 
     Serial.println(F("Connecting to the reaDIYmate server..."));
-    led.colorOrange();
     bool restore = true;
     if (api.connect()) {
         Serial.println(F("Connection to the reaDIYmate server established."));
@@ -287,12 +286,10 @@ void Dispatcher::setup() {
         }
     }
     resources.synchronize();
-    led.colorGreen();
     randomSeed(analogRead(0));
     Serial.println(F("Initialization done."));
     Serial.print(F("----------------------------------------\r\n"));
     audio.play("START.MP3");
-    led.colorGreen();
     personality.initialize();
 }
 //------------------------------------------------------------------------------
@@ -331,7 +328,6 @@ void Dispatcher::loop() {
             player.dispatch(PlayerEvent(PLAY, "YAWN.MP3"), playerOut);
             break;
         case GMAIL:
-            led.colorOrange();
             if (gmail.update()) {
                 soundName = gmail.getSoundFilename();
                 motionName = gmail.getMotionFilename();
@@ -342,10 +338,8 @@ void Dispatcher::loop() {
                 playerOut.signal = END_OF_FILE;
                 motionOut.signal = END_OF_FILE;
             }
-            led.colorGreen();
             break;
         case FACEBOOK :
-            led.colorOrange();
             if (facebook.update()) {
                 soundName = facebook.getSoundFilename();
                 motionName = facebook.getMotionFilename();
@@ -356,10 +350,8 @@ void Dispatcher::loop() {
                 playerOut.signal = END_OF_FILE;
                 motionOut.signal = END_OF_FILE;
             }
-            led.colorGreen();
             break;
         case TWITTER :
-            led.colorOrange();
             if (twitter.update()) {
                 soundName = twitter.getSoundFilename();
                 motionName = twitter.getMotionFilename();
@@ -370,10 +362,8 @@ void Dispatcher::loop() {
                 playerOut.signal = END_OF_FILE;
                 motionOut.signal = END_OF_FILE;
             }
-            led.colorGreen();
             break;
         case RSS :
-            led.colorOrange();
             if (rss.update()) {
                 soundName = rss.getSoundFilename();
                 motionName = rss.getMotionFilename();
@@ -384,10 +374,8 @@ void Dispatcher::loop() {
                 playerOut.signal = END_OF_FILE;
                 motionOut.signal = END_OF_FILE;
             }
-            led.colorGreen();
             break;
         case FOURSQUARE :
-            led.colorOrange();
             if (foursquare.update()) {
                 soundName = foursquare.getSoundFilename();
                 motionName = foursquare.getMotionFilename();
@@ -398,10 +386,8 @@ void Dispatcher::loop() {
                 playerOut.signal = END_OF_FILE;
                 motionOut.signal = END_OF_FILE;
             }
-            led.colorGreen();
             break;
         case SOUNDCLOUD :
-            led.colorOrange();
             if (soundcloud.download(PSTR("SNDCLD"))) {
                 personality.dispatch(Event(SOUNDCLOUD), persoOut);
                 player.dispatch(PlayerEvent(RANDOM, "SNDCLD", 1), playerOut);
@@ -413,10 +399,8 @@ void Dispatcher::loop() {
             if (!api.connected()) {
                 api.connect();
             }
-            led.colorGreen();
             break;
         case ACTION :
-            led.colorOrange();
             if (twitter.postStatus()) {
                 Serial.println(F("Twitter OK"));
             }
@@ -429,7 +413,6 @@ void Dispatcher::loop() {
             if (email.sendEmail()) {
                 Serial.println(F("Email OK"));
             }
-            led.colorGreen();
             if (soundcloud.enabled()) {
                 player.dispatch(PlayerEvent(RANDOM, "SNDCLD", 1), playerOut);
                 personality.dispatch(Event(SOUNDCLOUD), persoOut);
