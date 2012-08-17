@@ -429,11 +429,9 @@ void Dispatcher::loop() {
             if (email.sendEmail()) {
                 Serial.println(F("Email OK"));
             }
-
             led.colorGreen();
             player.dispatch(PlayerEvent(RANDOM, "SNDCLD", 1), playerOut);
             personality.dispatch(Event(SOUNDCLOUD), persoOut);
-            personality.dispatch(Event(STOP), persoOut);
             break;
         case NOTHING :
             player.dispatch(Event(TICK), playerOut);

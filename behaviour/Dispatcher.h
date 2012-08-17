@@ -71,6 +71,7 @@ private:
     Gmail gmail;
     Inbox inbox;
     Rss rss;
+    Resources resources;
     Settings settings;
     SoundCloud soundcloud;
     Twitter twitter;
