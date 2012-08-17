@@ -26,8 +26,6 @@ const char PROGMEM METHOD_POST_ACTIVITY[] = "thing/activity";
 const char PROGMEM KEY_ACTIVITY[] = "activity";
 //------------------------------------------------------------------------------
 // Timing constants
-/** Refresh interval (in ms) for the inbox messages. */
-const uint32_t POLL_INTERVAL = 480000;
 /** Refresh interval (in ms) to check Gmail. */
 const uint32_t CHECK_GMAIL_INTERVAL = 480000;
 /** Refresh interval (in ms) to check Facebook. */
@@ -40,8 +38,6 @@ const uint32_t CHECK_RSS_INTERVAL = 480000;
 const uint32_t CHECK_FOURSQUARE_INTERVAL = 480000;
 /** Refresh interval (in ms) to check SoundCloud. */
 const uint32_t CHECK_SOUNDCLOUD_INTERVAL = 3600000;
-/** Timeout (in ms) for remote control mode */
-const uint32_t REMOTE_CONTROL_TIMEOUT = 30000;
 const uint8_t MAX_LEVEL = 1;
 //------------------------------------------------------------------------------
 /** Construct an instance of the Personality FSM */
@@ -56,17 +52,17 @@ Personality::Personality(Api &api, Inbox &inbox, ServoControl &control,
 }
 //------------------------------------------------------------------------------
 void Personality::initialize() {
-    postActivity(MAX_LEVEL);
-    transition(Personality::awake);
+    transition(Personality::enteringPushMode);
 }
 //------------------------------------------------------------------------------
 /** Action */
 void Personality::action(const Event* e) {
     switch (e->signal) {
-#ifdef DEBUG
         case ENTRY :
+#ifdef DEBUG
             Serial.println(F("Personality::action"));
 #endif
+            inbox_->leavePushMode();
             break;
         case STOP :
             internalTransition(Personality::awake);
@@ -84,13 +80,8 @@ void Personality::asleep(const Event* e) {
 #ifdef DEBUG
         case ENTRY :
             Serial.println(F("Personality::asleep"));
+            break;
 #endif
-            pushModeDeadline_ = millis() + REMOTE_CONTROL_TIMEOUT;
-            break;
-        case TICK :
-            if (millis() > pushModeDeadline_)
-                transition(Personality::enteringPushMode);
-            break;
         case SUPERLONG_CLICK_ARMED :
             transition(Personality::wakingUp);
             emit(WAKE_UP);
@@ -102,14 +93,12 @@ void Personality::asleep(const Event* e) {
 void Personality::awake(const Event* e) {
     switch (e->signal) {
         case ENTRY :
-            resetDeadlines();
 #ifdef DEBUG
             Serial.println(F("Personality::awake"));
 #endif
-            inbox_->enterPushMode();
+            resetDeadlines();
             break;
         case SHORT_CLICK_RELEASED :
-            inbox_->leavePushMode();
             transition(Personality::action);
             emit(ACTION);
             break;
@@ -118,45 +107,19 @@ void Personality::awake(const Event* e) {
             emit(FALL_ASLEEP);
             break;
         case TICK :
-            if (millis() >= checkingFacebookDeadline_) {
-                inbox_->leavePushMode();
-                emit(FACEBOOK);
-                transition(Personality::checkingFacebook);
+            if (millis() >= checkingFacebookDeadline_
+            || millis() >= checkingGmailDeadline_
+            || millis() >= checkingTwitterDeadline_
+            || millis() >= checkingRssDeadline_
+            || millis() >= checkingFoursquareDeadline_
+            || millis() >= checkingSoundCloudDeadline_) {
+                transition(Personality::checkingServices);
             }
-            else if (millis() >= checkingGmailDeadline_) {
-                inbox_->leavePushMode();
-                emit(GMAIL);
-                transition(Personality::checkingGmail);
-            }
-            else if (millis() >= checkingTwitterDeadline_) {
-                inbox_->leavePushMode();
-                emit(TWITTER);
-                transition(Personality::checkingTwitter);
-            }
-            else if (millis() >= checkingRssDeadline_) {
-                inbox_->leavePushMode();
-                emit(RSS);
-                transition(Personality::checkingRss);
-            }
-            else if (millis() >= checkingFoursquareDeadline_) {
-                inbox_->leavePushMode();
-                emit(FOURSQUARE);
-                transition(Personality::checkingFoursquare);
-            }
-            else if (millis() >= checkingSoundCloudDeadline_) {
-                inbox_->leavePushMode();
-                emit(SOUNDCLOUD);
-                transition(Personality::checkingSoundCloud);
-            }
-            else if (millis() >= pollInboxDeadline_) {
-                inbox_->leavePushMode();
-                transition(Personality::pollingInbox);
-            }
-            else if(inbox_->enterPushMode()){
+            else {
                 int messageType = inbox_->getMessage();
                 if (messageType == INBOX_START_REMOTE) {
                     control_->begin(realtime_);
-                    transition(Personality::remoteControlAwake);
+                    transition(Personality::remoteControl);
                 }
 #ifdef DEBUG
                 else if (messageType == INBOX_PING) {
@@ -177,8 +140,7 @@ void Personality::checkingFacebook(const Event* e) {
             break;
 #endif
         case STOP :
-            internalTransition(Personality::awake);
-            Serial.println(F("Personality::awake"));
+            transition(Personality::checkingServices);
             checkingFacebookDeadline_ = millis() + CHECK_FACEBOOK_INTERVAL;
             break;
     }
@@ -193,39 +155,8 @@ void Personality::checkingFoursquare(const Event* e) {
             break;
 #endif
         case STOP :
-            internalTransition(Personality::awake);
-            Serial.println(F("Personality::awake"));
+            transition(Personality::checkingServices);
             checkingFoursquareDeadline_ = millis() + CHECK_FOURSQUARE_INTERVAL;
-            break;
-    }
-}
-//------------------------------------------------------------------------------
-/** Checking SoundCloud*/
-void Personality::checkingSoundCloud(const Event* e) {
-    switch (e->signal) {
-#ifdef DEBUG
-        case ENTRY :
-            Serial.println(F("Personality::checkingSoundcloud"));
-            break;
-#endif
-        case STOP :
-            transition(Personality::awake);
-            break;
-        case SOUNDCLOUD :
-            transition(Personality::playingSoundCloud);
-            break;
-    }
-}//------------------------------------------------------------------------------
-/** Playing a sond from SoundCloud*/
-void Personality::playingSoundCloud(const Event* e) {
-    switch (e->signal) {
-#ifdef DEBUG
-        case ENTRY :
-            Serial.println(F("Personality::playingSoundcloud"));
-            break;
-#endif
-        case STOP :
-            transition(Personality::awake);
             break;
     }
 }
@@ -235,12 +166,11 @@ void Personality::checkingGmail(const Event* e) {
     switch (e->signal) {
 #ifdef DEBUG
         case ENTRY :
-            Serial.println(F("Personality::checking Gmail"));
+            Serial.println(F("Personality::checkingGmail"));
             break;
 #endif
         case STOP :
-            internalTransition(Personality::awake);
-            Serial.println(F("Personality::awake"));
+            transition(Personality::checkingServices);
             checkingGmailDeadline_ = millis() + CHECK_GMAIL_INTERVAL;
             break;
     }
@@ -255,9 +185,66 @@ void Personality::checkingRss(const Event* e) {
             break;
 #endif
         case STOP :
-            internalTransition(Personality::awake);
-            Serial.println(F("Personality::awake"));
+            transition(Personality::checkingServices);
             checkingRssDeadline_ = millis() + CHECK_RSS_INTERVAL;
+            break;
+    }
+}
+//------------------------------------------------------------------------------
+/** Checking services */
+void Personality::checkingServices(const Event* e) {
+    switch (e->signal) {
+        case ENTRY :
+#ifdef DEBUG
+            Serial.println(F("Personality::checkingServices"));
+#endif
+            inbox_->leavePushMode();
+            break;
+        case TICK :
+            if (millis() >= checkingFacebookDeadline_) {
+                emit(FACEBOOK);
+                transition(Personality::checkingFacebook);
+            }
+            else if (millis() >= checkingGmailDeadline_) {
+                emit(GMAIL);
+                transition(Personality::checkingGmail);
+            }
+            else if (millis() >= checkingTwitterDeadline_) {
+                emit(TWITTER);
+                transition(Personality::checkingTwitter);
+            }
+            else if (millis() >= checkingRssDeadline_) {
+                emit(RSS);
+                transition(Personality::checkingRss);
+            }
+            else if (millis() >= checkingFoursquareDeadline_) {
+                emit(FOURSQUARE);
+                transition(Personality::checkingFoursquare);
+            }
+            else if (millis() >= checkingSoundCloudDeadline_) {
+                emit(SOUNDCLOUD);
+                transition(Personality::checkingSoundCloud);
+            }
+            else {
+                transition(Personality::enteringPushMode);
+            }
+            break;
+    }
+}
+//------------------------------------------------------------------------------
+/** Checking SoundCloud*/
+void Personality::checkingSoundCloud(const Event* e) {
+    switch (e->signal) {
+#ifdef DEBUG
+        case ENTRY :
+            Serial.println(F("Personality::checkingSoundcloud"));
+            break;
+#endif
+        case STOP :
+            transition(Personality::checkingServices);
+            break;
+        case SOUNDCLOUD :
+            transition(Personality::playingSoundCloud);
             break;
     }
 }
@@ -271,8 +258,7 @@ void Personality::checkingTwitter(const Event* e) {
             break;
 #endif
         case STOP :
-            internalTransition(Personality::awake);
-            Serial.println(F("Personality::awake"));
+            transition(Personality::checkingServices);
             checkingTwitterDeadline_ = millis() + CHECK_TWITTER_INTERVAL;
             break;
     }
@@ -287,10 +273,10 @@ void Personality::enteringPushMode(const Event* e) {
 #endif
         case TICK :
             if (inbox_->enterPushMode())
-                transition(Personality::pushMode);
+                transition(Personality::awake);
             else {
                 inbox_->leavePushMode();
-                transition(Personality::asleep);
+                transition(Personality::awake);
             }
             break;
     }
@@ -310,63 +296,22 @@ void Personality::fallingAsleep(const Event* e) {
     }
 }
 //------------------------------------------------------------------------------
-/** Substate when performing a self-triggered action */
-void Personality::pollingInbox(const Event* e) {
+/** Playing a sound from SoundCloud*/
+void Personality::playingSoundCloud(const Event* e) {
     switch (e->signal) {
 #ifdef DEBUG
         case ENTRY :
-            Serial.println(F("Personality::pollingInbox"));
+            Serial.println(F("Personality::playingSoundcloud"));
             break;
 #endif
-        case TICK :
-        {
-            int messageType = inbox_->getMessage();
-            if (messageType == INBOX_START_REMOTE) {
-                control_->begin(realtime_);
-                transition(Personality::remoteControlAsleep);
-            }
-            else {
-                internalTransition(Personality::awake);
-                Serial.println(F("Personality::awake"));
-                pollInboxDeadline_ = millis() + POLL_INTERVAL;
-            }
-        }
-        break;
-    }
-}
-//------------------------------------------------------------------------------
-/** Substate when performing a self-triggered action */
-void Personality::pushMode(const Event* e) {
-    switch (e->signal) {
-#ifdef DEBUG
-        case ENTRY :
-            Serial.println(F("Personality::pushMode"));
-            break;
-#endif
-        case TICK :
-        {
-            int messageType = inbox_->getMessage();
-            if (messageType == INBOX_START_REMOTE) {
-                control_->begin(realtime_);
-                transition(Personality::remoteControlAsleep);
-            }
-#ifdef DEBUG
-            else if (messageType == INBOX_PING) {
-                Serial.println(F("Ping event"));
-            }
-#endif
-            break;
-        }
-        case SUPERLONG_CLICK_ARMED :
-            inbox_->leavePushMode();
-            transition(Personality::wakingUp);
-            emit(WAKE_UP);
+        case STOP :
+            transition(Personality::enteringPushMode);
             break;
     }
 }
 //------------------------------------------------------------------------------
 /** Remote control mode */
-void Personality::remoteControlAwake(const Event* e) {
+void Personality::remoteControl(const Event* e) {
     switch (e->signal) {
 #ifdef DEBUG
         case ENTRY :
@@ -376,7 +321,7 @@ void Personality::remoteControlAwake(const Event* e) {
         case TICK :
             control_->startNextMotion(millis());
             if (control_->finishedTrajectory()) {
-                transition(Personality::pushMode);
+                transition(Personality::awake);
             }
             else if (control_->finishedStep()) {
                 control_->startNextStep();
@@ -386,27 +331,6 @@ void Personality::remoteControlAwake(const Event* e) {
             inbox_->leavePushMode();
             transition(Personality::wakingUp);
             emit(WAKE_UP);
-            break;
-    }
-}
-//------------------------------------------------------------------------------
-/** Remote control mode */
-void Personality::remoteControlAsleep(const Event* e) {
-    switch (e->signal) {
-#ifdef DEBUG
-        case ENTRY :
-            Serial.println(F("Personality::remoteControl"));
-            break;
-#endif
-        case TICK :
-            control_->startNextMotion(millis());
-            if (control_->finishedStep())
-                control_->startNextStep();
-            break;
-        case SHORT_CLICK_RELEASED :
-            inbox_->leavePushMode();
-            transition(Personality::fallingAsleep);
-            emit(FALL_ASLEEP);
             break;
     }
 }
@@ -421,10 +345,10 @@ void Personality::wakingUp(const Event* e) {
             postActivity(MAX_LEVEL);
             break;
         case STOP :
-            transition(Personality::awake);
+            transition(Personality::enteringPushMode);
             break;
         case SHORT_CLICK_RELEASED :
-            transition(Personality::awake);
+            transition(Personality::enteringPushMode);
             emit(STOP);
             break;
     }
@@ -443,7 +367,6 @@ void Personality::postActivity(uint8_t level) {
 //------------------------------------------------------------------------------
 /** Reset the timers for all recurring actions */
 void Personality::resetDeadlines() {
-    pollInboxDeadline_ = millis() + POLL_INTERVAL;
     checkingGmailDeadline_ = millis() + CHECK_GMAIL_INTERVAL;
     checkingFacebookDeadline_ = millis() + CHECK_FACEBOOK_INTERVAL;
     checkingTwitterDeadline_ = millis() + CHECK_TWITTER_INTERVAL;

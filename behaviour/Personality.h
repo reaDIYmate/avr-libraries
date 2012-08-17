@@ -54,6 +54,7 @@ private:
     void action(const Event* e);
     void asleep(const Event* e);
     void awake(const Event* e);
+    void checkingServices(const Event* e);
     void checkingFacebook(const Event* e);
     void checkingFoursquare(const Event* e);
     void checkingGmail(const Event* e);
@@ -63,16 +64,11 @@ private:
     void playingSoundCloud(const Event* e);
     void enteringPushMode(const Event* e);
     void fallingAsleep(const Event* e);
-    void pollingInbox(const Event* e);
-    void pushMode(const Event* e);
-    void remoteControlAsleep(const Event* e);
-    void remoteControlAwake(const Event* e);
+    void remoteControl(const Event* e);
     void wakingUp(const Event* e);
     // Helper methods
     void postActivity(uint8_t level);
     void resetDeadlines();
-    /** Timestamp used to trigger inbox refresh*/
-    unsigned long pollInboxDeadline_;
     /** Timestamp used to start checking Gmail*/
     unsigned long checkingGmailDeadline_;
     /** Timestamp used to start checking Facebook*/
@@ -87,8 +83,6 @@ private:
     unsigned long checkingSoundCloudDeadline_;
     /** Timestamp used to leave remote control mode */
     unsigned long remoteControlDeadline_;
-    /* Timestamp used to enter push mode when asleep */
-    unsigned long pushModeDeadline_;
     /** Instance of Api used to access the reaDIYmate API */
     Api* api_;
     /** Output controller */
