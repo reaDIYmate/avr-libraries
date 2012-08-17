@@ -37,7 +37,7 @@
 #define UART_COMPANION Serial
 //------------------------------------------------------------------------------
 // Settings
-const uint8_t NB_SETTINGS = 25;
+const uint8_t NB_SETTINGS = 26;
 
 const char FACEBOOK_ON[]        PROGMEM = "facebook.on";
 const char FACEBOOK_SOUND[]     PROGMEM = "facebook.sound";
@@ -64,12 +64,13 @@ const char FOURSQUARE_ON[]      PROGMEM = "foursquare.on";
 const char FOURSQUARE_SOUND[]   PROGMEM = "foursquare.sound";
 const char FOURSQUARE_MOTION[]  PROGMEM = "foursquare.motion";
 const char FOURSQUARE_VENUEID[] PROGMEM = "foursquare.venueId";
-const char FOURSQUARE_ACTION[] PROGMEM = "foursquare.action";
+const char FOURSQUARE_ACTION[]  PROGMEM = "foursquare.action";
 
 const char SOUNDCLOUD_ON[]      PROGMEM = "soundcloud.on";
 const char SOUNDCLOUD_OWNER[]   PROGMEM = "soundcloud.owner";
+const char SOUNDCLOUD_ACTION[]  PROGMEM = "soundcloud.action";
 
-const char EMAIL_ON[]            PROGMEM = "email.on";
+const char EMAIL_ON[]           PROGMEM = "email.on";
 
 const char* SETTINGS_NAMES[] PROGMEM =
 {
@@ -97,6 +98,7 @@ const char* SETTINGS_NAMES[] PROGMEM =
     FOURSQUARE_ACTION,
     SOUNDCLOUD_ON,
     SOUNDCLOUD_OWNER,
+    SOUNDCLOUD_ACTION,
     EMAIL_ON
 };
 //------------------------------------------------------------------------------
