@@ -53,6 +53,8 @@ Personality::Personality(Api &api, StatusLed &led, Inbox &inbox,
 }
 //------------------------------------------------------------------------------
 void Personality::initialize() {
+    postActivity(MAX_LEVEL);
+    resetDeadlines();
     transition(Personality::enteringPushMode);
 }
 //------------------------------------------------------------------------------
@@ -67,8 +69,7 @@ void Personality::action(const Event* e) {
             inbox_->leavePushMode();
             break;
         case STOP :
-            internalTransition(Personality::awake);
-            Serial.println(F("Personality::awake"));
+            transition(Personality::enteringPushMode);
             break;
         case SOUNDCLOUD :
             transition(Personality::playingSoundCloud);
@@ -98,7 +99,6 @@ void Personality::awake(const Event* e) {
 #ifdef DEBUG
             Serial.println(F("Personality::awake"));
 #endif
-            resetDeadlines();
             led_->colorGreen();
             break;
         case SHORT_CLICK_RELEASED :
@@ -139,7 +139,7 @@ void Personality::checkingFacebook(const Event* e) {
     switch (e->signal) {
 #ifdef DEBUG
         case ENTRY :
-            Serial.println(F("Personality::checking Facebook"));
+            Serial.println(F("Personality::checkingFacebook"));
             break;
 #endif
         case STOP :
@@ -154,7 +154,7 @@ void Personality::checkingFoursquare(const Event* e) {
     switch (e->signal) {
 #ifdef DEBUG
         case ENTRY :
-            Serial.println(F("Personality::checking Foursquare"));
+            Serial.println(F("Personality::checkingFoursquare"));
             break;
 #endif
         case STOP :
@@ -184,7 +184,7 @@ void Personality::checkingRss(const Event* e) {
     switch (e->signal) {
 #ifdef DEBUG
         case ENTRY :
-            Serial.println(F("Personality::checking Rss"));
+            Serial.println(F("Personality::checkingRss"));
             break;
 #endif
         case STOP :
@@ -258,7 +258,7 @@ void Personality::checkingTwitter(const Event* e) {
     switch (e->signal) {
 #ifdef DEBUG
         case ENTRY :
-            Serial.println(F("Personality::checking Twitter"));
+            Serial.println(F("Personality::checkingTwitter"));
             break;
 #endif
         case STOP :
@@ -270,19 +270,20 @@ void Personality::checkingTwitter(const Event* e) {
 //------------------------------------------------------------------------------
 void Personality::enteringPushMode(const Event* e) {
     switch (e->signal) {
-#ifdef DEBUG
         case ENTRY :
+#ifdef DEBUG
             Serial.println(F("Personality::enteringPushMode"));
-            break;
 #endif
             led_->colorOrange();
+            break;
         case TICK :
-            if (inbox_->enterPushMode())
+            if (inbox_->enterPushMode()) {
                 transition(Personality::awake);
+            }
             else {
                 inbox_->leavePushMode();
-                transition(Personality::awake);
                 led_->colorRed();
+                internalTransition(Personality::awake);
             }
             break;
     }
@@ -319,12 +320,12 @@ void Personality::playingSoundCloud(const Event* e) {
 /** Remote control mode */
 void Personality::remoteControl(const Event* e) {
     switch (e->signal) {
-#ifdef DEBUG
         case ENTRY :
+#ifdef DEBUG
             Serial.println(F("Personality::remoteControl"));
-            break;
             led_->colorOrange();
 #endif
+            break;
         case TICK :
             control_->startNextMotion(millis());
             if (control_->finishedTrajectory()) {
@@ -335,9 +336,7 @@ void Personality::remoteControl(const Event* e) {
             }
             break;
         case SHORT_CLICK_RELEASED :
-            inbox_->leavePushMode();
-            transition(Personality::wakingUp);
-            emit(WAKE_UP);
+            transition(Personality::awake);
             break;
     }
 }
