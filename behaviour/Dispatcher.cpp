@@ -47,7 +47,7 @@ const char FACEBOOK_ACTION[]    PROGMEM = "facebook.action";
 const char GMAIL_ON[]           PROGMEM = "gmail.on";
 const char GMAIL_SOUND[]        PROGMEM = "gmail.sound";
 const char GMAIL_MOTION[]       PROGMEM = "gmail.motion";
-const char GMAIL_KEYWORD[]       PROGMEM = "gmail.keyword";
+const char GMAIL_KEYWORD[]      PROGMEM = "gmail.keyword";
 
 const char TWITTER_ON[]         PROGMEM = "twitter.on";
 const char TWITTER_SOUND[]      PROGMEM = "twitter.sound";
