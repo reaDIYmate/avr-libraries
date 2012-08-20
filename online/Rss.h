@@ -20,13 +20,11 @@
 #ifndef RSS_H
 #define RSS_H
 
-#include <Api.h>
 #include <Service.h>
-#include <Settings.h>
 //------------------------------------------------------------------------------
 class Rss : public Service {
 public:
-    Rss(Api &api, Settings &settings, PGM_P on, PGM_P motion, PGM_P sound,
+    Rss(Api &api, Settings &settings, PGM_P enabled, PGM_P motion, PGM_P sound,
     	PGM_P keyword, PGM_P feedUrl);
      int fetch();
 //------------------------------------------------------------------------------

@@ -23,23 +23,21 @@
  * \file
  * \brief SoundCloud class to download files via HTTP.
  */
-#include <Api.h>
+#include <Action.h>
 #include <HttpClient.h>
 #include <SdFat.h>
-#include <Settings.h>
 //------------------------------------------------------------------------------
 /**
  * \class SoundCloud
  * \brief Retrieve files from a remote server and save them to the SD card.
  */
-class SoundCloud : public HttpClient, public SdFile {
+class SoundCloud : public HttpClient, public SdFile, public Action {
 public:
     SoundCloud(Api &api, Wifly &wifly, char* buffer, size_t bufferSize,
         SdFat &sd, uint8_t sdChipSelectPin, Settings &settings_, PGM_P owner,
-        PGM_P action);
+        PGM_P actionEnabled, PGM_P alertEnabled);
     bool download(PGM_P folder);
-    bool enabled() { return strcmp("1", settings_->getByName(action_)) == 0; }
-
+    bool alertEnabled();
 //------------------------------------------------------------------------------
 protected:
     /** Buffer to use during downloads */
@@ -48,14 +46,11 @@ protected:
     size_t bufferSize_;
 //------------------------------------------------------------------------------
 private:
-    /** Instance of Api used to access the reaDIYmate API */
-    Api* api_;
     /** An SdFat object to manage the SD card */
     SdFat* sd_;
-    Settings* settings_;
     /** The name of the parameter to pass to API calls */
     PGM_P owner_;
-    PGM_P action_;
+    PGM_P alertEnabled_;
     /** SD card Chip Select pin */
     const uint8_t sdChipSelectPin_;
 };

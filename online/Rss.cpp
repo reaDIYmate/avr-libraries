@@ -24,9 +24,9 @@ const char KEY_COUNT[] PROGMEM = "count";
 const char KEY_FEED_URL[] PROGMEM = "feed_url";
 const char KEY_KEYWORD[] PROGMEM = "keyword";
 //------------------------------------------------------------------------------
-Rss::Rss(Api &api, Settings &settings, PGM_P on, PGM_P motion,
-    PGM_P sound, PGM_P keyword, PGM_P feedUrl) :
-    Service(api, settings, on, motion, sound),
+Rss::Rss(Api &api, Settings &settings, PGM_P enabled, PGM_P motion, PGM_P sound,
+    PGM_P keyword, PGM_P feedUrl) :
+    Service(api, settings, enabled, motion, sound),
     keyword_(keyword),
     feedUrl_(feedUrl)
 {

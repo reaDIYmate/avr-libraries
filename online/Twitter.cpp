@@ -29,67 +29,70 @@ const char KEY_MSG[] PROGMEM = "msg";
 const char SETTINGS_UP_TO_DATE[] PROGMEM = "null";
 const char SD_FILE[] = "TWEET.TXT";
 //------------------------------------------------------------------------------
-Twitter::Twitter(Api &api, SdFat &sd, Settings &settings, PGM_P on, PGM_P motion,
-    PGM_P sound, PGM_P action, uint8_t sdChipSelectPin) :
-    Service(api, settings, on, motion, sound),
-    action_(action),
+Twitter::Twitter(Api &api, Settings &settings, SdFat &sd, uint8_t
+    sdChipSelectPin, PGM_P motion, PGM_P sound, PGM_P actionEnabled,
+    PGM_P alertEnabled) :
+    Service(api, settings, alertEnabled, motion, sound),
+    Action(api, settings, actionEnabled),
     sd_(&sd),
     sdChipSelectPin_(sdChipSelectPin)
 {
 }
 //------------------------------------------------------------------------------
 int Twitter::fetch() {
-    api_->call(STRING_API_TWITTER_UPDATE);
-    int mentions = api_->getIntegerByName_P(KEY_MENTIONS);
-    int followers = api_->getIntegerByName_P(KEY_FOLLOWERS);
+    Api* api = Service::api_;
+    api->call(STRING_API_TWITTER_UPDATE);
+    int mentions = api->getIntegerByName_P(KEY_MENTIONS);
+    int followers = api->getIntegerByName_P(KEY_FOLLOWERS);
 
     return mentions + followers;
 }
 //------------------------------------------------------------------------------
 bool Twitter::postStatus() {
-    char status[140] = {0};
+    if (!Action::enabled())
+        return false;
+
+    char content[140] = {0};
     if (!sd_->init(SPI_EIGHTH_SPEED, sdChipSelectPin_)) {
         sd_->initErrorHalt();
         return false;
     }
     if (!open(SD_FILE, O_READ)) {
-        Serial.println(F("Failed opening"));
         return false;
     }
     rewind();
-    read(status, 140);
-    if (strcmp("1", settings_->getByName(action_)) == 0) {
-        api_->call(STRING_API_TWITTER_POST, KEY_STATUS, status);
-        if (api_->getIntegerByName_P(KEY_STATUS) == 0){
-            close();
-            return true;
-        }
-    }
+    read(content, 140);
+
+    Api* api = Action::api_;
+    api->call(STRING_API_TWITTER_POST, KEY_STATUS, content);
+
+    int status = api->getIntegerByName_P(KEY_STATUS);
     close();
-    return false;
+    return (status == 0);
 }
 //------------------------------------------------------------------------------
 bool Twitter::saveSettings() {
-    char status[140] = {0};
+    char content[140] = {0};
 
-    api_->call(STRING_API_TWITTER_AUTO);
-    api_->rewind();
-    if(api_->find_P(SETTINGS_UP_TO_DATE)){
+    Api* api = Action::api_;
+    api->call(STRING_API_TWITTER_AUTO);
+    api->rewind();
+    if (api->find_P(SETTINGS_UP_TO_DATE)) {
         return false;
     }
     if (!sd_->init(SPI_EIGHTH_SPEED, sdChipSelectPin_)) {
         sd_->initErrorHalt();
         return false;
     }
-    if (sd_->exists(SD_FILE)){
+    if (sd_->exists(SD_FILE)) {
         sd_->remove(SD_FILE);
     }
     if (!open(SD_FILE, O_CREAT | O_WRITE)) {
         return false;
     }
-    int nbBytes = api_->getStringByName_P(KEY_MSG, status, 140);
-    if(nbBytes > -1){
-        write(status, nbBytes);
+    int nbBytes = api->getStringByName_P(KEY_MSG, content, 140);
+    if (nbBytes > -1) {
+        write(content, nbBytes);
         sync();
     }
     close();

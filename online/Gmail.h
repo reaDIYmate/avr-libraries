@@ -20,15 +20,13 @@
 #ifndef GMAIL_H
 #define GMAIL_H
 
-#include <Api.h>
 #include <Service.h>
-#include <Settings.h>
 //------------------------------------------------------------------------------
 class Gmail : public Service {
 public:
-    Gmail(Api &api, Settings &settings, PGM_P on, PGM_P motion, PGM_P sound,
-        PGM_P keyword);
-     int fetch();
+    Gmail(Api &api, Settings &settings, PGM_P enabled, PGM_P motion,
+    PGM_P sound, PGM_P keyword);
+    int fetch();
 private:
     PGM_P keyword_;
 };

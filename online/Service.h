@@ -25,8 +25,10 @@
 //------------------------------------------------------------------------------
 class Service {
 public:
-    Service(Api &api, Settings &settings, PGM_P on, PGM_P motion, PGM_P sound);
+    Service(Api &api, Settings &settings, PGM_P enabled, PGM_P motion,
+        PGM_P sound);
     virtual int fetch() = 0;
+    bool enabled();
     bool update();
     char* getMotionFilename();
     char* getSoundFilename();
@@ -35,9 +37,9 @@ protected:
     Api *api_;
     Settings *settings_;
     int count_;
-    PGM_P on_;
 //------------------------------------------------------------------------------
 private:
+    PGM_P enabled_;
     PGM_P motion_;
     PGM_P sound_;
 };

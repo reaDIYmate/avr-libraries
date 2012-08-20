@@ -29,17 +29,18 @@ const char SETTINGS_UP_TO_DATE[] PROGMEM = "null";
 const char END_CHAR[] PROGMEM = "}";
 const char SD_FILE[] = "EMAIL.TXT";
 //------------------------------------------------------------------------------
-Email::Email(Api &api, SdFat &sd, Settings &settings, PGM_P on,
-    uint8_t sdChipSelectPin) :
-    api_(&api),
+Email::Email(Api &api, Settings &settings, SdFat &sd, uint8_t sdChipSelectPin,
+    PGM_P enabled) :
+    Action(api, settings, enabled),
     sd_(&sd),
-    settings_(&settings),
-    on_(on),
     sdChipSelectPin_(sdChipSelectPin)
 {
 }
 //------------------------------------------------------------------------------
 bool Email::sendEmail() {
+    if (!enabled())
+        return false;
+
     char file[256] = {0};
     char to[32] = {0};
     char subject[32] = {0};
@@ -58,22 +59,19 @@ bool Email::sendEmail() {
     json.getStringByName_P(KEY_TO, to, 32);
     json.getStringByName_P(KEY_SUBJECT, subject, 32);
     json.getStringByName_P(KEY_BODY, body, 140);
-    if (strcmp("1", settings_->getByName(on_)) == 0) {
-        api_->call(STRING_API_EMAIL_SEND, KEY_TO, to, KEY_SUBJECT, subject, KEY_BODY, body);
-        if (api_->getIntegerByName_P(KEY_STATUS) == 0) {
-            close();
-            return true;
-        }
-    }
+
+    api_->call(STRING_API_EMAIL_SEND, KEY_TO, to, KEY_SUBJECT, subject, KEY_BODY, body);
+
+    int status = api_->getIntegerByName_P(KEY_STATUS);
     close();
-    return false;
+    return (status == 0);
 }
 //------------------------------------------------------------------------------
 bool Email::saveSettings() {
     char buffer[256] = {0};
     api_->call(STRING_API_EMAIL_AUTO);
     api_->rewind();
-    if(api_->find_P(SETTINGS_UP_TO_DATE)){
+    if (api_->find_P(SETTINGS_UP_TO_DATE)) {
         return false;
     }
     if (!sd_->init(SPI_EIGHTH_SPEED, sdChipSelectPin_)) {

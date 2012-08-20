@@ -1,5 +1,5 @@
 /* reaDIYmate AVR library
- * Written by Christopher Schindler
+ * Written by Pierre Bouchet
  * Copyright (C) 2011-2012 reaDIYmate
  *
  * This file is part of the reaDIYmate library.
@@ -17,20 +17,23 @@
  * You should have received a copy of the GNU General Public License along
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "Gmail.h"
+#ifndef ACTION_H
+#define ACTION_H
+
+#include <Api.h>
+#include <Settings.h>
 //------------------------------------------------------------------------------
-const char STRING_API_GMAIL[] PROGMEM = "gmail/search";
-const char KEY_COUNT[] PROGMEM = "count";
-const char KEY_KEYWORD[] PROGMEM = "keyword";
+class Action {
+public:
+    Action(Api &api, Settings &settings, PGM_P enabled);
+    bool enabled();
 //------------------------------------------------------------------------------
-Gmail::Gmail(Api &api, Settings &settings, PGM_P enabled, PGM_P motion,
-    PGM_P sound, PGM_P keyword) :
-    Service(api, settings, enabled, motion, sound),
-    keyword_(keyword)
-{
-}
+protected:
+    Api *api_;
+    Settings *settings_;
 //------------------------------------------------------------------------------
-int Gmail::fetch() {
-    api_->call(STRING_API_GMAIL, KEY_KEYWORD, settings_->getByName(keyword_));
-    return api_->getIntegerByName_P(KEY_COUNT);
-}
+private:
+    PGM_P enabled_;
+};
+
+#endif // ACTION_H;

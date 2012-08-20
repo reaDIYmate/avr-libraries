@@ -137,10 +137,10 @@ Dispatcher::Dispatcher() :
     ),
     email(
         api,
-        sd,
         settings,
-        EMAIL_ON,
-        PIN_SD_CHIPSELECT
+        sd,
+        PIN_SD_CHIPSELECT,
+        EMAIL_ON
     ),
     gmail(
         api,
@@ -152,23 +152,23 @@ Dispatcher::Dispatcher() :
     ),
     facebook(
         api,
-        sd,
         settings,
-        FACEBOOK_ON,
+        sd,
+        PIN_SD_CHIPSELECT,
         FACEBOOK_MOTION,
         FACEBOOK_SOUND,
         FACEBOOK_ACTION,
-        PIN_SD_CHIPSELECT
+        FACEBOOK_ON
     ),
     twitter(
         api,
-        sd,
         settings,
-        TWITTER_ON,
+        sd,
+        PIN_SD_CHIPSELECT,
         TWITTER_MOTION,
         TWITTER_SOUND,
         TWITTER_ACTION,
-        PIN_SD_CHIPSELECT
+        TWITTER_ON
     ),
     rss(
         api,
@@ -182,11 +182,11 @@ Dispatcher::Dispatcher() :
     foursquare(
         api,
         settings,
-        FOURSQUARE_ON,
         FOURSQUARE_MOTION,
         FOURSQUARE_SOUND,
         FOURSQUARE_VENUEID,
-        FOURSQUARE_ACTION
+        FOURSQUARE_ACTION,
+        FOURSQUARE_ON
     ),
     audio(
         PIN_VS1011_DREQ,
@@ -230,6 +230,7 @@ Dispatcher::Dispatcher() :
         PIN_SD_CHIPSELECT,
         settings,
         SOUNDCLOUD_OWNER,
+        SOUNDCLOUD_ACTION,
         SOUNDCLOUD_ON
     ),
     resources(
@@ -328,7 +329,7 @@ void Dispatcher::loop() {
             player.dispatch(PlayerEvent(PLAY, "YAWN.MP3"), playerOut);
             break;
         case GMAIL:
-            if (gmail.update()) {
+            if (gmail.enabled() && gmail.update()) {
                 soundName = gmail.getSoundFilename();
                 motionName = gmail.getMotionFilename();
                 player.dispatch(PlayerEvent(PLAY, soundName), playerOut);
@@ -340,7 +341,7 @@ void Dispatcher::loop() {
             }
             break;
         case FACEBOOK :
-            if (facebook.update()) {
+            if (facebook.Service::enabled() && facebook.update()) {
                 soundName = facebook.getSoundFilename();
                 motionName = facebook.getMotionFilename();
                 player.dispatch(PlayerEvent(PLAY, soundName), playerOut);
@@ -352,7 +353,7 @@ void Dispatcher::loop() {
             }
             break;
         case TWITTER :
-            if (twitter.update()) {
+            if (twitter.Service::enabled() && twitter.update()) {
                 soundName = twitter.getSoundFilename();
                 motionName = twitter.getMotionFilename();
                 player.dispatch(PlayerEvent(PLAY, soundName), playerOut);
@@ -364,7 +365,7 @@ void Dispatcher::loop() {
             }
             break;
         case RSS :
-            if (rss.update()) {
+            if (rss.enabled() && rss.update()) {
                 soundName = rss.getSoundFilename();
                 motionName = rss.getMotionFilename();
                 player.dispatch(PlayerEvent(PLAY, soundName), playerOut);
@@ -376,7 +377,7 @@ void Dispatcher::loop() {
             }
             break;
         case FOURSQUARE :
-            if (foursquare.update()) {
+            if (foursquare.Action::enabled() && foursquare.update()) {
                 soundName = foursquare.getSoundFilename();
                 motionName = foursquare.getMotionFilename();
                 player.dispatch(PlayerEvent(PLAY, soundName), playerOut);
@@ -388,7 +389,7 @@ void Dispatcher::loop() {
             }
             break;
         case SOUNDCLOUD :
-            if (soundcloud.download(PSTR("SNDCLD"))) {
+            if (soundcloud.alertEnabled() && soundcloud.download(PSTR("SNDCLD"))) {
                 personality.dispatch(Event(SOUNDCLOUD), persoOut);
                 player.dispatch(PlayerEvent(RANDOM, "SNDCLD", 1), playerOut);
             }
@@ -401,7 +402,7 @@ void Dispatcher::loop() {
             }
             break;
         case ACTION :
-            if (twitter.postStatus()) {
+            if (twitter.Action::enabled() && twitter.postStatus()) {
                 Serial.println(F("Twitter OK"));
             }
             if (facebook.postStatus()) {

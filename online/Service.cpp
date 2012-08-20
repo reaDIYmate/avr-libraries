@@ -19,32 +19,37 @@
  */
  #include "Service.h"
 //------------------------------------------------------------------------------
-Service::Service(Api &api, Settings &settings, PGM_P on, PGM_P motion,
+Service::Service(Api &api, Settings &settings, PGM_P enabled, PGM_P motion,
     PGM_P sound) :
     api_(&api),
     settings_(&settings),
     count_(-1),
-    on_(on),
+    enabled_(enabled),
     motion_(motion),
     sound_(sound)
 {
 }
 //------------------------------------------------------------------------------
+bool Service::enabled() {
+   return (strcmp("1", settings_->getByName(enabled_)) == 0);
+}
+//------------------------------------------------------------------------------
 bool Service::update() {
-   if (strcmp("1", settings_->getByName(on_)) == 0) {
-        int countCurrent = fetch();
-        if (countCurrent != count_ && count_ != -1 && countCurrent >=0) {
-            if (countCurrent > count_ ) {
-                count_ = countCurrent;
-                return true;
-            }
-            else {
-                count_ = countCurrent;
-            }
+    if (!enabled())
+        return false;
+
+    int countCurrent = fetch();
+    if (countCurrent != count_ && count_ != -1 && countCurrent >=0) {
+        if (countCurrent > count_ ) {
+            count_ = countCurrent;
+            return true;
         }
-        if (count_ == -1) {
+        else {
             count_ = countCurrent;
         }
+    }
+    if (count_ == -1) {
+        count_ = countCurrent;
     }
     return false;
  }

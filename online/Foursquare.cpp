@@ -25,28 +25,30 @@ const char KEY_CHECKINS[] PROGMEM = "checkins";
 const char KEY_VENUEID[] PROGMEM = "venueId";
 const char KEY_STATUS[] PROGMEM = "status";
 //------------------------------------------------------------------------------
-Foursquare::Foursquare(Api &api, Settings &settings, PGM_P on, PGM_P motion,
-    PGM_P sound, PGM_P venueId, PGM_P action) :
-    Service(api, settings, on, motion, sound),
-    venueId_(venueId),
-    action_(action)
+Foursquare::Foursquare(Api &api, Settings &settings, PGM_P motion, PGM_P sound,
+    PGM_P venueId, PGM_P actionEnabled, PGM_P alertEnabled) :
+    Service(api, settings, alertEnabled, motion, sound),
+    Action(api, settings, actionEnabled),
+    venueId_(venueId)
 {
 }
 //------------------------------------------------------------------------------
 int Foursquare::fetch() {
-	api_->call(STRING_API_FOURSQUARE_UPDATE, KEY_VENUEID,
- 		settings_->getByName(venueId_));
-    return api_->getIntegerByName_P(KEY_CHECKINS);
+    Api* api = Service::api_;
+    api->call(STRING_API_FOURSQUARE_UPDATE, KEY_VENUEID,
+        Service::settings_->getByName(venueId_));
+    return api->getIntegerByName_P(KEY_CHECKINS);
 }
 //------------------------------------------------------------------------------
 bool Foursquare::checkin() {
-    if (strcmp("1", settings_->getByName(action_)) == 0) {
-        api_->call(STRING_API_FOURSQUARE_CHECKIN, KEY_VENUEID, 
-            settings_->getByName(venueId_));
+    if (!Action::enabled())
+        return false;
 
-        if (api_->getIntegerByName_P(KEY_STATUS) == 0){
-            return true;
-        }
-    }
-    return false;
+    Api* api = Action::api_;
+    api->call(STRING_API_FOURSQUARE_CHECKIN, KEY_VENUEID,
+        Action::settings_->getByName(venueId_));
+
+    int status = api->getIntegerByName_P(KEY_STATUS);
+    return (status == 0);
 }
+//------------------------------------------------------------------------------

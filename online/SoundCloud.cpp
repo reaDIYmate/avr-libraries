@@ -39,23 +39,25 @@ const char PROGMEM SOUNDCLOUD_URL_KEY[] = "url";
  */
 SoundCloud::SoundCloud(Api &api, Wifly &wifly, char* buffer, size_t bufferSize,
     SdFat &sd, uint8_t sdChipSelectPin, Settings &settings, PGM_P owner,
-    PGM_P action) :
+    PGM_P actionEnabled, PGM_P alertEnabled) :
+    Action(api, settings, actionEnabled),
     HttpClient(wifly),
-    api_(&api),
     buffer_(buffer),
     bufferSize_(bufferSize),
     sd_(&sd),
     sdChipSelectPin_(sdChipSelectPin),
-    settings_(&settings),
     owner_(owner),
-    action_(action)
+    alertEnabled_(alertEnabled)
 {
 }
 //------------------------------------------------------------------------------
+bool SoundCloud::alertEnabled() {
+    return (strcmp("1", settings_->getByName(alertEnabled_)) == 0);
+}
+//------------------------------------------------------------------------------
 bool SoundCloud::download(PGM_P folder) {
-    if (strcmp("1", settings_->getByName(action_)) != 0) {
+    if (!alertEnabled())
         return false;
-    }
     // fetch file information from API
     if (!api_->connect())
         return false;
