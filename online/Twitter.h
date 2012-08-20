@@ -20,22 +20,18 @@
 #ifndef TWITTER_H
 #define TWITTER_H
 
-#include <Action.h>
-#include <SdFat.h>
+#include <ContentAction.h>
 #include <Service.h>
 //------------------------------------------------------------------------------
-class Twitter : public Service, public Action, public SdFile {
+class Twitter : public Service, public ContentAction {
 public:
-    Twitter(Api &api, Settings &settings, SdFat &sd, uint8_t sdChipSelectPin,
-        PGM_P motion, PGM_P sound, PGM_P actionEnabled, PGM_P alertEnabled);
+    Twitter(Api &api, Settings &settings, PGM_P motion, PGM_P sound,
+        PGM_P alertEnabled, PGM_P actionEnabled, SdFat &sd,
+        uint8_t sdChipSelectPin);
     int fetch();
-    bool postStatus();
-    bool saveSettings();
+    bool perform();
+    bool updateContent();
 //------------------------------------------------------------------------------
-private:
-    SdFat* sd_;
-    const uint8_t sdChipSelectPin_;
 };
-
 
 #endif // TWITTER_H

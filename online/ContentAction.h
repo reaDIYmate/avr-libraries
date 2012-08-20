@@ -17,25 +17,24 @@
  * You should have received a copy of the GNU General Public License along
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef ACTION_H
-#define ACTION_H
+#ifndef CONTENT_ACTION_H
+#define CONTENT_ACTION_H
 
-#include <Api.h>
-#include <Settings.h>
+#include <Action.h>
+#include <SdFat.h>
 //------------------------------------------------------------------------------
-class Action {
+class ContentAction : public Action, public SdFile {
 public:
-    Action(Api &api, Settings &settings, PGM_P enabled);
-    bool enabled();
+    ContentAction(Api &api, Settings &settings, PGM_P enabled, SdFat &sd,
+        uint8_t sdChipSelectPin, PGM_P filename);
     virtual bool perform() = 0;
     virtual bool trigger();
+    virtual bool updateContent() = 0;
 //------------------------------------------------------------------------------
 protected:
-    Api *api_;
-    Settings *settings_;
-//------------------------------------------------------------------------------
-private:
-    PGM_P enabled_;
+    SdFat* sd_;
+    const uint8_t sdChipSelectPin_;
+    PGM_P filename_;
 };
 
 #endif // ACTION_H;

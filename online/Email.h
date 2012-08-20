@@ -20,18 +20,14 @@
 #ifndef EMAIL_H
 #define EMAIL_H
 
-#include <Action.h>
-#include <SdFat.h>
+#include <ContentAction.h>
 //------------------------------------------------------------------------------
-class Email : public Action, public SdFile {
+class Email : public ContentAction {
 public:
-    Email(Api &api, Settings &settings, SdFat &sd, uint8_t sdChipSelectPin,
-        PGM_P enabled);
-    bool sendEmail();
-    bool saveSettings();
+    Email(Api &api, Settings &settings, PGM_P enabled, SdFat &sd,
+          uint8_t sdChipSelectPin);
+    bool perform();
+    bool updateContent();
 //------------------------------------------------------------------------------
-private:
-    SdFat *sd_;
-    const uint8_t sdChipSelectPin_;
 };
 #endif // EMAIL_H

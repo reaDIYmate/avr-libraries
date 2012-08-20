@@ -138,9 +138,9 @@ Dispatcher::Dispatcher() :
     email(
         api,
         settings,
+        EMAIL_ON,
         sd,
-        PIN_SD_CHIPSELECT,
-        EMAIL_ON
+        PIN_SD_CHIPSELECT
     ),
     gmail(
         api,
@@ -153,22 +153,22 @@ Dispatcher::Dispatcher() :
     facebook(
         api,
         settings,
-        sd,
-        PIN_SD_CHIPSELECT,
         FACEBOOK_MOTION,
         FACEBOOK_SOUND,
+        FACEBOOK_ON,
         FACEBOOK_ACTION,
-        FACEBOOK_ON
+        sd,
+        PIN_SD_CHIPSELECT
     ),
     twitter(
         api,
         settings,
-        sd,
-        PIN_SD_CHIPSELECT,
         TWITTER_MOTION,
         TWITTER_SOUND,
+        TWITTER_ON,
         TWITTER_ACTION,
-        TWITTER_ON
+        sd,
+        PIN_SD_CHIPSELECT
     ),
     rss(
         api,
@@ -250,6 +250,7 @@ void Dispatcher::setup() {
 
     button.initialize();
     led.initialize();
+    led.colorOrange();
 
     wifly.initialize();
     config.synchronize(3000);
@@ -262,26 +263,29 @@ void Dispatcher::setup() {
     pusher.setKey(config.getPusherKey());
     Serial.print(F("API credential: "));
     Serial.println(credential);
-    Serial.println(F("Object configuration restored from EEPROM."));
+    Serial.println(F("Object configuration restored from the EEPROM."));
 
-    Serial.println(F("Connecting to the reaDIYmate server..."));
+    Serial.print(F("Connecting to the reaDIYmate server... "));
     bool restore = true;
     if (api.connect()) {
-        Serial.println(F("Connection to the reaDIYmate server established."));
-        facebook.saveSettings();
-        twitter.saveSettings();
-        email.saveSettings();
+        Serial.println(F("connection established."));
+        facebook.updateContent();
+        twitter.updateContent();
+        email.updateContent();
         if (settings.fetch() >= 0) {
             settings.save();
             restore = false;
             Serial.println(F("Application settings updated."));
             Serial.print(settings.getNbSettings());
-            Serial.println(F(" settings saved."));
+            Serial.println(F(" settings saved to the EEPROM."));
         }
+    }
+    else {
+        Serial.println(F("failed to connect."));
     }
     if (restore) {
         if (settings.restore() >= 0) {
-            Serial.println(F("Application settings restored from EEPROM."));
+            Serial.println(F("Application settings restored from the EEPROM."));
             Serial.print(settings.getNbSettings());
             Serial.println(F(" settings restored."));
         }
@@ -402,16 +406,16 @@ void Dispatcher::loop() {
             }
             break;
         case ACTION :
-            if (twitter.Action::enabled() && twitter.postStatus()) {
+            if (twitter.Action::enabled() && twitter.trigger()) {
                 Serial.println(F("Twitter OK"));
             }
-            if (facebook.postStatus()) {
+            if (facebook.Action::enabled() && facebook.trigger()) {
                 Serial.println(F("Facebook OK"));
             }
-            if (foursquare.checkin()) {
+            if (foursquare.Action::enabled() && foursquare.trigger()) {
                 Serial.println(F("Foursquare OK"));
             }
-            if (email.sendEmail()) {
+            if (email.Action::enabled() && email.trigger()) {
                 Serial.println(F("Email OK"));
             }
             if (soundcloud.enabled()) {

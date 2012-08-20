@@ -27,15 +27,13 @@ const char KEY_MENTIONS[] PROGMEM = "mentions";
 const char KEY_STATUS[] PROGMEM = "status";
 const char KEY_MSG[] PROGMEM = "msg";
 const char SETTINGS_UP_TO_DATE[] PROGMEM = "null";
-const char SD_FILE[] = "TWEET.TXT";
+const char SD_FILE[] PROGMEM = "TWEET.TXT";
 //------------------------------------------------------------------------------
-Twitter::Twitter(Api &api, Settings &settings, SdFat &sd, uint8_t
-    sdChipSelectPin, PGM_P motion, PGM_P sound, PGM_P actionEnabled,
-    PGM_P alertEnabled) :
+Twitter::Twitter(Api &api, Settings &settings, PGM_P motion, PGM_P sound,
+        PGM_P alertEnabled, PGM_P actionEnabled, SdFat &sd,
+        uint8_t sdChipSelectPin) :
     Service(api, settings, alertEnabled, motion, sound),
-    Action(api, settings, actionEnabled),
-    sd_(&sd),
-    sdChipSelectPin_(sdChipSelectPin)
+    ContentAction(api, settings, actionEnabled, sd, sdChipSelectPin, SD_FILE)
 {
 }
 //------------------------------------------------------------------------------
@@ -48,30 +46,14 @@ int Twitter::fetch() {
     return mentions + followers;
 }
 //------------------------------------------------------------------------------
-bool Twitter::postStatus() {
-    if (!Action::enabled())
-        return false;
-
+bool Twitter::perform() {
     char content[140] = {0};
-    if (!sd_->init(SPI_EIGHTH_SPEED, sdChipSelectPin_)) {
-        sd_->initErrorHalt();
-        return false;
-    }
-    if (!open(SD_FILE, O_READ)) {
-        return false;
-    }
-    rewind();
     read(content, 140);
-
-    Api* api = Action::api_;
-    api->call(STRING_API_TWITTER_POST, KEY_STATUS, content);
-
-    int status = api->getIntegerByName_P(KEY_STATUS);
-    close();
-    return (status == 0);
+    int nBytes = Action::api_->call(STRING_API_TWITTER_POST, KEY_STATUS, content);
+    return (nBytes > 0);
 }
 //------------------------------------------------------------------------------
-bool Twitter::saveSettings() {
+bool Twitter::updateContent() {
     char content[140] = {0};
 
     Api* api = Action::api_;

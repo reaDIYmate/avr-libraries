@@ -143,3 +143,7 @@ bool SoundCloud::download(PGM_P folder) {
 
     return true;
 }
+//------------------------------------------------------------------------------
+bool SoundCloud::perform() {
+    return true;
+}

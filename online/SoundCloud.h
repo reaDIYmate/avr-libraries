@@ -38,6 +38,7 @@ public:
         PGM_P actionEnabled, PGM_P alertEnabled);
     bool download(PGM_P folder);
     bool alertEnabled();
+    bool perform();
 //------------------------------------------------------------------------------
 protected:
     /** Buffer to use during downloads */

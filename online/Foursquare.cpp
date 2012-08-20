@@ -23,7 +23,6 @@ const char STRING_API_FOURSQUARE_UPDATE[] PROGMEM = "foursquare/update";
 const char STRING_API_FOURSQUARE_CHECKIN[] PROGMEM = "foursquare/checkin";
 const char KEY_CHECKINS[] PROGMEM = "checkins";
 const char KEY_VENUEID[] PROGMEM = "venueId";
-const char KEY_STATUS[] PROGMEM = "status";
 //------------------------------------------------------------------------------
 Foursquare::Foursquare(Api &api, Settings &settings, PGM_P motion, PGM_P sound,
     PGM_P venueId, PGM_P actionEnabled, PGM_P alertEnabled) :
@@ -40,15 +39,9 @@ int Foursquare::fetch() {
     return api->getIntegerByName_P(KEY_CHECKINS);
 }
 //------------------------------------------------------------------------------
-bool Foursquare::checkin() {
-    if (!Action::enabled())
-        return false;
-
-    Api* api = Action::api_;
-    api->call(STRING_API_FOURSQUARE_CHECKIN, KEY_VENUEID,
+bool Foursquare::perform() {
+    int nBytes = Action::api_->call(STRING_API_FOURSQUARE_CHECKIN, KEY_VENUEID,
         Action::settings_->getByName(venueId_));
-
-    int status = api->getIntegerByName_P(KEY_STATUS);
-    return (status == 0);
+    return (nBytes > 0);
 }
 //------------------------------------------------------------------------------

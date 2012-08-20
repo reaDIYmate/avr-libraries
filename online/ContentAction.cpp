@@ -17,25 +17,31 @@
  * You should have received a copy of the GNU General Public License along
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef ACTION_H
-#define ACTION_H
-
-#include <Api.h>
-#include <Settings.h>
+#include "ContentAction.h"
 //------------------------------------------------------------------------------
-class Action {
-public:
-    Action(Api &api, Settings &settings, PGM_P enabled);
-    bool enabled();
-    virtual bool perform() = 0;
-    virtual bool trigger();
+ContentAction::ContentAction(Api &api, Settings &settings, PGM_P enabled,
+    SdFat &sd, uint8_t sdChipSelectPin, PGM_P filename) :
+    Action(api, settings, enabled),
+    sd_(&sd),
+    sdChipSelectPin_(sdChipSelectPin),
+    filename_(filename)
+{
+}
 //------------------------------------------------------------------------------
-protected:
-    Api *api_;
-    Settings *settings_;
-//------------------------------------------------------------------------------
-private:
-    PGM_P enabled_;
-};
-
-#endif // ACTION_H;
+bool ContentAction::trigger() {
+    if (!enabled())
+        return false;
+    if (!sd_->init(SPI_EIGHTH_SPEED, sdChipSelectPin_)) {
+        sd_->initErrorHalt();
+        return false;
+    }
+    char filename[13] = {0};
+    strcpy_P(filename, filename_);
+    if (!open(filename, O_READ)) {
+        return false;
+    }
+    rewind();
+    bool success = Action::trigger();
+    close();
+    return success;
+}

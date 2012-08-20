@@ -24,50 +24,34 @@ const char STRING_API_EMAIL_AUTO[] PROGMEM = "email/auto";
 const char KEY_TO[] PROGMEM = "to";
 const char KEY_SUBJECT[] PROGMEM = "subject";
 const char KEY_BODY[] PROGMEM = "body";
-const char KEY_STATUS[] PROGMEM = "status";
 const char SETTINGS_UP_TO_DATE[] PROGMEM = "null";
 const char END_CHAR[] PROGMEM = "}";
-const char SD_FILE[] = "EMAIL.TXT";
+const char SD_FILE[] PROGMEM = "EMAIL.TXT";
 //------------------------------------------------------------------------------
-Email::Email(Api &api, Settings &settings, SdFat &sd, uint8_t sdChipSelectPin,
-    PGM_P enabled) :
-    Action(api, settings, enabled),
-    sd_(&sd),
-    sdChipSelectPin_(sdChipSelectPin)
+Email::Email(Api &api, Settings &settings, PGM_P enabled, SdFat &sd,
+    uint8_t sdChipSelectPin) :
+    ContentAction(api, settings, enabled, sd, sdChipSelectPin, SD_FILE)
 {
 }
 //------------------------------------------------------------------------------
-bool Email::sendEmail() {
-    if (!enabled())
-        return false;
-
+bool Email::perform() {
     char file[256] = {0};
-    char to[32] = {0};
-    char subject[32] = {0};
-    char body[140] = {0};
-
-    if (!sd_->init(SPI_EIGHTH_SPEED, sdChipSelectPin_)) {
-        sd_->initErrorHalt();
-        return false;
-    }
-    if (!open(SD_FILE, O_READ)) {
-        return false;
-    }
-    rewind();
     int nbBytes = read(file, 256);
+
     JsonStream json = JsonStream(file, nbBytes);
+    char to[32] = {0};
     json.getStringByName_P(KEY_TO, to, 32);
+    char subject[32] = {0};
     json.getStringByName_P(KEY_SUBJECT, subject, 32);
+    char body[140] = {0};
     json.getStringByName_P(KEY_BODY, body, 140);
 
-    api_->call(STRING_API_EMAIL_SEND, KEY_TO, to, KEY_SUBJECT, subject, KEY_BODY, body);
-
-    int status = api_->getIntegerByName_P(KEY_STATUS);
-    close();
-    return (status == 0);
+    int nBytes = api_->call(STRING_API_EMAIL_SEND, KEY_TO, to, KEY_SUBJECT,
+        subject, KEY_BODY, body);
+    return (nBytes > 0);
 }
 //------------------------------------------------------------------------------
-bool Email::saveSettings() {
+bool Email::updateContent() {
     char buffer[256] = {0};
     api_->call(STRING_API_EMAIL_AUTO);
     api_->rewind();

@@ -17,7 +17,9 @@
  * You should have received a copy of the GNU General Public License along
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
- #include "Action.h"
+#include "Action.h"
+//------------------------------------------------------------------------------
+const char KEY_STATUS[] PROGMEM = "status";
 //------------------------------------------------------------------------------
 Action::Action(Api &api, Settings &settings, PGM_P enabled) :
     api_(&api),
@@ -28,4 +30,11 @@ Action::Action(Api &api, Settings &settings, PGM_P enabled) :
 //------------------------------------------------------------------------------
 bool Action::enabled() {
     return (strcmp("1", settings_->getByName(enabled_)) == 0);
+}
+//------------------------------------------------------------------------------
+bool Action::trigger() {
+    if (!perform())
+        return false;
+    int status = api_->getIntegerByName_P(KEY_STATUS);
+    return (status == 0);
 }

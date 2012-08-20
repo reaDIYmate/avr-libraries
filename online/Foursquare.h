@@ -28,7 +28,7 @@ public:
     Foursquare(Api &api, Settings &settings, PGM_P motion, PGM_P sound,
     PGM_P venueId, PGM_P actionEnabled, PGM_P alertEnabled);
     int fetch();
-    bool checkin();
+    bool perform();
 //------------------------------------------------------------------------------
 private:
     PGM_P venueId_;
