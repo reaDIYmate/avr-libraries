@@ -246,6 +246,7 @@ void Personality::checkingSoundCloud(const Event* e) {
 #endif
         case STOP :
             transition(Personality::checkingServices);
+            checkingSoundCloudDeadline_ = millis() + CHECK_SOUNDCLOUD_INTERVAL;
             break;
         case SOUNDCLOUD :
             transition(Personality::playingSoundCloud);
@@ -313,6 +314,7 @@ void Personality::playingSoundCloud(const Event* e) {
 #endif
         case STOP :
             transition(Personality::enteringPushMode);
+            checkingSoundCloudDeadline_ = millis() + CHECK_SOUNDCLOUD_INTERVAL;
             break;
     }
 }
