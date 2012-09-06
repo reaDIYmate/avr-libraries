@@ -43,18 +43,22 @@ class Inbox {
 public:
     Inbox(Api &api, PusherClient &pusher);
     bool enterPushMode();
-    bool leavePushMode();
     int getIntegerByName_P(PGM_P key) {return stream_->getIntegerByName_P(key);}
     int getMessage();
     int getStringByName_P(PGM_P key, char* buffer, size_t length) {
        return stream_->getStringByName_P(key, buffer, length);}
+    bool leavePushMode();
+    bool updatePusherChannel();
 //------------------------------------------------------------------------------
 private:
+    /** The JsonStream object used for JSON parsing */
     JsonStream* stream_;
     /** Instance of Api used to access the reaDIYmate API */
     Api* api_;
     /** Pusher client used to receive realtime messages */
     PusherClient* pusher_;
+    /** Name of the channel used on Pusher */
+    char channel_[21];
     /** Cache the ID of the last message sender */
     char senderId_[13];
 };

@@ -19,6 +19,11 @@
  */
 #include <PusherTrajectory.h>
 //------------------------------------------------------------------------------
+/** Key corresponding to the message type in the message data */
+const char PROGMEM KEY_MESSAGE_TYPE[] = "type";
+/** Start remote control mode */
+int const INBOX_START_REMOTE = 1;
+//------------------------------------------------------------------------------
 /*
  * x(-i) is the i-th most recent sample
  * since we only use a 1st-order lowpass filter we only actually need
@@ -101,6 +106,12 @@ int PusherTrajectory::filter(int input) {
 bool PusherTrajectory::getNextMotion(int* dest, int* dur, uint8_t pos) {
     if (!pusher_->hasNextEvent())
         return false;
+    int messageType = pusher_->getIntegerByName_P(KEY_MESSAGE_TYPE);
+    if (messageType == 1) {
+        *dest = y(0);
+        *dur = 0;
+        return true;
+    }
     int tilt = pusher_->getIntegerByName("tilt");
     if (tilt == END_OF_TRAJECTORY) {
         *dest = END_OF_TRAJECTORY;

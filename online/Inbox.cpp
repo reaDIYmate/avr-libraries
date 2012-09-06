@@ -46,14 +46,6 @@ bool Inbox::enterPushMode() {
     if (stream_ == pusher_ && pusher_->connected()) {
         return true;
     }
-    if (!api_->connected()) {
-        api_->connect();
-    }
-    if (api_->call(METHOD_PUSHER_CHANNEL) < 0) {
-        return false;
-    }
-    char channel[21] = {0};
-    api_->getStringByName_P(KEY_CHANNEL_NAME, channel, 21);
     api_->disconnect();
     stream_ = pusher_;
 
@@ -62,7 +54,7 @@ bool Inbox::enterPushMode() {
         return false;
     }
     // subscribe to channel
-    if (!pusher_->subscribe(channel)) {
+    if (!pusher_->subscribe(channel_)) {
         pusher_->disconnect();
         return false;
     }
@@ -103,4 +95,14 @@ bool Inbox::leavePushMode() {
     stream_ = api_;
 
     return api_->connect();
+}
+//------------------------------------------------------------------------------
+bool Inbox::updatePusherChannel() {
+    if (!api_->connected()) {
+        api_->connect();
+    }
+    if (api_->call(METHOD_PUSHER_CHANNEL) < 0) {
+        return false;
+    }
+    api_->getStringByName_P(KEY_CHANNEL_NAME, channel_, 21);
 }

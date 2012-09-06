@@ -42,7 +42,7 @@ public:
     bool hasNextEvent();
     bool ping();
     void pong();
-    bool subscribe(const char* channel, char* auth = NULL);
+    bool subscribe(const char* channel = NULL, char* auth = NULL);
     //------------------------------------------------------------------------------
     /*
      * Update the channel.

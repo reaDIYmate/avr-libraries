@@ -273,6 +273,10 @@ void PusherClient::send_P(PGM_P data) {
  * \return true is returned if the subscription is successfull, false otherwise.
  */
 bool PusherClient::subscribe(const char* channel, char* auth) {
+    if (channel == NULL)
+        channel = channel_;
+    if (channel == NULL)
+        return false;
     memset(buffer_, 0x00, bufferSize_);
     if (auth == NULL) {
         snprintf_P(

@@ -340,6 +340,13 @@ void Personality::remoteControl(const Event* e) {
         case SHORT_CLICK_RELEASED :
             transition(Personality::awake);
             break;
+        case SUPERLONG_CLICK_ARMED :
+            transition(Personality::fallingAsleep);
+            emit(FALL_ASLEEP);
+            break;
+        case EXIT :
+            resetDeadlines();
+            break;
     }
 }
 //------------------------------------------------------------------------------
@@ -358,6 +365,9 @@ void Personality::wakingUp(const Event* e) {
         case SHORT_CLICK_RELEASED :
             transition(Personality::enteringPushMode);
             emit(STOP);
+            break;
+        case EXIT :
+            inbox_->updatePusherChannel();
             break;
     }
 }
