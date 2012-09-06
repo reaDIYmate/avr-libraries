@@ -106,142 +106,35 @@ const char STRING_API_HOST[] PROGMEM = "dev.readiymate.com";
 const char STRING_API_PATH[] PROGMEM = "/index.php/api/";
 //------------------------------------------------------------------------------
 Dispatcher::Dispatcher() :
-    wifly(
-        UART_WIFLY,
-        PIN_WIFLY_RESET,
-        PIN_WIFLY_GPIO4,
-        PIN_WIFLY_GPIO5,
-        PIN_WIFLY_GPIO6
-    ),
-    led(
-        PIN_GREEN_LED,
-        PIN_RED_LED
-    ),
-    config(
-        UART_COMPANION,
-        wifly,
-        led,
-        PIN_SD_CHIPSELECT
-    ),
-    api(
-        wifly,
-        buffer,
-        BUFFER_SIZE,
-        STRING_API_HOST,
-        STRING_API_PATH
-    ),
-    settings(
-        SETTINGS_NAMES,
-        NB_SETTINGS,
-        api
-    ),
-    email(
-        api,
-        settings,
-        EMAIL_ON,
-        sd,
-        PIN_SD_CHIPSELECT
-    ),
-    gmail(
-        api,
-        settings,
-        GMAIL_ON,
-        GMAIL_MOTION,
-        GMAIL_SOUND,
-        GMAIL_KEYWORD
-    ),
-    facebook(
-        api,
-        settings,
-        FACEBOOK_MOTION,
-        FACEBOOK_SOUND,
-        FACEBOOK_ON,
-        FACEBOOK_ACTION,
-        sd,
-        PIN_SD_CHIPSELECT
-    ),
-    twitter(
-        api,
-        settings,
-        TWITTER_MOTION,
-        TWITTER_SOUND,
-        TWITTER_ON,
-        TWITTER_ACTION,
-        sd,
-        PIN_SD_CHIPSELECT
-    ),
-    rss(
-        api,
-        settings,
-        RSS_ON,
-        RSS_MOTION,
-        RSS_SOUND,
-        RSS_KEYWORD,
-        RSS_FEED_URL
-    ),
-    foursquare(
-        api,
-        settings,
-        FOURSQUARE_MOTION,
-        FOURSQUARE_SOUND,
-        FOURSQUARE_VENUEID,
-        FOURSQUARE_ACTION,
-        FOURSQUARE_ON
-    ),
-    audio(
-        PIN_VS1011_DREQ,
-        PIN_VS1011_RESET,
-        PIN_VS1011_XDCS,
-        PIN_VS1011_XCS,
-        sd,
-        PIN_SD_CHIPSELECT
-    ),
-    button(
-        PIN_BUTTON,
-        led
-    ),
+    wifly(UART_WIFLY, PIN_WIFLY_RESET, PIN_WIFLY_GPIO4, PIN_WIFLY_GPIO5,
+        PIN_WIFLY_GPIO6),
+    led(PIN_GREEN_LED, PIN_RED_LED),
+    config(UART_COMPANION, wifly, led, PIN_SD_CHIPSELECT),
+    api(wifly, buffer, BUFFER_SIZE, STRING_API_HOST, STRING_API_PATH),
+    settings(SETTINGS_NAMES, NB_SETTINGS, api),
+    email(api, settings, EMAIL_ON, sd, PIN_SD_CHIPSELECT),
+    gmail(api, settings, GMAIL_ON, GMAIL_MOTION, GMAIL_SOUND, GMAIL_KEYWORD),
+    facebook(api, settings, FACEBOOK_MOTION, FACEBOOK_SOUND, FACEBOOK_ON,
+        FACEBOOK_ACTION, sd, PIN_SD_CHIPSELECT),
+    twitter(api, settings, TWITTER_MOTION, TWITTER_SOUND, TWITTER_ON,
+        TWITTER_ACTION, sd, PIN_SD_CHIPSELECT),
+    rss(api, settings, RSS_ON, RSS_MOTION, RSS_SOUND, RSS_KEYWORD, RSS_FEED_URL),
+    foursquare(api, settings, FOURSQUARE_MOTION, FOURSQUARE_SOUND,
+        FOURSQUARE_VENUEID, FOURSQUARE_ACTION, FOURSQUARE_ON),
+    audio(PIN_VS1011_DREQ, PIN_VS1011_RESET, PIN_VS1011_XDCS, PIN_VS1011_XCS, sd,
+        PIN_SD_CHIPSELECT),
+    button(PIN_BUTTON, led),
     player(audio),
-    pusher(
-        wifly,
-        buffer,
-        BUFFER_SIZE
-    ),
+    pusher(wifly, buffer, BUFFER_SIZE),
     inbox(api, pusher),
     control(PIN_SERVO),
     realtime(pusher),
-    motion(
-        control,
-        sd,
-        PIN_SD_CHIPSELECT
-    ),
-    personality(
-        api,
-        led,
-        inbox,
-        control,
-        realtime
-    ),
-    soundcloud(
-        api,
-        wifly,
-        buffer,
-        BUFFER_SIZE,
-        sd,
-        PIN_SD_CHIPSELECT,
-        settings,
-        SOUNDCLOUD_OWNER,
-        SOUNDCLOUD_ACTION,
-        SOUNDCLOUD_ON
-    ),
-    resources(
-        api,
-        wifly,
-        buffer,
-        BUFFER_SIZE,
-        STRING_API_HOST,
-        sd,
-        PIN_SD_CHIPSELECT
-    )
+    motion(control, sd, PIN_SD_CHIPSELECT),
+    personality(api, led, inbox, control, realtime),
+    soundcloud(api, wifly, buffer, BUFFER_SIZE, sd, PIN_SD_CHIPSELECT, settings,
+        SOUNDCLOUD_OWNER, SOUNDCLOUD_ACTION, SOUNDCLOUD_ON),
+    resources(api, wifly, buffer, BUFFER_SIZE, STRING_API_HOST, sd,
+        PIN_SD_CHIPSELECT)
 {
 }
 //------------------------------------------------------------------------------
