@@ -396,7 +396,7 @@ void Dispatcher::loop() {
         case SOUNDCLOUD :
             if (soundcloud.alertEnabled() && soundcloud.download(PSTR("SNDCLD"))) {
                 personality.dispatch(Event(SOUNDCLOUD), persoOut);
-                player.dispatch(PlayerEvent(RANDOM, "SNDCLD", 1), playerOut);
+                player.dispatch(PlayerEvent(PLAY, soundcloud.filepath()), playerOut);
             }
             else {
                 playerOut.signal = END_OF_FILE;
@@ -420,7 +420,7 @@ void Dispatcher::loop() {
                 Serial.println(F("Email OK"));
             }
             if (soundcloud.enabled()) {
-                player.dispatch(PlayerEvent(RANDOM, "SNDCLD", 1), playerOut);
+                player.dispatch(PlayerEvent(RANDOM, "SNDCLD"), playerOut);
                 personality.dispatch(Event(SOUNDCLOUD), persoOut);
             }
             else {

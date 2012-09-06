@@ -33,13 +33,8 @@
 struct PlayerEvent : public Event {
     /** Name of the audio file targeted by the event */
     const char* filename;
-    /** Number of files in the directory targeted by the event */
-    uint16_t filecount;
-    /** Create a new PlayerEvent targeting a file */
+    /** Create a new PlayerEvent targeting a file or a directory */
     PlayerEvent(Signal sig, const char* str) : Event(sig), filename(str) {}
-    /** Create a new PlayerEvent targeting a directory */
-    PlayerEvent(Signal sig, const char* str, uint16_t n) : Event(sig),
-        filename(str), filecount(n) {}
 };
 //------------------------------------------------------------------------------
 class Player : public Fsm {

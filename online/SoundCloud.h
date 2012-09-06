@@ -39,21 +39,23 @@ public:
     bool download(PGM_P folder);
     bool alertEnabled();
     bool perform();
-//------------------------------------------------------------------------------
-protected:
-    /** Buffer to use during downloads */
-    char* buffer_;
-    /** Size of the buffer */
-    size_t bufferSize_;
+    const char* filepath();
 //------------------------------------------------------------------------------
 private:
     /** An SdFat object to manage the SD card */
     SdFat* sd_;
-    /** The name of the parameter to pass to API calls */
-    PGM_P owner_;
-    PGM_P alertEnabled_;
+    /** A buffer to hold the path to recently downloaded files */
+    char filepath_[32];
+    /** Buffer to use during downloads */
+    char* buffer_;
+    /** Size of the buffer */
+    size_t bufferSize_;
     /** SD card Chip Select pin */
     const uint8_t sdChipSelectPin_;
+    /** The name of the parameter to pass to API calls */
+    PGM_P owner_;
+    /** The alert flag in the settings */
+    PGM_P alertEnabled_;
 };
 
 #endif // SOUNDCLOUD_H

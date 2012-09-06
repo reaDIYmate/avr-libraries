@@ -68,8 +68,7 @@ bool SoundCloud::download(PGM_P folder) {
     if (api_->getStringByName_P(SOUNDCLOUD_NAME_KEY, filename, 16) <= 0)
         return false;
     // construct local path
-    char filepath[32] = {0};
-    snprintf(filepath, 32, "%S/%s", folder, filename);
+    snprintf(filepath_, 32, "%S/%s", folder, filename);
 
     if (!sd_->init(SPI_EIGHTH_SPEED, sdChipSelectPin_)) {
         sd_->initErrorHalt();
@@ -77,7 +76,7 @@ bool SoundCloud::download(PGM_P folder) {
     }
 
     // if the file already exists, cancel the download
-    if (sd_->exists(filepath)) {
+    if (sd_->exists(filepath_)) {
         return false;
     }
 
@@ -101,7 +100,7 @@ bool SoundCloud::download(PGM_P folder) {
     uint16_t nbPieces = (fileSize - 1)/bufferSize_ + 1;
 
     // create the local file
-    if (!open(filepath, O_CREAT | O_WRITE)) {
+    if (!open(filepath_, O_CREAT | O_WRITE)) {
         return false;
     }
 
@@ -142,6 +141,10 @@ bool SoundCloud::download(PGM_P folder) {
     close();
 
     return true;
+}
+//------------------------------------------------------------------------------
+const char* SoundCloud::filepath() {
+    return filepath_;
 }
 //------------------------------------------------------------------------------
 bool SoundCloud::perform() {

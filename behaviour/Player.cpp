@@ -37,8 +37,7 @@ void Player::stopped(const Event* e) {
                 emit(END_OF_FILE);
             break;
         case RANDOM :
-            if (audio_->openRandom(((PlayerEvent*)e)->filename,
-                ((PlayerEvent*)e)->filecount))
+            if (audio_->openRandom(((PlayerEvent*)e)->filename))
                 transition(Player::playing);
             else
                 emit(END_OF_FILE);
@@ -68,8 +67,7 @@ void Player::playing(const Event* e) {
             break;
         case RANDOM :
             audio_->stopPlaying();
-            if (audio_->openRandom(((PlayerEvent*)e)->filename,
-                ((PlayerEvent*)e)->filecount))
+            if (audio_->openRandom(((PlayerEvent*)e)->filename))
                 transition(Player::playing);
             else
                 transition(Player::stopped);
