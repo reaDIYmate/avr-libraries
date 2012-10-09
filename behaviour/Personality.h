@@ -68,7 +68,6 @@ private:
     void remoteControl(const Event* e);
     void wakingUp(const Event* e);
     // Helper methods
-    void postActivity(uint8_t level);
     void resetDeadlines();
     /** Timestamp used to start checking Gmail*/
     unsigned long checkingGmailDeadline_;

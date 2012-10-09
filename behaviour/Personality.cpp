@@ -20,11 +20,6 @@
 #include <Personality.h>
 #define DEBUG
 //------------------------------------------------------------------------------
-/** Name of the API method used to update the thing activity level. */
-const char PROGMEM METHOD_POST_ACTIVITY[] = "thing/activity";
-/** Key corresponding to the activity level in the API call. */
-const char PROGMEM KEY_ACTIVITY[] = "activity";
-//------------------------------------------------------------------------------
 // Timing constants
 /** Refresh interval (in ms) to check Gmail. */
 const uint32_t CHECK_GMAIL_INTERVAL = 480000;
@@ -53,7 +48,6 @@ Personality::Personality(Api &api, StatusLed &led, Inbox &inbox,
 }
 //------------------------------------------------------------------------------
 void Personality::initialize() {
-    postActivity(MAX_LEVEL);
     resetDeadlines();
     transition(Personality::enteringPushMode);
 }
@@ -353,12 +347,11 @@ void Personality::remoteControl(const Event* e) {
 /** Substate when performing a user-triggered action */
 void Personality::wakingUp(const Event* e) {
     switch (e->signal) {
-        case ENTRY :
 #ifdef DEBUG
+        case ENTRY :
             Serial.println(F("Personality::wakingUp"));
-#endif
-            postActivity(MAX_LEVEL);
             break;
+#endif
         case STOP :
             transition(Personality::enteringPushMode);
             break;
@@ -370,17 +363,6 @@ void Personality::wakingUp(const Event* e) {
             inbox_->updatePusherChannel();
             break;
     }
-}
-//------------------------------------------------------------------------------
-/** Send the current activity level to the reaDIYmate API */
-void Personality::postActivity(uint8_t level) {
-    char itoaBuffer[3];
-    itoa(level, itoaBuffer, 10);
-    api_->call(METHOD_POST_ACTIVITY, KEY_ACTIVITY, itoaBuffer);
-#ifdef DEBUG
-    Serial.print(F("Level: "));
-    Serial.println(level);
-#endif
 }
 //------------------------------------------------------------------------------
 /** Reset the timers for all recurring actions */
