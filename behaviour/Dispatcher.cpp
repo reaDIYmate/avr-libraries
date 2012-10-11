@@ -154,7 +154,6 @@ void Dispatcher::setup() {
     strcpy(credential, buf);
     api.setFixedArgs(credential);
     pusher.setKey(config.getPusherKey());
-    inbox.updatePusherChannel();
     Serial.print(F("API credential: "));
     Serial.println(credential);
     Serial.println(F("Object configuration restored from the EEPROM."));

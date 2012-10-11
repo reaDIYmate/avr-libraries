@@ -44,7 +44,7 @@ Personality::Personality(Api &api, StatusLed &led, Inbox &inbox,
     control_(&control),
     realtime_(&realtime)
 {
-    internalTransition(Personality::asleep);
+    internalTransition(Personality::wakingUp);
 }
 //------------------------------------------------------------------------------
 void Personality::initialize() {
