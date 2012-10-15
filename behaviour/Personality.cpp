@@ -278,7 +278,7 @@ void Personality::enteringPushMode(const Event* e) {
             else {
                 inbox_->leavePushMode();
                 led_->colorRed();
-                internalTransition(Personality::awake);
+                internalTransition(Personality::enteringPushMode);
             }
             break;
     }
