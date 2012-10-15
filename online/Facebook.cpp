@@ -61,17 +61,19 @@ bool Facebook::updateContent() {
     Api* api = Action::api_;
     api->call(STRING_API_FACEBOOK_AUTO);
     api->rewind();
-    if (api->find_P(SETTINGS_UP_TO_DATE)){
+    if (api->find_P(SETTINGS_UP_TO_DATE)) {
         return false;
     }
     if (!sd_->init(SPI_EIGHTH_SPEED, sdChipSelectPin_)) {
         sd_->initErrorHalt();
         return false;
     }
-    if (sd_->exists(SD_FILE)){
-        sd_->remove(SD_FILE);
+    char filename[13] = {0};
+    strcpy_P(filename, filename_);
+    if (sd_->exists(filename)){
+        sd_->remove(filename);
     }
-    if (!open(SD_FILE, O_CREAT | O_WRITE)) {
+    if (!open(filename, O_CREAT | O_WRITE)) {
         return false;
     }
     int nbBytes = api->getStringByName_P(KEY_MSG, content, 140);

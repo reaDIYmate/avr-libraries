@@ -66,10 +66,12 @@ bool Twitter::updateContent() {
         sd_->initErrorHalt();
         return false;
     }
-    if (sd_->exists(SD_FILE)) {
-        sd_->remove(SD_FILE);
+    char filename[13] = {0};
+    strcpy_P(filename, filename_);
+    if (sd_->exists(filename)){
+        sd_->remove(filename);
     }
-    if (!open(SD_FILE, O_CREAT | O_WRITE)) {
+    if (!open(filename, O_CREAT | O_WRITE)) {
         return false;
     }
     int nbBytes = api->getStringByName_P(KEY_MSG, content, 140);
