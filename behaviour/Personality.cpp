@@ -294,6 +294,7 @@ void Personality::fallingAsleep(const Event* e) {
 #endif
         case STOP :
             transition(Personality::asleep);
+            led_->colorNothing();
             break;
     }
 }
@@ -347,11 +348,12 @@ void Personality::remoteControl(const Event* e) {
 /** Substate when performing a user-triggered action */
 void Personality::wakingUp(const Event* e) {
     switch (e->signal) {
-#ifdef DEBUG
         case ENTRY :
+#ifdef DEBUG
             Serial.println(F("Personality::wakingUp"));
-            break;
 #endif
+            led_->colorOrange();
+            break;
         case STOP :
             transition(Personality::enteringPushMode);
             break;

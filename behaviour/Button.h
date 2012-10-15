@@ -33,7 +33,7 @@ class Button : public Fsm {
  * \brief A state machine that debounces the button and generates click events.
  */
 public:
-    Button(uint8_t buttonPin, StatusLed &led);
+    Button(uint8_t buttonPin);
     void initialize();
 //------------------------------------------------------------------------------
 private:
@@ -51,8 +51,6 @@ private:
     unsigned long longClickDeadline;
     /** Timestamp used to trigger superlong click events */
     unsigned long superLongClickDeadline;
-    /** Status LED */
-    StatusLed* led_;
 };
 
 #endif // BUTTON_H

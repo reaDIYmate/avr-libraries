@@ -123,7 +123,7 @@ Dispatcher::Dispatcher() :
         FOURSQUARE_VENUEID, FOURSQUARE_ACTION, FOURSQUARE_ON),
     audio(PIN_VS1011_DREQ, PIN_VS1011_RESET, PIN_VS1011_XDCS, PIN_VS1011_XCS, sd,
         PIN_SD_CHIPSELECT),
-    button(PIN_BUTTON, led),
+    button(PIN_BUTTON),
     player(audio),
     pusher(wifly, buffer, BUFFER_SIZE),
     inbox(api, pusher),
@@ -192,7 +192,6 @@ void Dispatcher::setup() {
     Serial.print(F("----------------------------------------\r\n"));
     audio.play("START.MP3");
     personality.initialize();
-    led.colorGreen();
 }
 //------------------------------------------------------------------------------
 void Dispatcher::loop() {

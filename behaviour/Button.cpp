@@ -20,13 +20,12 @@
  #include <Button.h>
 //------------------------------------------------------------------------------
 const long SHORT_CLICK_DEBOUNCE = 100;
-const long LONG_CLICK_DEBOUNCE = 2000;
-const long SUPERLONG_CLICK_DEBOUNCE = 3000;
+const long LONG_CLICK_DEBOUNCE = 1000;
+const long SUPERLONG_CLICK_DEBOUNCE = 2000;
 //------------------------------------------------------------------------------
 /** Construct an instance of the Button FSM */
-Button::Button(uint8_t buttonPin, StatusLed &led) :
-    buttonPin_(buttonPin),
-    led_(&led)
+Button::Button(uint8_t buttonPin) :
+    buttonPin_(buttonPin)
 {
     internalTransition(Button::notPushed);
     dispatch(entryEvt);
@@ -42,9 +41,6 @@ void Button::initialize() {
 /** No contact detected. */
 void Button::notPushed(const Event* e) {
     switch (e->signal) {
-        case ENTRY :
-            led_->colorGreen();
-            break;
         case CONTACT_DETECTED :
             transition(Button::maybePushed);
             break;
@@ -76,7 +72,6 @@ void Button::pushedShort(const Event* e) {
     switch (e->signal) {
         case ENTRY :
             longClickDeadline = millis() + LONG_CLICK_DEBOUNCE;
-            led_->colorOrange();
             break;
         case NO_CONTACT_DETECTED :
             emit(SHORT_CLICK_RELEASED);
@@ -106,9 +101,6 @@ void Button::pushedLong(const Event* e) {
                 emit(SUPERLONG_CLICK_ARMED);
                 transition(Button::pushedSuperLong);
             }
-            break;
-        case EXIT :
-            led_->colorRed();
             break;
     }
 }
