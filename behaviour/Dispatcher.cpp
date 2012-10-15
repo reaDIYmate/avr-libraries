@@ -223,8 +223,17 @@ void Dispatcher::loop() {
     char* motionName;
     switch (persoOut.signal) {
         case WAKE_UP :
-            player.dispatch(PlayerEvent(PLAY, "JINGLE6.MP3"), playerOut);
+        {
+            facebook.updateContent();
+            twitter.updateContent();
+            email.updateContent();
+            if (settings.fetch() >= 0) {
+                settings.save();
+            }
+            resources.synchronize();
+            player.dispatch(PlayerEvent(PLAY, "START.MP3"), playerOut);
             break;
+        }
         case FALL_ASLEEP :
             player.dispatch(PlayerEvent(PLAY, "YAWN.MP3"), playerOut);
             break;

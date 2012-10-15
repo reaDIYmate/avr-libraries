@@ -295,6 +295,7 @@ void Personality::fallingAsleep(const Event* e) {
         case STOP :
             transition(Personality::asleep);
             led_->colorNothing();
+            inbox_->leavePushMode();
             break;
     }
 }
