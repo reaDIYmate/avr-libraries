@@ -528,8 +528,6 @@ void Configuration::sendDeviceId() {
  * \param[in] timeout Timeout used to decide when to abort the synchronization.
  */
 void Configuration::synchronize(uint16_t timeout) {
-
-    led_->colorOrange();
     char buffer[512] = {0};
     write_P(WIZARD_STARTUP);
 
@@ -577,5 +575,4 @@ void Configuration::synchronize(uint16_t timeout) {
             return;
         }
     }
-    led_->colorGreen();
 }

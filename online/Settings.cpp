@@ -23,8 +23,10 @@
 const char PROGMEM METHOD_SETTINGS_ACK[] = "app/settings_ack";
 /** Name of the API method used to fetch the new settings */
 const char PROGMEM METHOD_SETTINGS_GET[] = "app/settings";
-/** String returned by the server when the settings are up-to-date */
-const char PROGMEM SETTINGS_UP_TO_DATE[] = "null";
+/** Key for the status in the server response */
+const char PROGMEM SETTINGS_STATUS[] = "status";
+/** Status value returned by the server when the settings are up-to-date */
+const char PROGMEM SETTINGS_UP_TO_DATE = 0;
 /** String returned by the server when the settings are up-to-date */
 const char PROGMEM SETTINGS_EMPTY[] = "{}";
 //------------------------------------------------------------------------------
@@ -97,12 +99,15 @@ int Settings::fetch() {
         return 0;
 
     int nBytes = api_->call(METHOD_SETTINGS_GET);
+
     // Api::call returns -1 if the request times out
     if (nBytes <= 0)
         return -1;
+
     //  the server returns SETTINGS_UP_TO_DATE if everything is up-to-date
-    if (api_->findUntil_P(SETTINGS_UP_TO_DATE, PSTR("{")))
+    if (api_->getIntegerByName_P(SETTINGS_STATUS) == SETTINGS_UP_TO_DATE) {
         return -1;
+    }
     //  the server returns SETTINGS_EMPTY if the new settings are empty
     if (nBytes == 2 && api_->find_P(SETTINGS_EMPTY))
         return 0;

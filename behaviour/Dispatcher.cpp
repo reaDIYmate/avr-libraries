@@ -172,6 +172,9 @@ void Dispatcher::setup() {
             Serial.print(settings.getNbSettings());
             Serial.println(F(" settings saved to the EEPROM."));
         }
+        else {
+            Serial.println(F("Application settings up-to-date."));
+        }
     }
     else {
         Serial.println(F("failed to connect."));
@@ -189,6 +192,7 @@ void Dispatcher::setup() {
     Serial.print(F("----------------------------------------\r\n"));
     audio.play("START.MP3");
     personality.initialize();
+    led.colorGreen();
 }
 //------------------------------------------------------------------------------
 void Dispatcher::loop() {
