@@ -47,8 +47,7 @@ public:
     const char* getPusherChannel() {return channel_;}
     void synchronize(uint16_t timeout);
 //------------------------------------------------------------------------------
-private:
-    void firstBoot();
+    void enableBootloader();
     bool formatSdCard();
     void readPusher(char* buffer, uint8_t bufferSize);
     void readUserAndPass(char* buffer, uint8_t bufferSize);

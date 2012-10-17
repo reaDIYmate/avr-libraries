@@ -56,6 +56,8 @@ const char PROGMEM COMMAND_TYPE[] = "cmd";
 const char PROGMEM COMMAND_DEVICEID[] = "id";
 /** Configuration mode */
 const char PROGMEM COMMAND_CONFIGURATION[] = "config";
+/** Configuration mode */
+const char PROGMEM COMMAND_BOOTLOADER[] = "bootloader";
 /** Factory mode */
 const char PROGMEM COMMAND_FACTORY[] = "factory";
 /** Update Wifly firmware mode */
@@ -117,7 +119,12 @@ Configuration::~Configuration() {
     }
 }
 //------------------------------------------------------------------------------
-void Configuration::firstBoot() {
+/*
+ * This method writes the "magic" value to the last EEPROM word. The reaDIYboot
+ * bootloader always checks this location at start-up. If the value is anything
+ * else than 0x232e, reaDIYboot will act as a regular STK500 bootloader.
+ */
+ void Configuration::enableBootloader() {
     eeprom_write_word((uint16_t*)(0xFFF - 1), 0x232e);
 }
 //------------------------------------------------------------------------------
@@ -548,7 +555,6 @@ void Configuration::synchronize(uint16_t timeout) {
             nbBytes = readBytesUntil(COMMAND_END_CHAR, buffer, 512);
             readWifiSettings(buffer, nbBytes);
             readUserAndPass(buffer, nbBytes);
-            firstBoot();
             deadline = millis() + timeout;
         }
         else if (strcmp_P(cmd, COMMAND_PUSHER) == 0) {
