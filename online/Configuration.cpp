@@ -18,6 +18,13 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <Configuration.h>
+#define DEBUG
+//------------------------------------------------------------------------------
+#ifdef DEBUG
+    #define DEBUG_LOG(str) Serial.println(F(str))
+#else
+    #define DEBUG_LOG(str)
+#endif
 //------------------------------------------------------------------------------
 // reaDIYmate Companion commands
 /** End character */
@@ -55,7 +62,7 @@ const char PROGMEM COMMAND_TYPE[] = "cmd";
 /** DeviceID mode */
 const char PROGMEM COMMAND_DEVICEID[] = "id";
 /** Configuration mode */
-const char PROGMEM COMMAND_CONFIGURATION[] = "config";
+const char PROGMEM COMMAND_AUTH[] = "auth";
 /** Configuration mode */
 const char PROGMEM COMMAND_BOOTLOADER[] = "bootloader";
 /** Factory mode */
@@ -64,6 +71,8 @@ const char PROGMEM COMMAND_FACTORY[] = "factory";
 const char PROGMEM COMMAND_UPDATE[] = "update";
 /** Pusher mode */
 const char PROGMEM COMMAND_PUSHER[] = "pusher";
+/** WLAN config */
+const char PROGMEM COMMAND_WLAN[] = "wlan";
 /** Format SD card */
 const char PROGMEM COMMAND_FORMAT[] = "format";
 /** Start-up signal */
@@ -545,40 +554,61 @@ void Configuration::synchronize(uint16_t timeout) {
         JsonStream json = JsonStream(buffer, nbBytes);
 
         char cmd[16] = {0};
-        json.getStringByName_P(COMMAND_TYPE, cmd, 16);
+        int nBytes = json.getStringByName_P(COMMAND_TYPE, cmd, 16);
 
-        if (strcmp_P(cmd, COMMAND_DEVICEID) == 0) {
-            sendDeviceId();
-        }
-        else if (strcmp_P(cmd, COMMAND_CONFIGURATION) == 0) {
-            memset(buffer, 0x00, 512);
-            nbBytes = readBytesUntil(COMMAND_END_CHAR, buffer, 512);
-            readWifiSettings(buffer, nbBytes);
-            readUserAndPass(buffer, nbBytes);
-            deadline = millis() + timeout;
-        }
-        else if (strcmp_P(cmd, COMMAND_PUSHER) == 0) {
-            memset(buffer, 0x00, 512);
-            nbBytes = readBytesUntil(COMMAND_END_CHAR, buffer, 512);
-            readPusher(buffer, nbBytes);
-            deadline = millis() + timeout;
-        }
-        else if (strcmp_P(cmd, COMMAND_FACTORY) == 0) {
-            wifly_->resetConfigToDefault();
-            wifly_->getDeviceId(deviceId_);
-            saveDeviceId();
-            Serial.println(F("Factory configuration"));
-            return;
-        }
-        else if (strcmp_P(cmd, COMMAND_UPDATE) == 0) {
-            wifly_->updateFirmware();
-            Serial.println(F("WiFly firmware updated"));
-            return;
-        }
-        else if (strcmp_P(cmd, COMMAND_FORMAT) == 0) {
-            formatSdCard();
-            Serial.println(F("SD card formatted"));
-            return;
+        if (nBytes > 0) {
+
+            if (strcmp_P(cmd, COMMAND_DEVICEID) == 0) {
+                sendDeviceId();
+                deadline = millis() + timeout;
+            }
+            else if (strcmp_P(cmd, COMMAND_AUTH) == 0) {
+                DEBUG_LOG("Command received: set authentication.");
+                readUserAndPass(buffer, nbBytes);
+                deadline = millis() + timeout;
+                DEBUG_LOG("Authentication set.");
+            }
+            else if (strcmp_P(cmd, COMMAND_WLAN) == 0) {
+                DEBUG_LOG("Command received: set WLAN config.");
+                readWifiSettings(buffer, nbBytes);
+                deadline = millis() + timeout;
+                DEBUG_LOG("WLAN config set.");
+            }
+            else if (strcmp_P(cmd, COMMAND_PUSHER) == 0) {
+                DEBUG_LOG("Command received: setup Pusher messaging.");
+                readPusher(buffer, nbBytes);
+                deadline = millis() + timeout;
+                DEBUG_LOG("Pusher information set.");
+            }
+            else if (strcmp_P(cmd, COMMAND_FACTORY) == 0) {
+                DEBUG_LOG("Command received: perform factory reset.");
+                wifly_->resetConfigToDefault();
+                wifly_->getDeviceId(deviceId_);
+                saveDeviceId();
+                deadline = millis() + timeout;
+                DEBUG_LOG("Reset to default config performed.");
+            }
+            else if (strcmp_P(cmd, COMMAND_UPDATE) == 0) {
+                DEBUG_LOG("Command received: update Wi-Fi firmware.");
+                wifly_->updateFirmware();
+                deadline = millis() + timeout;
+                DEBUG_LOG("Wi-Fi firmware updated.");
+            }
+            else if (strcmp_P(cmd, COMMAND_FORMAT) == 0) {
+                DEBUG_LOG("Command received: format SD card.");
+                formatSdCard();
+                deadline = millis() + timeout;
+                DEBUG_LOG("SD card formatted.");
+            }
+            else if (strcmp_P(cmd, COMMAND_BOOTLOADER) == 0) {
+                DEBUG_LOG("Command received: enable Wi-Fi bootloader.");
+                enableBootloader();
+                deadline = millis() + timeout;
+                DEBUG_LOG("Bootloader enabled.");
+            }
+            else {
+                DEBUG_LOG("Command not recognized.");
+            }
         }
     }
 }
