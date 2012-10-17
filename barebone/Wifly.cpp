@@ -479,6 +479,30 @@ void Wifly::reset() {
     delay(150);
 }
 //------------------------------------------------------------------------------
+/** Reset the baudrate of the wifly module to 9600 */
+bool Wifly::resetBaudrate() {
+
+    begin(9600);
+    reset();
+    if (enterCommandMode()) {
+        DEBUG_LOG("Baudrate already at 9600");
+        reset();
+        return true;
+    }
+    else {
+        DEBUG_LOG("Change baudrate to 9600");
+        begin(115200);
+        reset();
+        enterCommandMode();
+        executeCommand(WIFLY_FACTORY_RESET, WIFLY_FACTORY_MESSAGE);
+        executeCommand(WIFLY_SAVE_CONFIG, WIFLY_CONFIG_SAVED);
+        executeCommand(WIFLY_EXIT, WIFLY_EXITED);
+        reset();
+        return false;
+    }
+}
+
+//------------------------------------------------------------------------------
 /**
  * Setup the WiFly module to connect to a given access point.
  *
@@ -715,26 +739,4 @@ bool Wifly::updateFirmware() {
     reset();
 
     return true;
-}
-/** Reset the baudrate of the wifly module to 9600 */
-bool Wifly::resetBaudrate() {
-
-    begin(9600);
-    reset();
-    if (enterCommandMode()) {
-        DEBUG_LOG("Baudrate already at 9600");
-        reset();
-        return true;
-    }
-    else {
-        DEBUG_LOG("Change baudrate to 9600");
-        begin(115200);
-        reset();
-        enterCommandMode();
-        executeCommand(WIFLY_FACTORY_RESET, WIFLY_FACTORY_MESSAGE);
-        executeCommand(WIFLY_SAVE_CONFIG, WIFLY_CONFIG_SAVED);
-        executeCommand(WIFLY_EXIT, WIFLY_EXITED);
-        reset();
-        return false;
-    }
 }
