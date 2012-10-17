@@ -49,9 +49,9 @@ public:
 //------------------------------------------------------------------------------
     void enableBootloader();
     bool formatSdCard();
-    void readPusher(char* buffer, uint8_t bufferSize);
-    void readUserAndPass(char* buffer, uint8_t bufferSize);
-    void readWifiSettings(char* buffer, uint8_t bufferSize);
+    bool readPusher(char* buffer, uint8_t bufferSize);
+    bool readUserAndPass(char* buffer, uint8_t bufferSize);
+    bool readWifiSettings(char* buffer, uint8_t bufferSize);
     void restoreDeviceId();
     void restorePusher();
     void restoreUserAndPass();

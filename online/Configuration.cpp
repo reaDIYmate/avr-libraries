@@ -367,7 +367,7 @@ void Configuration::getApiCredential(char* buffer, uint8_t bufferSize) {
 }
 //------------------------------------------------------------------------------
 /** Read the pusher key/secret/channel sent by the Companion */
-void Configuration::readPusher(char* buffer, uint8_t bufferSize) {
+bool Configuration::readPusher(char* buffer, uint8_t bufferSize) {
     JsonStream json = JsonStream(buffer, bufferSize);
 
     char key[22] = {0};
@@ -385,11 +385,14 @@ void Configuration::readPusher(char* buffer, uint8_t bufferSize) {
         secret_ = secret;
         channel_ = channel;
         savePusher();
+        return true;
     }
+
+    return false;
 }
 //------------------------------------------------------------------------------
 /** Read the username and password sent by the Companion */
-void Configuration::readUserAndPass(char* buffer, uint8_t bufferSize) {
+bool Configuration::readUserAndPass(char* buffer, uint8_t bufferSize) {
     JsonStream json = JsonStream(buffer, bufferSize);
 
     char newUsername[64] = {0};
@@ -398,18 +401,22 @@ void Configuration::readUserAndPass(char* buffer, uint8_t bufferSize) {
     json.getStringByName_P(WIZARD_KEY_USER, newUsername, 64);
     json.getStringByName_P(WIZARD_KEY_PASSWORD, newPassword, 128);
 
+    if (strlen(newUsername) == 0 || strlen(newPassword) == 0) {
+        return false;
+    }
+
     if (strcmp(username_, newUsername) != 0
     || strcmp(password_, newPassword) != 0) {
         username_ = newUsername;
         password_ = newPassword;
         saveUserAndPass();
     }
+
+    return true;
 }
 //------------------------------------------------------------------------------
 /** Read the Wi-Fi settings sent by the Companion and update the WiFly config */
-void Configuration::readWifiSettings(char* buffer, uint8_t bufferSize) {
-
-
+bool Configuration::readWifiSettings(char* buffer, uint8_t bufferSize) {
     JsonStream json = JsonStream(buffer, bufferSize);
 
     // parse the individual settings one by one
@@ -429,18 +436,18 @@ void Configuration::readWifiSettings(char* buffer, uint8_t bufferSize) {
     // check the validity of the new settings
     bool dhcp = (strcmp_P(mode, WIZARD_DHCP) == 0);
     if (strlen(ssid) == 0 || strlen(passphrase) == 0) {
-        return;
+        return false;
     }
     if (dhcp == false && (strlen(ip) == 0 || strlen(ip) == 0 || strlen(ip) == 0)) {
-        return;
+        return false;
     }
 
     // update the configuration of the Wi-Fi module
     if (dhcp == true) {
-        wifly_->setWlanConfig(ssid, passphrase);
+        return wifly_->setWlanConfig(ssid, passphrase);
     }
     else {
-        wifly_->setWlanConfig(ssid, passphrase, ip, mask, gateway);
+        return wifly_->setWlanConfig(ssid, passphrase, ip, mask, gateway);
     }
 }
 //------------------------------------------------------------------------------
@@ -566,47 +573,61 @@ void Configuration::synchronize(uint16_t timeout) {
             }
             else if (strcmp_P(cmd, COMMAND_AUTH) == 0) {
                 DEBUG_LOG("Command received: set authentication.");
-                readUserAndPass(buffer, nbBytes);
+                if (readUserAndPass(buffer, nbBytes)) {
+                    DEBUG_LOG("Authentication set.");
+                }
+                else {
+                    DEBUG_LOG("Authentication settings accepted.");
+                }
                 deadline = millis() + timeout;
-                DEBUG_LOG("Authentication set.");
             }
             else if (strcmp_P(cmd, COMMAND_WLAN) == 0) {
                 DEBUG_LOG("Command received: set WLAN config.");
-                readWifiSettings(buffer, nbBytes);
+                if (readWifiSettings(buffer, nbBytes)) {
+                    DEBUG_LOG("WLAN config set.");
+                }
+                else {
+                    DEBUG_LOG("Failed to set WLAN config.");
+                }
                 deadline = millis() + timeout;
-                DEBUG_LOG("WLAN config set.");
             }
             else if (strcmp_P(cmd, COMMAND_PUSHER) == 0) {
                 DEBUG_LOG("Command received: setup Pusher messaging.");
-                readPusher(buffer, nbBytes);
+                if (readPusher(buffer, nbBytes)) {
+                    DEBUG_LOG("Pusher information set.");
+                }
+                else {
+                    DEBUG_LOG("Failed to set Pusher information.");
+
+                }
                 deadline = millis() + timeout;
-                DEBUG_LOG("Pusher information set.");
-            }
-            else if (strcmp_P(cmd, COMMAND_FACTORY) == 0) {
-                DEBUG_LOG("Command received: perform factory reset.");
-                wifly_->resetConfigToDefault();
-                wifly_->getDeviceId(deviceId_);
-                saveDeviceId();
-                deadline = millis() + timeout;
-                DEBUG_LOG("Reset to default config performed.");
-            }
-            else if (strcmp_P(cmd, COMMAND_UPDATE) == 0) {
-                DEBUG_LOG("Command received: update Wi-Fi firmware.");
-                wifly_->updateFirmware();
-                deadline = millis() + timeout;
-                DEBUG_LOG("Wi-Fi firmware updated.");
-            }
-            else if (strcmp_P(cmd, COMMAND_FORMAT) == 0) {
-                DEBUG_LOG("Command received: format SD card.");
-                formatSdCard();
-                deadline = millis() + timeout;
-                DEBUG_LOG("SD card formatted.");
             }
             else if (strcmp_P(cmd, COMMAND_BOOTLOADER) == 0) {
                 DEBUG_LOG("Command received: enable Wi-Fi bootloader.");
                 enableBootloader();
-                deadline = millis() + timeout;
                 DEBUG_LOG("Bootloader enabled.");
+                deadline = millis() + timeout;
+            }
+            else if (strcmp_P(cmd, COMMAND_FACTORY) == 0) {
+                DEBUG_LOG("Command received: perform factory reset.");
+                wifly_->resetBaudrate();
+                wifly_->resetConfigToDefault();
+                wifly_->getDeviceId(deviceId_);
+                saveDeviceId();
+                DEBUG_LOG("Reset to default config performed.");
+                deadline = millis() + timeout;
+            }
+            else if (strcmp_P(cmd, COMMAND_UPDATE) == 0) {
+                DEBUG_LOG("Command received: update Wi-Fi firmware.");
+                wifly_->updateFirmware();
+                DEBUG_LOG("Wi-Fi firmware updated.");
+                deadline = millis() + timeout;
+            }
+            else if (strcmp_P(cmd, COMMAND_FORMAT) == 0) {
+                DEBUG_LOG("Command received: format SD card.");
+                formatSdCard();
+                DEBUG_LOG("SD card formatted.");
+                deadline = millis() + timeout;
             }
             else {
                 DEBUG_LOG("Command not recognized.");
