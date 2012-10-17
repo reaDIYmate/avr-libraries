@@ -428,10 +428,12 @@ void Configuration::readWifiSettings(char* buffer, uint8_t bufferSize) {
 
     // check the validity of the new settings
     bool dhcp = (strcmp_P(mode, WIZARD_DHCP) == 0);
-    if (ssid == NULL || passphrase == NULL)
+    if (strlen(ssid) == 0 || strlen(passphrase) == 0) {
         return;
-    if (dhcp == false && (ip == NULL || mask == NULL || gateway == NULL))
+    }
+    if (dhcp == false && (strlen(ip) == 0 || strlen(ip) == 0 || strlen(ip) == 0)) {
         return;
+    }
 
     // update the configuration of the Wi-Fi module
     if (dhcp == true) {
