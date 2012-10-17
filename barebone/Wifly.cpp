@@ -491,7 +491,7 @@ void Wifly::reset() {
  * \note The IP address, subnet mask and gateway address will be overriden when
  * using DHCP.
  */
-bool Wifly::setConfig(const char* ssid, const char* passphrase, const char* ip,
+bool Wifly::setWlanConfig(const char* ssid, const char* passphrase, const char* ip,
     const char* mask, const char* gateway) {
     reset();
     begin(FULL_SPEED);
@@ -551,7 +551,7 @@ bool Wifly::setConfig(const char* ssid, const char* passphrase, const char* ip,
 }
 //------------------------------------------------------------------------------
 /** Setup the RN171. */
-bool Wifly::setFirstConfig() {
+bool Wifly::resetConfigToDefault() {
     begin(9600);
     reset();
 

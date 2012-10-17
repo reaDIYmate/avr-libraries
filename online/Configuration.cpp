@@ -426,10 +426,10 @@ void Configuration::readWifiSettings(char* buffer, uint8_t bufferSize) {
 
     // update the configuration of the Wi-Fi module
     if (dhcp == true) {
-        wifly_->setConfig(ssid, passphrase);
+        wifly_->setWlanConfig(ssid, passphrase);
     }
     else {
-        wifly_->setConfig(ssid, passphrase, ip, mask, gateway);
+        wifly_->setWlanConfig(ssid, passphrase, ip, mask, gateway);
     }
 }
 //------------------------------------------------------------------------------
@@ -564,7 +564,7 @@ void Configuration::synchronize(uint16_t timeout) {
             deadline = millis() + timeout;
         }
         else if (strcmp_P(cmd, COMMAND_FACTORY) == 0) {
-            wifly_->setFirstConfig();
+            wifly_->resetConfigToDefault();
             wifly_->getDeviceId(deviceId_);
             saveDeviceId();
             Serial.println(F("Factory configuration"));
