@@ -95,6 +95,8 @@ const char PROGMEM WIFLY_SET_SYS_IOFUNC[] = "set sys iofunc";
 /** Set the UART mode */
 const char PROGMEM WIFLY_SET_UART_MODE[] = "set uart mode";
 /** Set the UART baudrate value */
+const char PROGMEM WIFLY_SET_UART_BAUD[] = "set uart baud";
+/** Set the UART baudrate value */
 const char PROGMEM WIFLY_SET_UART_RAW[] = "set uart raw";
 /** Set the WLAN join mode */
 const char PROGMEM WIFLY_SET_WLAN_JOIN[] = "set wlan join";
@@ -601,7 +603,7 @@ bool Wifly::resetConfigToDefault() {
     DEBUG_LOG("set baudate FULL_SPEED");
     delay(200);
     // set baudrate to 250000
-    if(!executeCommand(WIFLY_SET_UART_RAW, WIFLY_AOK, FULL_SPEED))
+    if(!executeCommand(WIFLY_SET_UART_BAUD, WIFLY_AOK, FULL_SPEED))
         return false;
 
     DEBUG_LOG("set wlan linkmon");
