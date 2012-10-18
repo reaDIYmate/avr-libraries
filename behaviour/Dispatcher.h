@@ -54,6 +54,7 @@ public:
     Dispatcher();
     void setup();
     void loop();
+    void play(const char* sound, const char* motion);
 //------------------------------------------------------------------------------
 private:
     // Base

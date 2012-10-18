@@ -148,6 +148,8 @@ void Dispatcher::setup() {
     wifly.initialize();
     config.synchronize(3000);
 
+    play("SYSTEM/SYS_WAKE.MP3", "PUBLIC/ARMSWING.TXT");
+
     char buf[128] = {0};
     config.getApiCredential(buf, 128);
     char* credential = (char*)calloc(strlen(buf) + 1,sizeof(char));
@@ -175,9 +177,16 @@ void Dispatcher::setup() {
         else {
             Serial.println(F("Application settings up-to-date."));
         }
+        // the reaDIYmate is online
+        audio.play("SYSTEM/SYS_CNCT.MP3");
+        led.colorGreen();
     }
     else {
         Serial.println(F("failed to connect."));
+        // the reaDIYmate is offline
+        led.colorRed();
+        // hang forever
+        while (true);
     }
     if (restore) {
         if (settings.restore() >= 0) {
@@ -190,7 +199,6 @@ void Dispatcher::setup() {
     randomSeed(analogRead(0));
     Serial.println(F("Initialization done."));
     Serial.print(F("----------------------------------------\r\n"));
-    audio.play("START.MP3");
     personality.initialize();
 }
 //------------------------------------------------------------------------------
@@ -352,4 +360,17 @@ void Dispatcher::loop() {
         player.dispatch(Event(STOP));
         personality.dispatch(Event(STOP), persoOut);
     }
+}
+//------------------------------------------------------------------------------
+void Dispatcher::play(const char* soundName, const char* motionName) {
+    motion.dispatch(MotionEvent(PLAY, motionName));
+    player.dispatch(PlayerEvent(PLAY, soundName));
+
+    Event playerOut;
+    do {
+        motion.dispatch(Event(TICK));
+        player.dispatch(Event(TICK), playerOut);
+    } while (playerOut.signal != END_OF_FILE);
+
+    motion.dispatch(Event(STOP));
 }
