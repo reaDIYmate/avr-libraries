@@ -165,7 +165,7 @@ void Dispatcher::setup() {
     char buf[128] = {0};
     config.getApiCredential(buf, 128);
     char* credential = (char*)calloc(strlen(buf) + 1,sizeof(char));
-    strcpy(credential, buf);
+    strncpy(credential, buf, 128 - 1);
     api.setFixedArgs(credential);
     pusher.setKey(config.getPusherKey());
     Serial.print(F("API credential: "));
