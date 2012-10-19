@@ -438,7 +438,7 @@ bool Configuration::readWifiSettings(char* buffer, uint8_t bufferSize) {
     if (strlen(ssid) == 0 || strlen(passphrase) == 0) {
         return false;
     }
-    if (dhcp == false && (strlen(ip) == 0 || strlen(ip) == 0 || strlen(ip) == 0)) {
+    if (dhcp == false && (strlen(ip) == 0 || strlen(mask) == 0 || strlen(gateway) == 0)) {
         return false;
     }
 

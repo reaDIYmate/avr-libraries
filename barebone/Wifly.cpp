@@ -485,7 +485,6 @@ void Wifly::reset() {
 //------------------------------------------------------------------------------
 /** Reset the baudrate of the wifly module to 9600 */
 bool Wifly::resetBaudrate() {
-
     begin(9600);
     reset();
     if (enterCommandMode()) {
@@ -584,86 +583,68 @@ bool Wifly::resetConfigToDefault() {
     reset();
 
     DEBUG_LOG("Entering command mode...");
-    if(!enterCommandMode()){
+    if (!enterCommandMode()) {
         DEBUG_LOG("FAILED");
         return false;
     }
     DEBUG_LOG("OK");
 
     // disable echo of RX data and replace the version string with a single CR
-
     DEBUG_LOG("set UART mode");
-    delay(200);
     if(!executeCommand(WIFLY_SET_UART_MODE, WIFLY_AOK, 0x21))
         return false;
-
     DEBUG_LOG("set opt replace");
-    delay(200);
     if(!executeCommand(WIFLY_SET_OPT_REPLACE, WIFLY_AOK, WIFLY_REPLACE_CHAR))
         return false;
 
-    DEBUG_LOG("set baudate FULL_SPEED");
-    delay(200);
     // set baudrate to 250000
+    DEBUG_LOG("set baudrate FULL_SPEED");
     if(!executeCommand(WIFLY_SET_UART_BAUD, WIFLY_AOK, FULL_SPEED))
         return false;
 
-    DEBUG_LOG("set wlan linkmon");
-    delay(200);
     // enable the link monitor threshold with the recommended value
+    DEBUG_LOG("set wlan linkmon");
     if(!executeCommand(WIFLY_SET_WLAN_LINKMON, WIFLY_AOK, 5))
         return false;
 
-    DEBUG_LOG("set wlan join");
-    delay(200);
     // disable access point autojoin
+    DEBUG_LOG("set wlan join");
     if(!executeCommand(WIFLY_SET_WLAN_JOIN, WIFLY_AOK, 0L))
         return false;
 
-    DEBUG_LOG("set comm open");
-    delay(200);
     // disable the socket monitor strings
+    DEBUG_LOG("set comm open");
     if(!executeCommand(WIFLY_SET_COMM_OPEN, WIFLY_AOK, 0L))
         return false;
-
     DEBUG_LOG("set comm close");
-    delay(200);
     if(!executeCommand(WIFLY_SET_COMM_CLOSE, WIFLY_AOK, 0L))
         return false;
-
     DEBUG_LOG("set comm remote");
-    delay(200);
     if(!executeCommand(WIFLY_SET_COMM_REMOTE, WIFLY_AOK, 0L))
         return false;
 
-    DEBUG_LOG("set ip flags");
-    delay(200);
     // close any open TCP connection when the WLAN link is lost
+    DEBUG_LOG("set ip flags");
     if(!executeCommand(WIFLY_SET_IP_FLAGS, WIFLY_AOK, 0x06))
         return false;
 
-    DEBUG_LOG("set ip tcp mode");
-    delay(200);
     // force DNS
+    DEBUG_LOG("set ip tcp mode");
     if(!executeCommand(WIFLY_SET_IP_TCPMODE, WIFLY_AOK, 0x04))
         return false;
 
-    DEBUG_LOG("set sys iofunc");
-    delay(200);
     // enable the alternate functions of the LEDs
+    DEBUG_LOG("set sys iofunc");
     if(!executeCommand(WIFLY_SET_SYS_IOFUNC, WIFLY_AOK, 0x70))
         return false;
 
-    DEBUG_LOG("set comm size");
-    delay(200);
     // set the flush size
+    DEBUG_LOG("set comm size");
     if(!executeCommand(WIFLY_SET_COMM_SIZE, WIFLY_AOK, 500))
         return false;
 
     DEBUG_LOG("save and exit");
-    delay(200);
     executeCommand(WIFLY_SAVE_CONFIG, WIFLY_CONFIG_SAVED);
-    delay(200);
     executeCommand(WIFLY_EXIT, WIFLY_EXITED);
     reset();
 
