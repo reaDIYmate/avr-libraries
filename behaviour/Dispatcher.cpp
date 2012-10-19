@@ -108,6 +108,15 @@ const char* SETTINGS_NAMES[] PROGMEM =
 const char STRING_API_HOST[] PROGMEM = "dev.readiymate.com";
 const char STRING_API_PATH[] PROGMEM = "/index.php/api/";
 //------------------------------------------------------------------------------
+// System files
+const char DIRECTORY_SOUNDCLOUD[] PROGMEM = "SNDCLD";
+const char SOUND_WAKE[]           PROGMEM = "SYSTEM/SYS_WAKE.MP3";
+const char SOUND_SLEEP[]          PROGMEM = "SYSTEM/SYS_ZZZZ.MP3";
+const char SOUND_CONNECT[]        PROGMEM = "SYSTEM/SYS_CNCT.MP3";
+const char SOUND_AOK[]            PROGMEM = "SYSTEM/SYS_AOK.MP3";
+const char SOUND_ERR[]            PROGMEM = "SYSTEM/SYS_ERR.MP3";
+const char MOTION_ARMSWING[]      PROGMEM = "PUBLIC/ARMSWING.TXT";
+//------------------------------------------------------------------------------
 Dispatcher::Dispatcher() :
     wifly(UART_WIFLY, PIN_WIFLY_RESET, PIN_WIFLY_GPIO4, PIN_WIFLY_GPIO5,
         PIN_WIFLY_GPIO6),
@@ -151,7 +160,7 @@ void Dispatcher::setup() {
     wifly.initialize();
     config.synchronize(3000);
 
-    play("SYSTEM/SYS_WAKE.MP3", "PUBLIC/ARMSWING.TXT");
+    play_P(SOUND_WAKE, MOTION_ARMSWING);
 
     char buf[128] = {0};
     config.getApiCredential(buf, 128);
@@ -181,7 +190,7 @@ void Dispatcher::setup() {
             Serial.println(F("Application settings up-to-date."));
         }
         // the reaDIYmate is online
-        audio.play("SYSTEM/SYS_CNCT.MP3");
+        audio.play_P(SOUND_CONNECT);
         led.colorGreen();
     }
     else {
@@ -242,12 +251,18 @@ void Dispatcher::loop() {
                 settings.save();
             }
             resources.synchronize();
-            player.dispatch(PlayerEvent(PLAY, "START.MP3"), playerOut);
+            char soundName[PATH_BUFFER_SIZE] = {0};
+            strncpy_P(soundName, SOUND_WAKE, PATH_BUFFER_SIZE - 1);
+            player.dispatch(PlayerEvent(PLAY, soundName), playerOut);
             break;
         }
         case FALL_ASLEEP :
-            player.dispatch(PlayerEvent(PLAY, "YAWN.MP3"), playerOut);
+        {
+            char soundName[PATH_BUFFER_SIZE] = {0};
+            strncpy_P(soundName, SOUND_SLEEP, PATH_BUFFER_SIZE - 1);
+            player.dispatch(PlayerEvent(PLAY, soundName), playerOut);
             break;
+        }
         case GMAIL:
             if (gmail.enabled() && gmail.update()) {
                 soundName = gmail.getSoundFilename();
@@ -319,7 +334,7 @@ void Dispatcher::loop() {
             }
             break;
         case SOUNDCLOUD :
-            if (soundcloud.alertEnabled() && soundcloud.download(PSTR("SNDCLD"))) {
+            if (soundcloud.alertEnabled() && soundcloud.download(DIRECTORY_SOUNDCLOUD)) {
                 personality.dispatch(Event(SOUNDCLOUD), persoOut);
                 player.dispatch(PlayerEvent(PLAY, soundcloud.filepath()), playerOut);
             }
@@ -332,20 +347,42 @@ void Dispatcher::loop() {
             }
             break;
         case ACTION :
-            if (twitter.Action::enabled() && twitter.trigger()) {
-                Serial.println(F("Twitter OK"));
+            if (twitter.Action::enabled()) {
+                if (twitter.trigger()) {
+                    audio.play_P(SOUND_AOK);
+                }
+                else {
+                    audio.play_P(SOUND_ERR);
+                }
             }
-            if (facebook.Action::enabled() && facebook.trigger()) {
-                Serial.println(F("Facebook OK"));
+            if (facebook.Action::enabled()) {
+                if (facebook.trigger()) {
+                    audio.play_P(SOUND_AOK);
+                }
+                else {
+                    audio.play_P(SOUND_ERR);
+                }
             }
-            if (foursquare.Action::enabled() && foursquare.trigger()) {
-                Serial.println(F("Foursquare OK"));
+            if (foursquare.Action::enabled()) {
+                if (foursquare.trigger()) {
+                    audio.play_P(SOUND_AOK);
+                }
+                else {
+                    audio.play_P(SOUND_ERR);
+                }
             }
-            if (email.Action::enabled() && email.trigger()) {
-                Serial.println(F("Email OK"));
+            if (email.Action::enabled()) {
+                if (email.trigger()) {
+                    audio.play_P(SOUND_AOK);
+                }
+                else {
+                    audio.play_P(SOUND_ERR);
+                }
             }
             if (soundcloud.enabled()) {
-                player.dispatch(PlayerEvent(RANDOM, "SNDCLD"), playerOut);
+                char directory[PATH_BUFFER_SIZE] = {0};
+                strncpy_P(directory, DIRECTORY_SOUNDCLOUD, PATH_BUFFER_SIZE - 1);
+                player.dispatch(PlayerEvent(RANDOM, directory), playerOut);
                 personality.dispatch(Event(SOUNDCLOUD), persoOut);
             }
             else {
