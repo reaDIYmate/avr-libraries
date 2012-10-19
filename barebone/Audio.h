@@ -38,6 +38,7 @@ public:
     bool openRandom(const char* directory, uint16_t count = 0);
     bool playNextFrame();
     bool play(const char* filename);
+    bool play_P(PGM_P filename);
     void stopPlaying();
 //------------------------------------------------------------------------------
 private:

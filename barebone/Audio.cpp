@@ -19,6 +19,9 @@
  */
 #include <Audio.h>
 //------------------------------------------------------------------------------
+/* Max length for a valid path is a directory name + an 8.3 filename. */
+static const uint16_t PATH_BUFFER_SIZE = 26;
+//------------------------------------------------------------------------------
 /**
  * Construct an instance of Audio.
  *
@@ -122,6 +125,23 @@ bool Audio::playNextFrame() {
  */
 bool Audio::play(const char* filename) {
     if (!open(filename))
+        return false;
+    while (playNextFrame());
+    stopPlaying();
+    return true;
+}
+//------------------------------------------------------------------------------
+/**
+ * Play one audio file from the beginning to the end.
+ *
+ * \param[in] filename A Flash-based filename.
+ *
+ * \return true is returned for success and false is returned for failure.
+ */
+bool Audio::play_P(PGM_P filename) {
+    char buffer[PATH_BUFFER_SIZE] = {0};
+    strncpy_P(buffer, filename, PATH_BUFFER_SIZE - 1);
+    if (!open(buffer))
         return false;
     while (playNextFrame());
     stopPlaying();
