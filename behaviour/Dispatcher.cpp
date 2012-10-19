@@ -366,11 +366,19 @@ void Dispatcher::play(const char* soundName, const char* motionName) {
     motion.dispatch(MotionEvent(PLAY, motionName));
     player.dispatch(PlayerEvent(PLAY, soundName));
 
+    Event motionOut;
     Event playerOut;
-    do {
-        motion.dispatch(Event(TICK));
-        player.dispatch(Event(TICK), playerOut);
-    } while (playerOut.signal != END_OF_FILE);
 
-    motion.dispatch(Event(STOP));
+    bool motionFinished = false;
+    bool soundFinished = false;
+
+    while (!(motionFinished && soundFinished)) {
+        motion.dispatch(Event(TICK), motionOut);
+        if (motionOut.signal == END_OF_FILE)
+            motionFinished = true;
+        player.dispatch(Event(TICK), playerOut);
+        if (playerOut.signal == END_OF_FILE)
+            soundFinished = true;
+    }
+
 }
