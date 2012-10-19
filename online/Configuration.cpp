@@ -55,6 +55,8 @@ const char PROGMEM WIZARD_KEY_KEY[] = "key";
 const char PROGMEM WIZARD_KEY_SECRET[] = "secret";
 /** Channel for Pusher */
 const char PROGMEM WIZARD_KEY_CHANNEL[] = "channel";
+/** Default position of the servo motor for this reaDIYmate */
+const char PROGMEM WIZARD_KEY_ORIGIN[] = "origin";
 /**  Key for the command */
 const char PROGMEM COMMAND_TYPE[] = "cmd";
 /** DeviceID mode */
@@ -73,6 +75,8 @@ const char PROGMEM COMMAND_PUSHER[] = "pusher";
 const char PROGMEM COMMAND_WLAN[] = "wlan";
 /** Format SD card */
 const char PROGMEM COMMAND_FORMAT[] = "format";
+/** Set servo motor origin */
+const char PROGMEM COMMAND_SERVO[] = "servo";
 /** Start-up signal */
 const char PROGMEM WIZARD_STARTUP[] = "reaDIYmate\n";
 /** Command confirmation */
@@ -402,6 +406,17 @@ bool Configuration::readPusher(char* buffer, uint8_t bufferSize) {
     return false;
 }
 //------------------------------------------------------------------------------
+/** Set the default servo position */
+bool Configuration::readServoDefaultPosition(char* buffer, uint8_t bufferSize) {
+    JsonStream json = JsonStream(buffer, bufferSize);
+    int origin = json.getIntegerByName_P(WIZARD_KEY_ORIGIN);
+    if (origin < 0) {
+        return false;
+    }
+    eeprom_write_byte((uint8_t*)EEPROM_SERVO_ORIGIN, origin);
+    return true;
+ }
+//------------------------------------------------------------------------------
 /** Read the username and password sent by the Companion */
 bool Configuration::readUserAndPass(char* buffer, uint8_t bufferSize) {
     JsonStream json = JsonStream(buffer, bufferSize);
@@ -623,6 +638,18 @@ void Configuration::synchronize(uint16_t timeout) {
                 enableBootloader();
                 DEBUG_LOG("Bootloader enabled.");
                 write_P(WIZARD_AOK);
+                deadline = millis() + timeout;
+            }
+            else if (strcmp_P(cmd, COMMAND_SERVO) == 0) {
+                DEBUG_LOG("Command received: set servo origin.");
+                if (readServoDefaultPosition(buffer, nBytes)) {
+                    DEBUG_LOG("Servo origin set.");
+                    write_P(WIZARD_AOK);
+                }
+                else {
+                    DEBUG_LOG("Failed to set servo origin.");
+                    write_P(WIZARD_ERR);
+                }
                 deadline = millis() + timeout;
             }
             else if (strcmp_P(cmd, COMMAND_FACTORY) == 0) {

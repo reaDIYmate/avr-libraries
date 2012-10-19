@@ -51,6 +51,7 @@ public:
     void enableBootloader();
     bool formatSdCard();
     bool readPusher(char* buffer, uint8_t bufferSize);
+    bool readServoDefaultPosition(char* buffer, uint8_t bufferSize);
     bool readUserAndPass(char* buffer, uint8_t bufferSize);
     bool readWifiSettings(char* buffer, uint8_t bufferSize);
     void restoreDeviceId();
