@@ -18,7 +18,6 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <Configuration.h>
-#define DEBUG
 //------------------------------------------------------------------------------
 #ifdef DEBUG
     #define DEBUG_LOG(str) Serial.println(F(str))
@@ -26,7 +25,6 @@
     #define DEBUG_LOG(str)
 #endif
 //------------------------------------------------------------------------------
-// reaDIYmate Companion commands
 /** End character */
 uint8_t const COMMAND_END_CHAR = '}';
 /** UART timeout */
@@ -77,6 +75,10 @@ const char PROGMEM COMMAND_WLAN[] = "wlan";
 const char PROGMEM COMMAND_FORMAT[] = "format";
 /** Start-up signal */
 const char PROGMEM WIZARD_STARTUP[] = "reaDIYmate\n";
+/** Command confirmation */
+const char PROGMEM WIZARD_AOK[] = "AOK\r\n";
+/** Command error */
+const char PROGMEM WIZARD_ERR[] = "ERR\r\n";
 //------------------------------------------------------------------------------
 /** Format string used to construct the credential for API calls */
 const char API_CREDENTIAL_FORMAT[] PROGMEM = "id=%s&user=%s&token=%s";
@@ -568,46 +570,51 @@ void Configuration::synchronize(uint16_t timeout) {
     uint32_t deadline = millis() + timeout;
     while (millis() < deadline) {
         memset(buffer, 0x00, 512);
-        int nbBytes = readBytesUntil(COMMAND_END_CHAR, buffer, 512);
-        JsonStream json = JsonStream(buffer, nbBytes);
+        int nBytes = readBytesUntil(COMMAND_END_CHAR, buffer, 511);
+        buffer[nBytes] = COMMAND_END_CHAR;
+        JsonStream json = JsonStream(buffer, nBytes);
 
         char cmd[16] = {0};
-        int nBytes = json.getStringByName_P(COMMAND_TYPE, cmd, 16);
+        int cmdLen = json.getStringByName_P(COMMAND_TYPE, cmd, 16);
 
-        if (nBytes > 0) {
-
+        if (cmdLen > 0) {
             if (strcmp_P(cmd, COMMAND_DEVICEID) == 0) {
                 sendDeviceId();
                 deadline = millis() + timeout;
             }
             else if (strcmp_P(cmd, COMMAND_AUTH) == 0) {
                 DEBUG_LOG("Command received: set authentication.");
-                if (readUserAndPass(buffer, nbBytes)) {
-                    DEBUG_LOG("Authentication set.");
+                if (readUserAndPass(buffer, nBytes)) {
+                    DEBUG_LOG("Authentication settings accepted.");
+                    write_P(WIZARD_AOK);
                 }
                 else {
-                    DEBUG_LOG("Authentication settings accepted.");
+                    DEBUG_LOG("Authentication settings refused.");
+                    write_P(WIZARD_ERR);
                 }
                 deadline = millis() + timeout;
             }
             else if (strcmp_P(cmd, COMMAND_WLAN) == 0) {
                 DEBUG_LOG("Command received: set WLAN config.");
-                if (readWifiSettings(buffer, nbBytes)) {
-                    DEBUG_LOG("WLAN config set.");
+                if (readWifiSettings(buffer, nBytes)) {
+                    DEBUG_LOG("WLAN config accepted.");
+                    write_P(WIZARD_AOK);
                 }
                 else {
-                    DEBUG_LOG("Failed to set WLAN config.");
+                    DEBUG_LOG("WLAN config refused.");
+                    write_P(WIZARD_ERR);
                 }
                 deadline = millis() + timeout;
             }
             else if (strcmp_P(cmd, COMMAND_PUSHER) == 0) {
                 DEBUG_LOG("Command received: setup Pusher messaging.");
-                if (readPusher(buffer, nbBytes)) {
-                    DEBUG_LOG("Pusher information set.");
+                if (readPusher(buffer, nBytes)) {
+                    DEBUG_LOG("Pusher information accepted.");
+                    write_P(WIZARD_AOK);
                 }
                 else {
-                    DEBUG_LOG("Failed to set Pusher information.");
-
+                    DEBUG_LOG("Pusher information refused.");
+                    write_P(WIZARD_ERR);
                 }
                 deadline = millis() + timeout;
             }
@@ -615,27 +622,47 @@ void Configuration::synchronize(uint16_t timeout) {
                 DEBUG_LOG("Command received: enable Wi-Fi bootloader.");
                 enableBootloader();
                 DEBUG_LOG("Bootloader enabled.");
+                write_P(WIZARD_AOK);
                 deadline = millis() + timeout;
             }
             else if (strcmp_P(cmd, COMMAND_FACTORY) == 0) {
                 DEBUG_LOG("Command received: perform factory reset.");
-                wifly_->resetBaudrate();
-                wifly_->resetConfigToDefault();
+                if (!wifly_->resetBaudrate()) {
+                    DEBUG_LOG("Cannot reset baudrate.");
+                    write_P(WIZARD_ERR);
+                }
+                else if (!wifly_->resetConfigToDefault()) {
+                    DEBUG_LOG("Cannot reset config to default.");
+                    write_P(WIZARD_ERR);
+                }
                 wifly_->getDeviceId(deviceId_);
                 saveDeviceId();
                 DEBUG_LOG("Reset to default config performed.");
+                write_P(WIZARD_AOK);
                 deadline = millis() + timeout;
             }
             else if (strcmp_P(cmd, COMMAND_UPDATE) == 0) {
                 DEBUG_LOG("Command received: update Wi-Fi firmware.");
-                wifly_->updateFirmware();
-                DEBUG_LOG("Wi-Fi firmware updated.");
+                if (wifly_->updateFirmware()) {
+                    DEBUG_LOG("Wi-Fi firmware updated.");
+                    write_P(WIZARD_AOK);
+                }
+                else {
+                    DEBUG_LOG("Firmware update failed.");
+                    write_P(WIZARD_ERR);
+                }
                 deadline = millis() + timeout;
             }
             else if (strcmp_P(cmd, COMMAND_FORMAT) == 0) {
                 DEBUG_LOG("Command received: format SD card.");
-                formatSdCard();
-                DEBUG_LOG("SD card formatted.");
+                if (formatSdCard()) {
+                    DEBUG_LOG("SD card formatted.");
+                    write_P(WIZARD_AOK);
+                }
+                else {
+                    DEBUG_LOG("SD card formatting failed.");
+                    write_P(WIZARD_ERR);
+                }
                 deadline = millis() + timeout;
             }
             else {
