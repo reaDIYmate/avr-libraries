@@ -404,49 +404,47 @@ void Dispatcher::loop() {
 }
 //------------------------------------------------------------------------------
 void Dispatcher::play(const char* soundName, const char* motionName) {
-    motion.dispatch(MotionEvent(PLAY, motionName));
-    player.dispatch(PlayerEvent(PLAY, soundName));
-
     Event motionOut;
+    motion.dispatch(MotionEvent(PLAY, motionName), motionOut);
+
     Event playerOut;
+    player.dispatch(PlayerEvent(PLAY, soundName), playerOut);
 
     bool motionFinished = false;
     bool soundFinished = false;
 
-    while (!(motionFinished && soundFinished)) {
-        motion.dispatch(Event(TICK), motionOut);
+    do {
         if (motionOut.signal == END_OF_FILE)
             motionFinished = true;
-        player.dispatch(Event(TICK), playerOut);
+        motion.dispatch(Event(TICK), motionOut);
         if (playerOut.signal == END_OF_FILE)
             soundFinished = true;
-    }
+        player.dispatch(Event(TICK), playerOut);
+    } while (!(motionFinished && soundFinished));
 }
 //------------------------------------------------------------------------------
 void Dispatcher::play_P(PGM_P soundName, PGM_P motionName) {
     char buffer[PATH_BUFFER_SIZE];
 
+    Event motionOut;
     memset(buffer, 0x00, PATH_BUFFER_SIZE);
     strncpy_P(buffer, motionName, PATH_BUFFER_SIZE - 1);
-
-    Event motionOut;
     motion.dispatch(MotionEvent(PLAY, buffer), motionOut);
 
+    Event playerOut;
     memset(buffer, 0x00, PATH_BUFFER_SIZE);
     strncpy_P(buffer, soundName, PATH_BUFFER_SIZE - 1);
-
-    Event playerOut;
     player.dispatch(PlayerEvent(PLAY, buffer), playerOut);
 
     bool motionFinished = false;
     bool soundFinished = false;
 
-    while (!(motionFinished && soundFinished)) {
-        motion.dispatch(Event(TICK), motionOut);
+    do {
         if (motionOut.signal == END_OF_FILE)
             motionFinished = true;
-        player.dispatch(Event(TICK), playerOut);
+        motion.dispatch(Event(TICK), motionOut);
         if (playerOut.signal == END_OF_FILE)
             soundFinished = true;
-    }
+        player.dispatch(Event(TICK), playerOut);
+    } while (!(motionFinished && soundFinished));
 }
