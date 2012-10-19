@@ -73,7 +73,9 @@ const char PROGMEM WIFLY_SET_COMM_REMOTE[] = "set comm remote";
 /** Set the TCP host */
 const char PROGMEM WIFLY_SET_DNS_NAME[] = "set dns name";
 /** Set the IP address of the Roving FTP server */
-const char PROGMEM WIFLY_SET_FTP_ADDRESS[] = "set ftp address 68.178.254.124";
+const char PROGMEM WIFLY_SET_FTP_ADDRESS[] = "set ftp address 0";
+/** Set the domain name of the Roving FTP server */
+const char PROGMEM WIFLY_SET_FTP_DOMAIN[] = "set dns name rn.microchip.com";
 /** Set the IP address of the WiFly GSX module */
 const char PROGMEM WIFLY_SET_IP_ADDRESS[] = "set ip address";
 /** Enable/disable DHCP mode */
@@ -710,6 +712,12 @@ bool Wifly::updateFirmware() {
     // set ftp address
     DEBUG_LOG("set ftp address");
     if(!executeCommand(WIFLY_SET_FTP_ADDRESS, WIFLY_AOK))
+        return false;
+    delay(200);
+
+    // set dns name
+    DEBUG_LOG("set dns name");
+    if(!executeCommand(WIFLY_SET_FTP_DOMAIN, WIFLY_AOK))
         return false;
     delay(200);
 
