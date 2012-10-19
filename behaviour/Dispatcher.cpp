@@ -36,6 +36,9 @@
 #define UART_WIFLY Serial1
 #define UART_COMPANION Serial
 //------------------------------------------------------------------------------
+/* The longest path accepted is a directory name followed by a 8.3 filename. */
+static const uint16_t PATH_BUFFER_SIZE = 26;
+//------------------------------------------------------------------------------
 // Settings
 const uint8_t NB_SETTINGS = 26;
 
@@ -380,5 +383,32 @@ void Dispatcher::play(const char* soundName, const char* motionName) {
         if (playerOut.signal == END_OF_FILE)
             soundFinished = true;
     }
+}
+//------------------------------------------------------------------------------
+void Dispatcher::play_P(PGM_P soundName, PGM_P motionName) {
+    char buffer[PATH_BUFFER_SIZE];
 
+    memset(buffer, 0x00, PATH_BUFFER_SIZE);
+    strncpy_P(buffer, motionName, PATH_BUFFER_SIZE - 1);
+
+    Event motionOut;
+    motion.dispatch(MotionEvent(PLAY, buffer), motionOut);
+
+    memset(buffer, 0x00, PATH_BUFFER_SIZE);
+    strncpy_P(buffer, soundName, PATH_BUFFER_SIZE - 1);
+
+    Event playerOut;
+    player.dispatch(PlayerEvent(PLAY, buffer), playerOut);
+
+    bool motionFinished = false;
+    bool soundFinished = false;
+
+    while (!(motionFinished && soundFinished)) {
+        motion.dispatch(Event(TICK), motionOut);
+        if (motionOut.signal == END_OF_FILE)
+            motionFinished = true;
+        player.dispatch(Event(TICK), playerOut);
+        if (playerOut.signal == END_OF_FILE)
+            soundFinished = true;
+    }
 }

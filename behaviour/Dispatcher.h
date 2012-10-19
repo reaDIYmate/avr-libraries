@@ -55,6 +55,7 @@ public:
     void setup();
     void loop();
     void play(const char* sound, const char* motion);
+    void play_P(PGM_P sound, PGM_P motion);
 //------------------------------------------------------------------------------
 private:
     // Base
