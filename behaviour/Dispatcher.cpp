@@ -160,6 +160,7 @@ void Dispatcher::setup() {
     wifly.initialize();
     config.synchronize(3000);
 
+    control.write(config.getServoDefaultPosition());
     play_P(SOUND_WAKE, MOTION_ARMSWING);
 
     char buf[128] = {0};

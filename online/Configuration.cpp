@@ -366,6 +366,15 @@ void Configuration::getApiCredential(char* buffer, uint8_t bufferSize) {
     );
 }
 //------------------------------------------------------------------------------
+/**
+ * Based on the value stored in the EEPROM, this method returns the default
+ * position for the servo motor.
+ *
+ */
+uint8_t Configuration::getServoDefaultPosition() {
+    return eeprom_read_byte((const uint8_t*)EEPROM_SERVO_ORIGIN);
+}
+//------------------------------------------------------------------------------
 /** Read the pusher key/secret/channel sent by the Companion */
 bool Configuration::readPusher(char* buffer, uint8_t bufferSize) {
     JsonStream json = JsonStream(buffer, bufferSize);

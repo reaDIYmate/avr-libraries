@@ -33,7 +33,9 @@ uint16_t const EEPROM_PUSHER_KEY = 0x6C;
 uint16_t const EEPROM_PUSHER_SECRET = 0x81;
 /** 21 bytes for the Pusher application channel */
 uint16_t const EEPROM_PUSHER_CHANNEL = 0x96;
+/** 1 byte for the default position of the servo */
+uint16_t const EEPROM_SERVO_ORIGIN = 0xAB;
 /** Application settings are stored in the remaining EEPROM space */
-uint16_t const EEPROM_SETTINGS = 0xAB;
+uint16_t const EEPROM_SETTINGS = 0xAC;
 
 #endif // EEPROM_ADDRESSES_H

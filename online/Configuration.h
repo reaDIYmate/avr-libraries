@@ -45,6 +45,7 @@ public:
     const char* getPusherKey() {return key_;}
     const char* getPusherSecret() {return secret_;}
     const char* getPusherChannel() {return channel_;}
+    uint8_t getServoDefaultPosition();
     void synchronize(uint16_t timeout);
 //------------------------------------------------------------------------------
     void enableBootloader();
