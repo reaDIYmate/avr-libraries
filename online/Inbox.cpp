@@ -104,5 +104,6 @@ bool Inbox::updatePusherChannel() {
     if (api_->call(METHOD_PUSHER_CHANNEL) < 0) {
         return false;
     }
-    api_->getStringByName_P(KEY_CHANNEL_NAME, channel_, 21);
+    int nBytes = api_->getStringByName_P(KEY_CHANNEL_NAME, channel_, 21);
+    return (nBytes > -1);
 }
