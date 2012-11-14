@@ -76,11 +76,11 @@ bool Facebook::updateContent() {
     if (!open(filename, O_CREAT | O_WRITE)) {
         return false;
     }
-    int nbBytes = api->getStringByName_P(KEY_MSG, content, 140);
-    if (nbBytes > -1) {
-        write(content, nbBytes);
+    int nBytes = api->getStringByName_P(KEY_MSG, content, 140);
+    if (nBytes > -1) {
+        write(content, nBytes);
         sync();
     }
     close();
-    return true;
+    return (nBytes > -1);
 }

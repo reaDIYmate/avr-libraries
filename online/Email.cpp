@@ -71,11 +71,11 @@ bool Email::updateContent() {
         return false;
     }
     api_->rewind();
-    int nbBytes = api_->readBytesUntil_P(END_CHAR, buffer, 256);
-    if (nbBytes > -1) {
-        write(buffer, nbBytes);
+    int nBytes = api_->readBytesUntil_P(END_CHAR, buffer, 256);
+    if (nBytes > -1) {
+        write(buffer, nBytes);
         sync();
     }
     close();
-    return true;
+    return (nBytes > -1);
 }
