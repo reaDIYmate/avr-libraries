@@ -43,6 +43,10 @@ Inbox::Inbox(Api &api, PusherClient &pusher) :
 }
 //------------------------------------------------------------------------------
 bool Inbox::enterPushMode() {
+    if (!(strlen(channel_) > 0)) {
+        return false;
+    }
+
     if (stream_ == pusher_ && pusher_->connected()) {
         return true;
     }
