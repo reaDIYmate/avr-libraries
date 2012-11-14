@@ -177,9 +177,14 @@ void Dispatcher::setup() {
     bool restore = true;
     if (api.connect()) {
         Serial.println(F("connection established."));
-        facebook.updateContent();
-        twitter.updateContent();
-        email.updateContent();
+        if (facebook.updateContent()
+        && twitter.updateContent()
+        && email.updateContent()) {
+            Serial.println(F("Predefined content retrieved."));
+        }
+        else {
+            Serial.println(F("Failed to retrieve predefined content."));
+        }
         if (settings.fetch() >= 0) {
             settings.save();
             restore = false;
@@ -208,7 +213,12 @@ void Dispatcher::setup() {
             Serial.println(F(" settings restored."));
         }
     }
-    resources.synchronize();
+    if (resources.synchronize()) {
+        Serial.println(F("Resource synchronization complete."));
+    }
+    else {
+        Serial.println(F("Resource synchronization failed."));
+    }
     randomSeed(analogRead(0));
     Serial.println(F("Initialization done."));
     Serial.print(F("----------------------------------------\r\n"));
