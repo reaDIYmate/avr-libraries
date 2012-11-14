@@ -188,7 +188,7 @@ void Dispatcher::setup() {
             Serial.println(F(" settings saved to the EEPROM."));
         }
         else {
-            Serial.println(F("Application settings up-to-date."));
+            Serial.println(F("No application settings available."));
         }
         // the reaDIYmate is online
         audio.play_P(SOUND_CONNECT);
