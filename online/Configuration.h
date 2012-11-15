@@ -48,7 +48,9 @@ public:
     uint8_t getServoDefaultPosition();
     void synchronize(uint16_t timeout);
 //------------------------------------------------------------------------------
+private:
     void enableBootloader();
+    void enterProxyMode();
     bool formatSdCard();
     bool readPusher(char* buffer, uint8_t bufferSize);
     bool readServoDefaultPosition(char* buffer, uint8_t bufferSize);

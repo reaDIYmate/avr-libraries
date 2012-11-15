@@ -43,6 +43,7 @@ public:
     bool connect(const char* host);
     bool connectedTo_P(PGM_P host);
     void disconnect();
+    bool enterCommandMode();
     void getDeviceId(char* output);
     void initialize();
     void reset();
@@ -59,7 +60,6 @@ private:
     void closeSocket();
     bool connected();
     bool connected(uint16_t timeout);
-    bool enterCommandMode();
     bool executeCommand(PGM_P commandIndex, PGM_P expectedReturnIndex,
         const char* parameter = NULL);
     bool executeCommand(PGM_P commandIndex, PGM_P expectedReturnIndex,

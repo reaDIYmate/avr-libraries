@@ -77,6 +77,8 @@ const char PROGMEM COMMAND_WLAN[] = "wlan";
 const char PROGMEM COMMAND_FORMAT[] = "format";
 /** Set servo motor origin */
 const char PROGMEM COMMAND_SERVO[] = "servo";
+/** Act as a proxy for the RN171 */
+const char PROGMEM COMMAND_PROXY[] = "proxy";
 /** Start-up signal */
 const char PROGMEM WIZARD_STARTUP[] = "reaDIYmate\n";
 /** Command confirmation */
@@ -141,6 +143,40 @@ Configuration::~Configuration() {
  */
  void Configuration::enableBootloader() {
     eeprom_write_word((uint16_t*)(0xFFF - 1), 0x232e);
+}
+//------------------------------------------------------------------------------
+void Configuration::enterProxyMode() {
+    while (true) {
+        if (wifly_->available()) {
+            write(wifly_->read());
+        }
+        else if (available()) {
+            uint8_t ch = read();
+            if (ch == '\\') {
+                while (!available());
+                ch = read();
+                switch (ch) {
+                    case 'r' :
+                        print("\r\n-Reset-\r\n");
+                        wifly_->reset();
+                        break;
+                    case 'c' :
+                        print("\r\n-Command mode-\r\n");
+                        if (wifly_->enterCommandMode()) {
+                            println(F("CMD"));
+                        }
+                        break;
+                    default :
+                        wifly_->write('\\');
+                        wifly_->write(ch);
+                        break;
+                }
+            }
+            else {
+                wifly_->write(ch);
+            }
+        }
+    }
 }
 //------------------------------------------------------------------------------
 bool Configuration::formatSdCard() {
@@ -690,6 +726,12 @@ void Configuration::synchronize(uint16_t timeout) {
                     DEBUG_LOG("SD card formatting failed.");
                     write_P(WIZARD_ERR);
                 }
+                deadline = millis() + timeout;
+            }
+            else if (strcmp_P(cmd, COMMAND_PROXY) == 0) {
+                DEBUG_LOG("Command received: enter proxy mode.");
+                write_P(WIZARD_AOK);
+                enterProxyMode();
                 deadline = millis() + timeout;
             }
             else {
