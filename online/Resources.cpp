@@ -18,7 +18,6 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <Resources.h>
-#define DEBUG
 //------------------------------------------------------------------------------
 // reaDIYmate API strings
 /** Name of the API method used to enquire about resource status */
