@@ -504,78 +504,6 @@ bool Wifly::resetBaudrate() {
         return false;
     }
 }
-
-//------------------------------------------------------------------------------
-/**
- * Setup the WiFly module to connect to a given access point.
- *
- * \param[in] ssid The WLAN SSID.
- * \param[in] passphrase The security passphrase of the WLAN.
- * \param[in] ip The IP address affected to the WiFly module (optional).
- * \param[in] mask The network mask to use (optional).
- * \param[in] gateway The IP address of the local gateway (optional).
- *
- * \note The IP address, subnet mask and gateway address will be overriden when
- * using DHCP.
- */
-bool Wifly::setWlanConfig(const char* ssid, const char* passphrase, const char* ip,
-    const char* mask, const char* gateway) {
-    reset();
-    begin(FULL_SPEED);
-
-    DEBUG_LOG("Entering command mode...");
-    if(!enterCommandMode()){
-        DEBUG_LOG("FAILED");
-        return false;
-    }
-    DEBUG_LOG("OK");
-
-    // setup the access point SSID and security phrase:
-    DEBUG_LOG("set wlan ssid");
-    delay(200);
-    if(!executeCommand(WIFLY_SET_WLAN_SSID, WIFLY_AOK, ssid))
-        return false;
-
-    DEBUG_LOG("set wlan phrase");
-    delay(200);
-    if(!executeCommand(WIFLY_SET_WLAN_PHRASE, WIFLY_AOK, passphrase))
-        return false;
-
-    // setup static IP, gateway and netmask
-    if (ip != NULL && mask != NULL && gateway != NULL) {
-        DEBUG_LOG("set ip dhcp");
-        delay(200);
-        if(!executeCommand(WIFLY_SET_IP_DHCP, WIFLY_AOK, 0L))
-            return false;
-
-        DEBUG_LOG("set ip address");
-        delay(200);
-        if(!executeCommand(WIFLY_SET_IP_ADDRESS, WIFLY_AOK, ip))
-            return false;
-
-        DEBUG_LOG("set ip gateway");
-        delay(200);
-        if(!executeCommand(WIFLY_SET_IP_GATEWAY, WIFLY_AOK, gateway))
-            return false;
-
-        DEBUG_LOG("set ip netmask");
-        delay(200);
-        if(!executeCommand(WIFLY_SET_IP_NETMASK, WIFLY_AOK, mask))
-            return false;
-    }
-    // enable DHCP in cache mode
-    else if(!executeCommand(WIFLY_SET_IP_DHCP, WIFLY_AOK, 3)) {
-        return false;
-    }
-
-    DEBUG_LOG("Save and exit");
-    executeCommand(WIFLY_SAVE_CONFIG, WIFLY_CONFIG_SAVED);
-    delay(200);
-    executeCommand(WIFLY_EXIT, WIFLY_EXITED);
-    reset();
-
-    return true;
-}
 //------------------------------------------------------------------------------
 /** Setup the RN171. */
 bool Wifly::resetConfigToDefault() {
@@ -667,6 +595,77 @@ bool Wifly::setHost(const char* host) {
         return false;
     else
         return true;
+}
+//------------------------------------------------------------------------------
+/**
+ * Setup the WiFly module to connect to a given access point.
+ *
+ * \param[in] ssid The WLAN SSID.
+ * \param[in] passphrase The security passphrase of the WLAN.
+ * \param[in] ip The IP address affected to the WiFly module (optional).
+ * \param[in] mask The network mask to use (optional).
+ * \param[in] gateway The IP address of the local gateway (optional).
+ *
+ * \note The IP address, subnet mask and gateway address will be overriden when
+ * using DHCP.
+ */
+bool Wifly::setWlanConfig(const char* ssid, const char* passphrase, const char* ip,
+    const char* mask, const char* gateway) {
+    reset();
+    begin(FULL_SPEED);
+
+    DEBUG_LOG("Entering command mode...");
+    if(!enterCommandMode()){
+        DEBUG_LOG("FAILED");
+        return false;
+    }
+    DEBUG_LOG("OK");
+
+    // setup the access point SSID and security phrase:
+    DEBUG_LOG("set wlan ssid");
+    delay(200);
+    if(!executeCommand(WIFLY_SET_WLAN_SSID, WIFLY_AOK, ssid))
+        return false;
+
+    DEBUG_LOG("set wlan phrase");
+    delay(200);
+    if(!executeCommand(WIFLY_SET_WLAN_PHRASE, WIFLY_AOK, passphrase))
+        return false;
+
+    // setup static IP, gateway and netmask
+    if (ip != NULL && mask != NULL && gateway != NULL) {
+        DEBUG_LOG("set ip dhcp");
+        delay(200);
+        if(!executeCommand(WIFLY_SET_IP_DHCP, WIFLY_AOK, 0L))
+            return false;
+
+        DEBUG_LOG("set ip address");
+        delay(200);
+        if(!executeCommand(WIFLY_SET_IP_ADDRESS, WIFLY_AOK, ip))
+            return false;
+
+        DEBUG_LOG("set ip gateway");
+        delay(200);
+        if(!executeCommand(WIFLY_SET_IP_GATEWAY, WIFLY_AOK, gateway))
+            return false;
+
+        DEBUG_LOG("set ip netmask");
+        delay(200);
+        if(!executeCommand(WIFLY_SET_IP_NETMASK, WIFLY_AOK, mask))
+            return false;
+    }
+    // enable DHCP in cache mode
+    else if(!executeCommand(WIFLY_SET_IP_DHCP, WIFLY_AOK, 3)) {
+        return false;
+    }
+
+    DEBUG_LOG("Save and exit");
+    executeCommand(WIFLY_SAVE_CONFIG, WIFLY_CONFIG_SAVED);
+    delay(200);
+    executeCommand(WIFLY_EXIT, WIFLY_EXITED);
+    reset();
+
+    return true;
 }
 //------------------------------------------------------------------------------
 /** Update the RN171 firmware to the latest version. */
