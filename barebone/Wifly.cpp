@@ -355,7 +355,6 @@ bool Wifly::enterCommandMode() {
         delay(250);
         // request a new command prompt
         write_P(WIFLY_ENTER_COMMAND);
-        flush();
         clear();
         // look for the command string
         if (find_P(WIFLY_CMD)) {
@@ -388,7 +387,6 @@ bool Wifly::executeCommand(PGM_P command, PGM_P expectedReturn,
         print(parameter);
     }
     write('\r');
-    flush();
     clear();
     return find_P(expectedReturn);
 }
@@ -408,7 +406,6 @@ bool Wifly::executeCommand(PGM_P command, PGM_P expectedReturn,
     write(' ');
     print(parameter);
     write('\r');
-    flush();
     clear();
     return find_P(expectedReturn);
 }
@@ -419,18 +416,9 @@ bool Wifly::executeCommand(PGM_P command, PGM_P expectedReturn,
  * \param[out] output The location the device ID will be written to.
  */
 void Wifly::getDeviceId(char* output) {
-    begin(FULL_SPEED);
-    reset();
-
-    DEBUG_LOG("Entering command mode...");
-    if(!enterCommandMode()){
-        DEBUG_LOG("FAILED");
-        return;
-    }
-    DEBUG_LOG("OK");
+    DEBUG_LOG("Reading the RN171 device ID.");
 
     write_P(WIFLY_GET_MAC_ADDRESS);
-    flush();
     clear();
 
     char buffer[30] = {0};
@@ -449,7 +437,6 @@ void Wifly::getDeviceId(char* output) {
     }
 
     memcpy((void*)output, (void*)mac, 12);
-    reset();
 }
 //------------------------------------------------------------------------------
 /** Initialize the WiFly module. */
@@ -484,97 +471,113 @@ void Wifly::reset() {
 }
 //------------------------------------------------------------------------------
 /** Reset the baudrate of the wifly module to 9600 */
-bool Wifly::resetBaudrate() {
+bool Wifly::resetBaudrateAndFirmware() {
+    DEBUG_LOG("Resetting the RN171 firmware.");
     begin(9600);
+    DEBUG_LOG("UART opened at 9600 baud.");
     reset();
+
+    DEBUG_LOG("Entering command mode...");
     if (enterCommandMode()) {
-        DEBUG_LOG("Baudrate already at 9600");
-        reset();
+        DEBUG_LOG("Entered command mode at 9600 baud.");
         return true;
     }
+    DEBUG_LOG("Failed to enter command mode at 9600 baud.");
+    begin(115200);
+    DEBUG_LOG("UART opened at 115200 baud.");
+    reset();
+
+    DEBUG_LOG("Entering command mode...");
+    if (enterCommandMode()) {
+        DEBUG_LOG("Entered command mode at 115200 baud.");
+
+        DEBUG_LOG("set uart baudrate 9600");
+        if (!executeCommand(WIFLY_SET_UART_BAUD, WIFLY_AOK, 9600))
+            return false;
+
+        DEBUG_LOG("factory RESET");
+        if (!executeCommand(WIFLY_FACTORY_RESET, WIFLY_FACTORY_MESSAGE))
+           return false;
+
+        DEBUG_LOG("reboot");
+        executeCommand(PSTR("reboot"), PSTR("*Reboot*"));
+        return false;
+    }
     else {
-        DEBUG_LOG("Change baudrate to 9600");
-        begin(115200);
-        reset();
-        enterCommandMode();
-        executeCommand(WIFLY_FACTORY_RESET, WIFLY_FACTORY_MESSAGE);
-        executeCommand(WIFLY_SAVE_CONFIG, WIFLY_CONFIG_SAVED);
-        executeCommand(WIFLY_EXIT, WIFLY_EXITED);
-        reset();
+        DEBUG_LOG("Failed to enter command mode at 115200 baud.");
         return false;
     }
 }
 //------------------------------------------------------------------------------
 /** Setup the RN171. */
 bool Wifly::resetConfigToDefault() {
-    begin(9600);
+    DEBUG_LOG("Setting the RN171 default config.");
     reset();
 
     DEBUG_LOG("Entering command mode...");
     if (!enterCommandMode()) {
-        DEBUG_LOG("FAILED");
+        DEBUG_LOG("Failed to enter command mode.");
         return false;
     }
-    DEBUG_LOG("OK");
+    DEBUG_LOG("Entered command mode.");
 
     // disable echo of RX data and replace the version string with a single CR
     DEBUG_LOG("set UART mode");
-    if(!executeCommand(WIFLY_SET_UART_MODE, WIFLY_AOK, 0x21))
+    if (!executeCommand(WIFLY_SET_UART_MODE, WIFLY_AOK, 0x21))
         return false;
     DEBUG_LOG("set opt replace");
-    if(!executeCommand(WIFLY_SET_OPT_REPLACE, WIFLY_AOK, WIFLY_REPLACE_CHAR))
+    if (!executeCommand(WIFLY_SET_OPT_REPLACE, WIFLY_AOK, WIFLY_REPLACE_CHAR))
         return false;
 
     // set baudrate to 250000
     DEBUG_LOG("set baudrate FULL_SPEED");
-    if(!executeCommand(WIFLY_SET_UART_BAUD, WIFLY_AOK, FULL_SPEED))
+    if (!executeCommand(WIFLY_SET_UART_BAUD, WIFLY_AOK, FULL_SPEED))
         return false;
 
     // enable the link monitor threshold with the recommended value
     DEBUG_LOG("set wlan linkmon");
-    if(!executeCommand(WIFLY_SET_WLAN_LINKMON, WIFLY_AOK, 5))
+    if (!executeCommand(WIFLY_SET_WLAN_LINKMON, WIFLY_AOK, 5))
         return false;
 
     // disable access point autojoin
     DEBUG_LOG("set wlan join");
-    if(!executeCommand(WIFLY_SET_WLAN_JOIN, WIFLY_AOK, 0L))
+    if (!executeCommand(WIFLY_SET_WLAN_JOIN, WIFLY_AOK, 0L))
         return false;
 
     // disable the socket monitor strings
     DEBUG_LOG("set comm open");
-    if(!executeCommand(WIFLY_SET_COMM_OPEN, WIFLY_AOK, 0L))
+    if (!executeCommand(WIFLY_SET_COMM_OPEN, WIFLY_AOK, 0L))
         return false;
     DEBUG_LOG("set comm close");
-    if(!executeCommand(WIFLY_SET_COMM_CLOSE, WIFLY_AOK, 0L))
+    if (!executeCommand(WIFLY_SET_COMM_CLOSE, WIFLY_AOK, 0L))
         return false;
     DEBUG_LOG("set comm remote");
-    if(!executeCommand(WIFLY_SET_COMM_REMOTE, WIFLY_AOK, 0L))
+    if (!executeCommand(WIFLY_SET_COMM_REMOTE, WIFLY_AOK, 0L))
         return false;
 
     // close any open TCP connection when the WLAN link is lost
     DEBUG_LOG("set ip flags");
-    if(!executeCommand(WIFLY_SET_IP_FLAGS, WIFLY_AOK, 0x06))
+    if (!executeCommand(WIFLY_SET_IP_FLAGS, WIFLY_AOK, 0x06))
         return false;
 
     // force DNS
     DEBUG_LOG("set ip tcp mode");
-    if(!executeCommand(WIFLY_SET_IP_TCPMODE, WIFLY_AOK, 0x04))
+    if (!executeCommand(WIFLY_SET_IP_TCPMODE, WIFLY_AOK, 0x04))
         return false;
 
     // enable the alternate functions of the LEDs
     DEBUG_LOG("set sys iofunc");
-    if(!executeCommand(WIFLY_SET_SYS_IOFUNC, WIFLY_AOK, 0x70))
+    if (!executeCommand(WIFLY_SET_SYS_IOFUNC, WIFLY_AOK, 0x70))
         return false;
 
     // set the flush size
     DEBUG_LOG("set comm size");
-    if(!executeCommand(WIFLY_SET_COMM_SIZE, WIFLY_AOK, 500))
+    if (!executeCommand(WIFLY_SET_COMM_SIZE, WIFLY_AOK, 500))
         return false;
 
-    DEBUG_LOG("save and exit");
-    executeCommand(WIFLY_SAVE_CONFIG, WIFLY_CONFIG_SAVED);
-    executeCommand(WIFLY_EXIT, WIFLY_EXITED);
-    reset();
+    DEBUG_LOG("save");
+    if (!executeCommand(WIFLY_SAVE_CONFIG, WIFLY_CONFIG_SAVED))
+        return false;
 
     return true;
 }

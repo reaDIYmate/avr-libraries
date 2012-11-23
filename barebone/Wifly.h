@@ -47,7 +47,7 @@ public:
     void getDeviceId(char* output);
     void initialize();
     void reset();
-    bool resetBaudrate();
+    bool resetBaudrateAndFirmware();
     bool resetConfigToDefault();
     bool setWlanConfig(const char* ssid, const char* passphrase,
         const char* ip = NULL, const char* mask = NULL,
