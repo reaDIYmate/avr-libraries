@@ -174,50 +174,38 @@ void Dispatcher::setup() {
     Serial.println(F("Object configuration restored from the EEPROM."));
 
     Serial.print(F("Connecting to the reaDIYmate server... "));
-    bool restore = true;
+
     if (api.connect()) {
         Serial.println(F("connection established."));
-        if (facebook.updateContent()
-        && twitter.updateContent()
-        && email.updateContent()) {
-            Serial.println(F("Predefined content retrieved."));
-        }
-        else {
-            Serial.println(F("Failed to retrieve predefined content."));
-        }
-        if (settings.fetch() >= 0) {
-            settings.save();
-            restore = false;
-            Serial.println(F("Application settings updated."));
-            Serial.print(settings.getNbSettings());
-            Serial.println(F(" settings saved to the EEPROM."));
-        }
-        else {
-            Serial.println(F("No application settings available."));
-        }
-        // the reaDIYmate is online
-        audio.play_P(SOUND_CONNECT);
-        led.colorGreen();
     }
     else {
-        Serial.println(F("failed to connect."));
-        // the reaDIYmate is offline
-        led.colorRed();
-        // hang forever
-        while (true);
     }
-    if (restore) {
-        if (settings.restore() >= 0) {
-            Serial.println(F("Application settings restored from the EEPROM."));
-            Serial.print(settings.getNbSettings());
-            Serial.println(F(" settings restored."));
-        }
+
+    if (facebook.updateContent()
+    && twitter.updateContent()
+    && email.updateContent()) {
+        Serial.println(F("Predefined content retrieved."));
     }
+
+    if (settings.fetch() >= 0) {
+        settings.save();
+        Serial.println(F("Application settings updated."));
+        Serial.print(settings.getNbSettings());
+        Serial.println(F(" new settings saved to the EEPROM."));
+    }
+    else if (settings.restore() >= 0) {
+        Serial.println(F("Application settings restored from the EEPROM."));
+        Serial.print(settings.getNbSettings());
+        Serial.println(F(" settings restored."));
+    }
+
+    // the reaDIYmate is online
+    audio.play_P(SOUND_CONNECT);
+
     if (resources.synchronize()) {
         Serial.println(F("Resource synchronization complete."));
     }
     else {
-        Serial.println(F("Resource synchronization failed."));
     }
     randomSeed(analogRead(0));
     Serial.println(F("Initialization done."));
