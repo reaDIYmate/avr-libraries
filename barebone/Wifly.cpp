@@ -45,7 +45,7 @@ uint32_t const COMMAND_MODE_TIMEOUT = 3000;
 /** WLAN timeout (in ms) */
 uint16_t const WLAN_TIMEOUT = 10000;
 /** Special character used for text communications with the WiFly */
-uint8_t const WIFLY_REPLACE_CHAR = '\r';
+uint8_t const WIFLY_REPLACE_CHAR = '$';
 /** Baudrate for regular operating mode */
 uint32_t const FULL_SPEED = 115200;
 //------------------------------------------------------------------------------
@@ -624,10 +624,17 @@ bool Wifly::setWlanConfig(const char* ssid, const char* passphrase, const char* 
     }
     DEBUG_LOG("OK");
 
+    // replace spaces in the SSID with the special character
+    char buffer[32] = {0};
+    uint8_t nChars = strlen(ssid);
+    for (uint8_t i = 0; i < nChars; i++) {
+        buffer[i] = (ssid[i] == ' ') ? WIFLY_REPLACE_CHAR : ssid[i];
+    }
+
     // setup the access point SSID and security phrase:
     DEBUG_LOG("set wlan ssid");
     delay(200);
-    if(!executeCommand(WIFLY_SET_WLAN_SSID, WIFLY_AOK, ssid))
+    if(!executeCommand(WIFLY_SET_WLAN_SSID, WIFLY_AOK, buffer))
         return false;
 
     DEBUG_LOG("set wlan phrase");
