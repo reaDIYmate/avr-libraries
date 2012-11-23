@@ -121,7 +121,7 @@ Dispatcher::Dispatcher() :
     wifly(UART_WIFLY, PIN_WIFLY_RESET, PIN_WIFLY_GPIO4, PIN_WIFLY_GPIO5,
         PIN_WIFLY_GPIO6),
     led(PIN_GREEN_LED, PIN_RED_LED),
-    config(UART_COMPANION, wifly, led, PIN_SD_CHIPSELECT),
+    config(UART_COMPANION, wifly, PIN_SD_CHIPSELECT),
     api(wifly, buffer, BUFFER_SIZE, STRING_API_HOST, STRING_API_PATH),
     settings(SETTINGS_NAMES, NB_SETTINGS, api),
     email(api, settings, EMAIL_ON, sd, PIN_SD_CHIPSELECT),

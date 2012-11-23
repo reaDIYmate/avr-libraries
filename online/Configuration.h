@@ -38,7 +38,7 @@
  */
 class Configuration : public SerialStream {
 public:
-    Configuration(HardwareSerial &companion, Wifly &wifly, StatusLed &led,
+    Configuration(HardwareSerial &companion, Wifly &wifly,
         uint8_t sdChipSelectPin);
     ~Configuration();
     void getApiCredential(char* buffer, uint8_t bufferSize);
@@ -77,8 +77,6 @@ private:
     char* channel_;
     /** The WiFly module manager */
     Wifly* wifly_;
-    /** The dual-color LED wrapper */
-    StatusLed* led_;
     uint8_t sdChipSelectPin_;
 };
 

@@ -96,10 +96,9 @@ const char API_CREDENTIAL_FORMAT[] PROGMEM = "id=%s&user=%s&token=%s";
  * \param[in] wifly The Wifly object to use for communications.
  */
 Configuration::Configuration(HardwareSerial &companion, Wifly &wifly,
-    StatusLed &led, uint8_t sdChipSelectPin) :
+    uint8_t sdChipSelectPin) :
     SerialStream(companion, WIZARD_TIMEOUT),
     wifly_(&wifly),
-    led_(&led),
     sdChipSelectPin_(sdChipSelectPin),
     username_(NULL),
     password_(NULL),
