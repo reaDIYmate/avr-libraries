@@ -59,10 +59,13 @@ bool Facebook::updateContent() {
     char content[140] = {0};
 
     Api* api = Action::api_;
-    api->call(STRING_API_FACEBOOK_AUTO);
+    int nBytes = api->call(STRING_API_FACEBOOK_AUTO);
+    if (nBytes < 0)
+        return false;
+
     api->rewind();
     if (api->find_P(SETTINGS_UP_TO_DATE)) {
-        return false;
+        return true;
     }
     if (!sd_->init(SPI_EIGHTH_SPEED, sdChipSelectPin_)) {
         sd_->initErrorHalt();
@@ -76,7 +79,7 @@ bool Facebook::updateContent() {
     if (!open(filename, O_CREAT | O_WRITE)) {
         return false;
     }
-    int nBytes = api->getStringByName_P(KEY_MSG, content, 140);
+    nBytes = api->getStringByName_P(KEY_MSG, content, 140);
     if (nBytes > -1) {
         write(content, nBytes);
         sync();

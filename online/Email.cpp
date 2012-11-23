@@ -53,10 +53,13 @@ bool Email::perform() {
 //------------------------------------------------------------------------------
 bool Email::updateContent() {
     char buffer[256] = {0};
-    api_->call(STRING_API_EMAIL_AUTO);
+    int nBytes = api_->call(STRING_API_EMAIL_AUTO);
+    if (nBytes < 0)
+        return false;
+
     api_->rewind();
     if (api_->find_P(SETTINGS_UP_TO_DATE)) {
-        return false;
+        return true;
     }
     if (!sd_->init(SPI_EIGHTH_SPEED, sdChipSelectPin_)) {
         sd_->initErrorHalt();
@@ -71,7 +74,7 @@ bool Email::updateContent() {
         return false;
     }
     api_->rewind();
-    int nBytes = api_->readBytesUntil_P(END_CHAR, buffer, 256);
+    nBytes = api_->readBytesUntil_P(END_CHAR, buffer, 256);
     if (nBytes > -1) {
         write(buffer, nBytes);
         sync();
