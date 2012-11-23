@@ -31,7 +31,7 @@ const char ATOI_BUFFER_SIZE = 16;
  * this integer is returned.
  */
 int JsonStream::getIntegerByName(const char* key) {
-    index_ = 0;
+    rewind();
     if (!find(key))
         return -1;
     if (!find(':'))
@@ -50,7 +50,7 @@ int JsonStream::getIntegerByName(const char* key) {
  * this integer is returned.
  */
 int JsonStream::getIntegerByName_P(PGM_P key) {
-    index_ = 0;
+    rewind();
     if (!find_P(key))
         return -1;
     if (!find(':'))
@@ -72,7 +72,7 @@ int JsonStream::getIntegerByName_P(PGM_P key) {
  * \return The number of characters written to the buffer is returned.
  */
 int JsonStream::getObjectStringByName(const char* key, char* buffer, size_t length) {
-    index_ = 0;
+    rewind();
     if (!find(key))
         return -1;
     if (!find(':'))
@@ -93,7 +93,7 @@ int JsonStream::getObjectStringByName(const char* key, char* buffer, size_t leng
  * \return The number of characters written to the buffer is returned.
  */
 int JsonStream::getObjectStringByName_P(PGM_P key, char* buffer, size_t length) {
-    index_ = 0;
+    rewind();
     if (!find_P(key))
         return -1;
     if (!find(':'))
@@ -114,9 +114,18 @@ int JsonStream::getObjectStringByName_P(PGM_P key, char* buffer, size_t length) 
  * \return The number of characters written to the buffer is returned.
  */
 int JsonStream::getStringByName(const char* key, char* buffer, size_t length) {
-    index_ = 0;
-    if (!find(key))
-        return -1;
+    rewind();
+    uint8_t len = strlen(key);
+
+    char ch = '\0';
+    while (ch != '\"') {
+        if (find(key)) {
+            ch = buffer_[index_-len-1];
+        }
+        else {
+            return -1;
+        }
+    }
     if (!find(':'))
         return -1;
     if (!find('"'))
@@ -135,7 +144,7 @@ int JsonStream::getStringByName(const char* key, char* buffer, size_t length) {
  * \return The number of characters written to the buffer is returned.
  */
 int JsonStream::getStringByName_P(PGM_P key, char* buffer, size_t length) {
-    index_ = 0;
+    rewind();
     if (!find_P(key))
         return -1;
     if (!find(':'))
