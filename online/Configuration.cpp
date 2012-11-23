@@ -155,16 +155,28 @@ void Configuration::enterProxyMode() {
                 while (!available());
                 ch = read();
                 switch (ch) {
-                    case 'r' :
+                    case 'R' :
                         print("\r\n-Reset-\r\n");
                         wifly_->reset();
                         break;
-                    case 'c' :
+                    case 'C' :
                         print("\r\n-Command mode-\r\n");
                         if (wifly_->enterCommandMode()) {
                             println(F("CMD"));
                         }
                         break;
+                    case 'H' :
+                        print("\r\n-115200-\r\n");
+                        wifly_->begin(115200);
+                        wifly_->clear();
+                        break;
+                    case 'L' :
+                        print("\r\n-9600-\r\n");
+                        wifly_->begin(9600);
+                        wifly_->clear();
+                        break;
+                    case 'r' :
+                        wifly_->write('\r');
                     default :
                         wifly_->write('\\');
                         wifly_->write(ch);
@@ -629,6 +641,7 @@ void Configuration::synchronize(uint16_t timeout) {
 
         if (cmdLen > 0) {
             if (strcmp_P(cmd, COMMAND_DEVICEID) == 0) {
+                write_P(WIZARD_AOK);
                 sendDeviceId();
                 deadline = millis() + timeout;
             }
@@ -689,18 +702,29 @@ void Configuration::synchronize(uint16_t timeout) {
             }
             else if (strcmp_P(cmd, COMMAND_FACTORY) == 0) {
                 DEBUG_LOG("Command received: perform factory reset.");
-                if (!wifly_->resetBaudrate()) {
-                    DEBUG_LOG("Cannot reset baudrate.");
+
+                if (!wifly_->resetBaudrateAndFirmware()) {
+                    DEBUG_LOG("Failed to reset the RN171 firmware.");
                     write_P(WIZARD_ERR);
                 }
                 else if (!wifly_->resetConfigToDefault()) {
-                    DEBUG_LOG("Cannot reset config to default.");
+                    DEBUG_LOG("Failed to set the RN171 default config.");
                     write_P(WIZARD_ERR);
                 }
-                wifly_->getDeviceId(deviceId_);
-                saveDeviceId();
-                DEBUG_LOG("Reset to default config performed.");
-                write_P(WIZARD_AOK);
+                else {
+                    DEBUG_LOG("Erasing EEPROM...");
+                    for (int i = 0; i < 4096; i++) {
+                        eeprom_write_byte((uint8_t *)(i), 0x00);
+                    }
+                    DEBUG_LOG("EEPROM cleared.");
+
+                    wifly_->getDeviceId(deviceId_);
+                    saveDeviceId();
+                    wifly_->begin(115200);
+                    wifly_->clear();
+                    DEBUG_LOG("Reset to default config performed.");
+                    write_P(WIZARD_AOK);
+                }
                 deadline = millis() + timeout;
             }
             else if (strcmp_P(cmd, COMMAND_UPDATE) == 0) {
