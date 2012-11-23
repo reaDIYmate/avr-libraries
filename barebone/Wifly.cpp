@@ -33,7 +33,7 @@ uint8_t const MAX_WLAN_ERRORS = 2;
 /** Number of attempts to open a socket to the host before reset */
 uint8_t const MAX_SOCKET_ERRORS = 2;
 /** Number of critical errors before giving up */
-uint8_t const MAX_CRITICAL_ERRORS = 2;
+uint8_t const MAX_CRITICAL_ERRORS = 1;
 /** Interval to wait between to consecutive attempts (in ms) */
 uint32_t const RETRY_INTERVAL = 2000;
 /** Timeout for trying to open a TCP socket to a remote host (in ms) */
