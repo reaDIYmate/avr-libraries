@@ -179,12 +179,16 @@ void Dispatcher::setup() {
         Serial.println(F("connection established."));
     }
     else {
+        die(F("failed to connect."));
     }
 
     if (facebook.updateContent()
     && twitter.updateContent()
     && email.updateContent()) {
         Serial.println(F("Predefined content retrieved."));
+    }
+    else {
+        die(F("Failed to retrieve predefined content."));
     }
 
     if (settings.fetch() >= 0) {
@@ -206,7 +210,9 @@ void Dispatcher::setup() {
         Serial.println(F("Resource synchronization complete."));
     }
     else {
+        die(F("Resource synchronization failed."));
     }
+
     randomSeed(analogRead(0));
     Serial.println(F("Initialization done."));
     Serial.print(F("----------------------------------------\r\n"));
@@ -445,4 +451,12 @@ void Dispatcher::play_P(PGM_P soundName, PGM_P motionName) {
             soundFinished = true;
         player.dispatch(Event(TICK), playerOut);
     } while (!(motionFinished && soundFinished));
+}
+//------------------------------------------------------------------------------
+void Dispatcher::die(__FlashStringHelper* message) {
+    Serial.println(message);
+    // the reaDIYmate is offline
+    led.colorRed();
+    // hang forever
+    while (true);
 }

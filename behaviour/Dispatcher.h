@@ -58,6 +58,7 @@ public:
     void play_P(PGM_P sound, PGM_P motion);
 //------------------------------------------------------------------------------
 private:
+    void die(__FlashStringHelper* message);
     // Base
     char buffer[BUFFER_SIZE];
     Api api;
