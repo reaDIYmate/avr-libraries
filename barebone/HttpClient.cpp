@@ -182,6 +182,9 @@ int HttpClient::get(char* buffer, size_t bufferSize, const char* host,
             // parse chunk size
             uint16_t chunkSize = 0;
             sscanf(parseBuffer, "%x", &chunkSize);
+            if (chunkSize < 0 || chunkSize > bufferSize) {
+                return -1;
+            }
             if (chunkSize == 0)
                 break;
             // download chunk
