@@ -440,6 +440,10 @@ bool Configuration::readPusher(char* buffer, uint8_t bufferSize) {
     json.getStringByName_P(WIZARD_KEY_SECRET, secret, 22);
     json.getStringByName_P(WIZARD_KEY_CHANNEL, channel, 22);
 
+    if (strlen(key) == 0) {
+        return false;
+    }
+
     if (strcmp(key_, key) != 0
     || strcmp(secret_, secret) != 0
     || strcmp(channel_, channel) != 0) {
@@ -447,10 +451,9 @@ bool Configuration::readPusher(char* buffer, uint8_t bufferSize) {
         secret_ = secret;
         channel_ = channel;
         savePusher();
-        return true;
     }
 
-    return false;
+    return true;
 }
 //------------------------------------------------------------------------------
 /** Set the default servo position */
