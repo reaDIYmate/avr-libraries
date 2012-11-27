@@ -26,11 +26,12 @@
 class Foursquare : public Service, public Action {
 public:
     Foursquare(Api &api, Settings &settings, PGM_P motion, PGM_P sound,
-    PGM_P venueId, PGM_P actionEnabled, PGM_P alertEnabled);
+    PGM_P checkId, PGM_P venueId, PGM_P actionEnabled, PGM_P alertEnabled);
     int fetch();
     bool perform();
 //------------------------------------------------------------------------------
 private:
+    PGM_P checkId_;
     PGM_P venueId_;
 };
 

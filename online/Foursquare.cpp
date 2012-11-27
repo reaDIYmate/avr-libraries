@@ -25,9 +25,10 @@ const char KEY_CHECKINS[] PROGMEM = "checkins";
 const char KEY_VENUEID[] PROGMEM = "venueId";
 //------------------------------------------------------------------------------
 Foursquare::Foursquare(Api &api, Settings &settings, PGM_P motion, PGM_P sound,
-    PGM_P venueId, PGM_P actionEnabled, PGM_P alertEnabled) :
+    PGM_P checkId, PGM_P venueId, PGM_P actionEnabled, PGM_P alertEnabled) :
     Service(api, settings, alertEnabled, motion, sound),
     Action(api, settings, actionEnabled),
+    checkId_(checkId),
     venueId_(venueId)
 {
 }
@@ -41,7 +42,7 @@ int Foursquare::fetch() {
 //------------------------------------------------------------------------------
 bool Foursquare::perform() {
     int nBytes = Action::api_->call(STRING_API_FOURSQUARE_CHECKIN, KEY_VENUEID,
-        Action::settings_->getByName(venueId_));
+        Action::settings_->getByName(checkId_));
     return (nBytes > 0);
 }
 //------------------------------------------------------------------------------

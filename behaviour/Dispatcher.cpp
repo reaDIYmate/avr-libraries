@@ -37,10 +37,10 @@
 #define UART_COMPANION Serial
 //------------------------------------------------------------------------------
 /* The longest path accepted is a directory name followed by a 8.3 filename. */
-static const uint16_t PATH_BUFFER_SIZE = 26;
+static const uint16_t PATH_BUFFER_SIZE = 27;
 //------------------------------------------------------------------------------
 // Settings
-const uint8_t NB_SETTINGS = 26;
+const uint8_t NB_SETTINGS = 27;
 
 const char FACEBOOK_ON[]        PROGMEM = "facebook.on";
 const char FACEBOOK_SOUND[]     PROGMEM = "facebook.sound";
@@ -67,6 +67,7 @@ const char FOURSQUARE_ON[]      PROGMEM = "foursquare.on";
 const char FOURSQUARE_SOUND[]   PROGMEM = "foursquare.sound";
 const char FOURSQUARE_MOTION[]  PROGMEM = "foursquare.motion";
 const char FOURSQUARE_VENUEID[] PROGMEM = "foursquare.venueId";
+const char FOURSQUARE_CHECKID[] PROGMEM = "foursquare.checkId";
 const char FOURSQUARE_ACTION[]  PROGMEM = "foursquare.action";
 
 const char SOUNDCLOUD_ON[]      PROGMEM = "soundcloud.on";
@@ -98,6 +99,7 @@ const char* SETTINGS_NAMES[] PROGMEM =
     FOURSQUARE_SOUND,
     FOURSQUARE_MOTION,
     FOURSQUARE_VENUEID,
+    FOURSQUARE_CHECKID,
     FOURSQUARE_ACTION,
     SOUNDCLOUD_ON,
     SOUNDCLOUD_OWNER,
@@ -132,7 +134,7 @@ Dispatcher::Dispatcher() :
         TWITTER_ACTION, sd, PIN_SD_CHIPSELECT),
     rss(api, settings, RSS_ON, RSS_MOTION, RSS_SOUND, RSS_KEYWORD, RSS_FEED_URL),
     foursquare(api, settings, FOURSQUARE_MOTION, FOURSQUARE_SOUND,
-        FOURSQUARE_VENUEID, FOURSQUARE_ACTION, FOURSQUARE_ON),
+        FOURSQUARE_CHECKID, FOURSQUARE_VENUEID, FOURSQUARE_ACTION, FOURSQUARE_ON),
     audio(PIN_VS1011_DREQ, PIN_VS1011_RESET, PIN_VS1011_XDCS, PIN_VS1011_XCS, sd,
         PIN_SD_CHIPSELECT),
     button(PIN_BUTTON),
