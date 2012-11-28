@@ -107,7 +107,7 @@ const char* SETTINGS_NAMES[] PROGMEM =
     EMAIL_ON
 };
 //------------------------------------------------------------------------------
-const char STRING_API_HOST[] PROGMEM = "dev.readiymate.com";
+const char STRING_API_HOST[] PROGMEM = "readiymate.com";
 const char STRING_API_PATH[] PROGMEM = "/index.php/api/";
 //------------------------------------------------------------------------------
 // System files
