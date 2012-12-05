@@ -38,18 +38,18 @@ bool Service::update() {
     if (!enabled())
         return false;
 
-    int countCurrent = fetch();
-    if (countCurrent != count_ && count_ != -1 && countCurrent >=0) {
-        if (countCurrent > count_ ) {
-            count_ = countCurrent;
+    int newCount = fetch();
+    if ((newCount != count_) && (count_ != -1) && (newCount != 0)) {
+        if (newCount > count_ ) {
+            count_ = newCount;
             return true;
         }
         else {
-            count_ = countCurrent;
+            count_ = newCount;
         }
     }
     if (count_ == -1) {
-        count_ = countCurrent;
+        count_ = newCount;
     }
     return false;
  }
