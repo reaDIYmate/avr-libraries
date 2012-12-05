@@ -327,7 +327,7 @@ void Dispatcher::loop() {
             }
             break;
         case FOURSQUARE :
-            if (foursquare.Action::enabled() && foursquare.update()) {
+            if (foursquare.Service::enabled() && foursquare.update()) {
                 soundName = foursquare.getSoundFilename();
                 motionName = foursquare.getMotionFilename();
                 if (soundName != NULL)
