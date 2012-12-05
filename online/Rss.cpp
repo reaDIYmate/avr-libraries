@@ -32,8 +32,8 @@ Rss::Rss(Api &api, Settings &settings, PGM_P enabled, PGM_P motion, PGM_P sound,
 {
 }
 //------------------------------------------------------------------------------
-int Rss::fetch(){
-    api_->call(STRING_API_RSS, KEY_KEYWORD, settings_->getByName(keyword_),
-        KEY_FEED_URL, settings_->getByName(feedUrl_));
+int Rss::fetch() {
+    api_->call(STRING_API_RSS, KEY_FEED_URL, settings_->getByName(feedUrl_),
+        KEY_KEYWORD, settings_->getByName(keyword_));
     return api_->getIntegerByName_P(KEY_COUNT);
 }
