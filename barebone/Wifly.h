@@ -41,6 +41,8 @@ public:
         uint8_t gpio5Pin, uint8_t gpio6Pin);
     bool awaitResponse();
     bool connect(const char* host);
+    bool connected();
+    bool connected(uint16_t timeout);
     bool connectedTo_P(PGM_P host);
     void disconnect();
     bool enterCommandMode();
@@ -58,8 +60,6 @@ private:
     bool associated();
     bool associated(uint16_t timeout);
     void closeSocket();
-    bool connected();
-    bool connected(uint16_t timeout);
     bool executeCommand(PGM_P commandIndex, PGM_P expectedReturnIndex,
         const char* parameter = NULL);
     bool executeCommand(PGM_P commandIndex, PGM_P expectedReturnIndex,
