@@ -244,7 +244,7 @@ void Dispatcher::loop() {
             break;
     }
 
-    Event playerOut,motionOut;
+    Event playerOut, motionOut;
     char* soundName;
     char* motionName;
     switch (persoOut.signal) {
@@ -273,71 +273,41 @@ void Dispatcher::loop() {
             if (gmail.enabled() && gmail.update()) {
                 soundName = gmail.getSoundFilename();
                 motionName = gmail.getMotionFilename();
-                if (soundName != NULL)
-                    player.dispatch(PlayerEvent(PLAY, soundName), playerOut);
-                if (motionName != NULL)
-                    motion.dispatch(MotionEvent(PLAY, motionName), motionOut);
+                play(soundName, motionName);
             }
-            else {
-                playerOut.signal = END_OF_FILE;
-                motionOut.signal = END_OF_FILE;
-            }
+            personality.dispatch(Event(STOP), persoOut);
             break;
         case FACEBOOK :
             if (facebook.Service::enabled() && facebook.update()) {
                 soundName = facebook.getSoundFilename();
                 motionName = facebook.getMotionFilename();
-                if (soundName != NULL)
-                    player.dispatch(PlayerEvent(PLAY, soundName), playerOut);
-                if (motionName != NULL)
-                    motion.dispatch(MotionEvent(PLAY, motionName), motionOut);
+                play(soundName, motionName);
             }
-            else {
-                playerOut.signal = END_OF_FILE;
-                motionOut.signal = END_OF_FILE;
-            }
+            personality.dispatch(Event(STOP), persoOut);
             break;
         case TWITTER :
             if (twitter.Service::enabled() && twitter.update()) {
                 soundName = twitter.getSoundFilename();
                 motionName = twitter.getMotionFilename();
-                if (soundName != NULL)
-                    player.dispatch(PlayerEvent(PLAY, soundName), playerOut);
-                if (motionName != NULL)
-                    motion.dispatch(MotionEvent(PLAY, motionName), motionOut);
+                play(soundName, motionName);
             }
-            else {
-                playerOut.signal = END_OF_FILE;
-                motionOut.signal = END_OF_FILE;
-            }
+            personality.dispatch(Event(STOP), persoOut);
             break;
         case RSS :
             if (rss.enabled() && rss.update()) {
                 soundName = rss.getSoundFilename();
                 motionName = rss.getMotionFilename();
-                if (soundName != NULL)
-                    player.dispatch(PlayerEvent(PLAY, soundName), playerOut);
-                if (motionName != NULL)
-                    motion.dispatch(MotionEvent(PLAY, motionName), motionOut);
+                play(soundName, motionName);
             }
-            else {
-                playerOut.signal = END_OF_FILE;
-                motionOut.signal = END_OF_FILE;
-            }
+            personality.dispatch(Event(STOP), persoOut);
             break;
         case FOURSQUARE :
             if (foursquare.Service::enabled() && foursquare.update()) {
                 soundName = foursquare.getSoundFilename();
                 motionName = foursquare.getMotionFilename();
-                if (soundName != NULL)
-                    player.dispatch(PlayerEvent(PLAY, soundName), playerOut);
-                if (motionName != NULL)
-                    motion.dispatch(MotionEvent(PLAY, motionName), motionOut);
+                play(soundName, motionName);
             }
-            else {
-                playerOut.signal = END_OF_FILE;
-                motionOut.signal = END_OF_FILE;
-            }
+            personality.dispatch(Event(STOP), persoOut);
             break;
         case SOUNDCLOUD :
             if (soundcloud.downloadsEnabled() && soundcloud.download()) {
