@@ -32,6 +32,10 @@ bool Action::enabled() {
     return (strcmp("1", settings_->getByName(enabled_)) == 0);
 }
 //------------------------------------------------------------------------------
+bool Action::perform() {
+    return true;
+}
+//------------------------------------------------------------------------------
 bool Action::trigger() {
     if (!perform())
         return false;

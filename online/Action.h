@@ -27,7 +27,7 @@ class Action {
 public:
     Action(Api &api, Settings &settings, PGM_P enabled);
     bool enabled();
-    virtual bool perform() = 0;
+    virtual bool perform();
     virtual bool trigger();
 //------------------------------------------------------------------------------
 protected:
