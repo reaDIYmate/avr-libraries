@@ -111,7 +111,6 @@ const char STRING_API_HOST[] PROGMEM = "readiymate.com";
 const char STRING_API_PATH[] PROGMEM = "/index.php/api/";
 //------------------------------------------------------------------------------
 // System files
-const char DIRECTORY_SOUNDCLOUD[] PROGMEM = "SNDCLD";
 const char SOUND_WAKE[]           PROGMEM = "SYSTEM/SYS_WAKE.MP3";
 const char SOUND_SLEEP[]          PROGMEM = "SYSTEM/SYS_ZZZZ.MP3";
 const char SOUND_CONNECT[]        PROGMEM = "SYSTEM/SYS_CNCT.MP3";
@@ -341,7 +340,7 @@ void Dispatcher::loop() {
             }
             break;
         case SOUNDCLOUD :
-            if (soundcloud.alertEnabled() && soundcloud.download(DIRECTORY_SOUNDCLOUD)) {
+            if (soundcloud.downloadsEnabled() && soundcloud.download()) {
                 personality.dispatch(Event(SOUNDCLOUD), persoOut);
                 player.dispatch(PlayerEvent(PLAY, soundcloud.filepath()), playerOut);
             }
@@ -386,9 +385,10 @@ void Dispatcher::loop() {
                     audio.play_P(SOUND_ERR);
                 }
             }
-            if (soundcloud.enabled()) {
+            if (soundcloud.Action::enabled()) {
                 char directory[PATH_BUFFER_SIZE] = {0};
-                strncpy_P(directory, DIRECTORY_SOUNDCLOUD, PATH_BUFFER_SIZE - 1);
+                strncpy_P(directory, soundcloud.directory(),
+                    PATH_BUFFER_SIZE - 1);
                 player.dispatch(PlayerEvent(RANDOM, directory), playerOut);
                 personality.dispatch(Event(SOUNDCLOUD), persoOut);
             }

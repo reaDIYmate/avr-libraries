@@ -29,19 +29,31 @@
 //------------------------------------------------------------------------------
 /**
  * \class SoundCloud
- * \brief Retrieve files from a remote server and save them to the SD card.
+ * \brief Fetch files from the SoundCloud server and save them to the SD card.
  */
 class SoundCloud : public HttpClient, public SdFile, public Action {
 public:
     SoundCloud(Api &api, Wifly &wifly, char* buffer, size_t bufferSize,
         SdFat &sd, uint8_t sdChipSelectPin, Settings &settings_, PGM_P owner,
-        PGM_P actionEnabled, PGM_P alertEnabled);
-    bool download(PGM_P folder);
-    bool alertEnabled();
-    bool perform();
+        PGM_P actionEnabled, PGM_P downloadsEnabled);
+    PGM_P directory();
+    bool download();
+    bool downloadsEnabled();
     const char* filepath();
 //------------------------------------------------------------------------------
 private:
+    typedef struct {
+        char* host;
+        char* path;
+    } url_t;
+    typedef struct {
+        uint32_t size;
+        uint16_t nParts;
+    } download_t;
+    uint32_t getLengthFromHeader(char* buffer, size_t bufferSize, url_t& url);
+    int getPart(uint32_t partNo, url_t& url, download_t &download);
+    bool initializeDownload();
+    bool renewDownloadUrl(url_t &url);
     /** An SdFat object to manage the SD card */
     SdFat* sd_;
     /** A buffer to hold the path to recently downloaded files */
@@ -55,7 +67,7 @@ private:
     /** The name of the parameter to pass to API calls */
     PGM_P owner_;
     /** The alert flag in the settings */
-    PGM_P alertEnabled_;
+    PGM_P downloadsEnabled_;
 };
 
 #endif // SOUNDCLOUD_H
