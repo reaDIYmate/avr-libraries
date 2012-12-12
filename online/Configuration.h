@@ -63,6 +63,7 @@ private:
     void savePusher();
     void saveUserAndPass();
     void sendDeviceId();
+    bool validateDeviceId();
     /** The unique identifier of the device */
     char deviceId_[13];
     /** The username for the reaDIYmate webservices */

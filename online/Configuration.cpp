@@ -396,7 +396,7 @@ bool Configuration::formatSdCard() {
         return false;
     }
 
-    Serial.println(F("Format done"));
+    DEBUG_LOG("Format done");
     return true;
 }
 //------------------------------------------------------------------------------
@@ -617,6 +617,26 @@ void Configuration::saveDeviceId() {
     eeprom_write_block((const void*)deviceId_, (void*)EEPROM_DEVICEID, 12);
 }
 //------------------------------------------------------------------------------
+/** Make sure the device ID is valid. */
+bool Configuration::validateDeviceId() {
+    DEBUG_LOG("Validating device ID");
+    if (strrchr(deviceId_, 0xFF) == NULL && strlen(deviceId_) == 12) {
+        return true;
+    }
+    wifly_->reset();
+    if (!wifly_->enterCommandMode()) {
+        DEBUG_LOG("Failed to enter command mode");
+        return false;
+    }
+    wifly_->getDeviceId(deviceId_);
+    if (strrchr(deviceId_, 0xFF) != NULL || strlen(deviceId_) != 12) {
+        return false;
+    }
+    saveDeviceId();
+    DEBUG_LOG("Device ID successfully renewed.");
+    return true;
+}
+//------------------------------------------------------------------------------
 /** Send the device ID to the Companion */
 void Configuration::sendDeviceId() {
     print(deviceId_);
@@ -644,8 +664,14 @@ void Configuration::synchronize(uint16_t timeout) {
 
         if (cmdLen > 0) {
             if (strcmp_P(cmd, COMMAND_DEVICEID) == 0) {
-                write_P(WIZARD_AOK);
-                sendDeviceId();
+                if (validateDeviceId()) {
+                    write_P(WIZARD_AOK);
+                    sendDeviceId();
+                }
+                else {
+                    DEBUG_LOG("Invalid device ID detected.");
+                    write_P(WIZARD_ERR);
+                }
                 deadline = millis() + timeout;
             }
             else if (strcmp_P(cmd, COMMAND_AUTH) == 0) {
