@@ -205,8 +205,8 @@ int HttpClient::get(char* buffer, size_t bufferSize, const char* host,
 }
 //------------------------------------------------------------------------------
 /**
- * Connect to host and send a HEAD request to retrieve the size of the resource
- * located at the given URL.
+ * Send a HEAD request to retrieve the size of the resource located at the
+ * given URL.
  * \param[out] buffer The buffer where the response will be written.
  * \param[in] bufferSize The size of the output buffer.
  * \param[in] host The remote host where the resource is located.
@@ -230,8 +230,7 @@ uint32_t HttpClient::getContentLength(char* buffer, size_t bufferSize,
 }
 //------------------------------------------------------------------------------
 /**
- * Connect to host and send a GET request to retrieve a byte range from the given
- * URL.
+ * Send a GET request to retrieve a byte range from the given URL.
  *
  * \param[out] buffer The buffer where the response will be written.
  * \param[in] bufferSize The size of the output buffer.
@@ -240,8 +239,8 @@ uint32_t HttpClient::getContentLength(char* buffer, size_t bufferSize,
  * \param[in] firstByte Index of the first byte of the requested range.
  * \param[in] lastByte Index of the last byte of the requested range.
  *
- * \return true is returned if the right amount of data is successfully received,
- * false in case of failure.
+ * \return true is returned if the right amount of data is successfully
+ * received, false in case of failure.
  *
  * \note host can be either the domain name or the IP address of the host.
  */
