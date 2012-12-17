@@ -41,8 +41,8 @@ bool Email::perform() {
     JsonStream json = JsonStream(file, nbBytes);
     char to[32] = {0};
     json.getStringByName_P(KEY_TO, to, 32);
-    char subject[32] = {0};
-    json.getStringByName_P(KEY_SUBJECT, subject, 32);
+    char subject[64] = {0};
+    json.getStringByName_P(KEY_SUBJECT, subject, 64);
     char body[140] = {0};
     json.getStringByName_P(KEY_BODY, body, 140);
 
