@@ -46,6 +46,15 @@ public:
     int call(PGM_P method, PGM_P key1, const char* value1, PGM_P key2,
         const char* value2, PGM_P key3, const char* value3, PGM_P key4,
         const char* value4);
+    int post(PGM_P method);
+    int post(PGM_P method, PGM_P key1, const char* value1);
+    int post(PGM_P method, PGM_P key1, const char* value1, PGM_P key2,
+        const char* value2);
+    int post(PGM_P method, PGM_P key1, const char* value1, PGM_P key2,
+        const char* value2, PGM_P key3, const char* value3);
+    int post(PGM_P method, PGM_P key1, const char* value1, PGM_P key2,
+        const char* value2, PGM_P key3, const char* value3, PGM_P key4,
+        const char* value4);
     bool connect();
     bool connected();
     void setFixedArgs(char* data);
