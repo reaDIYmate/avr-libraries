@@ -57,6 +57,21 @@ const char PROGMEM HTTP_REQUEST_HEAD[] =
     "Connection: %S\r\n"
     // HTTP headers end with "\r\n"
     "\r\n";
+const char PROGMEM HTTP_REQUEST_POST[] =
+    // command line made of the GET command followed by a URL
+    "POST %s HTTP/1.1\r\n"
+    // domain name of the website
+    "Host: %s\r\n"
+    // user agent used by the device
+    "User-Agent: dsn/1.0\r\n"
+    // the connection to the host can be kept alive between successive requests
+    "Connection: %S\r\n"
+    // the length of the content
+    "Content-Length: %d\r\n"
+    // HTTP headers end with "\r\n"
+    "\r\n"
+    // the data to post with the request
+    "%s";
 /** Chunked transfer mode */
 const char PROGMEM HTTP_CHUNKED[] = "Transfer-Encoding: chunked";
 /** Regular connection type */
@@ -97,7 +112,7 @@ void HttpClient::disconnect() {
  * \param[in] firstByte Index of the first byte of the requested range.
  * \param[in] lastByte Index of the last byte of the requested range.
  */
-bool HttpClient::createRequest(char* buffer, size_t bufferSize,
+bool HttpClient::createGetRequest(char* buffer, size_t bufferSize,
     const char* host, const char* path, uint8_t flags, uint32_t firstByte,
     uint32_t lastByte) {
     // check flags
@@ -130,7 +145,41 @@ bool HttpClient::createRequest(char* buffer, size_t bufferSize,
     );
     return true;
 }
-
+//------------------------------------------------------------------------------
+bool HttpClient::createPostRequest(char* buffer, size_t bufferSize,
+    const char* host, const char* path, const char* content, uint8_t flags) {
+    // check flags
+    if ((flags & F_KEEP_ALIVE) == (flags & F_CLOSE)) {
+        return false;
+    }
+    else if ((flags & F_HEAD) == (flags & F_POST)) {
+        return false;
+    }
+    // determine request type
+    PGM_P request;
+    if (flags & F_HEAD) {
+        request = HTTP_REQUEST_HEAD;
+    }
+    else if (flags & F_POST) {
+        request = HTTP_REQUEST_POST;
+    }
+    // determine connection type
+    bool keepAlive = (flags & F_KEEP_ALIVE);
+    PGM_P connection = keepAlive ? HTTP_FIELD_KEEP_ALIVE : HTTP_FIELD_CLOSE;
+    // print the request to the buffer
+    memset(buffer, 0x00, bufferSize);
+    snprintf_P(
+        buffer,
+        bufferSize,
+        request,
+        path,
+        host,
+        connection,
+        strlen(content),
+        content
+    );
+    return true;
+}
 //------------------------------------------------------------------------------
 /**
  * Connect to host and send a GET request to retrieve the given URL.
@@ -147,8 +196,10 @@ bool HttpClient::createRequest(char* buffer, size_t bufferSize,
 int HttpClient::get(char* buffer, size_t bufferSize, const char* host,
     const char* path) {
     // generate the HTTP request
-    if (!createRequest(buffer, bufferSize, host, path, (F_GET | F_KEEP_ALIVE)))
+    if (!createGetRequest(buffer, bufferSize, host, path,
+        (F_GET | F_KEEP_ALIVE))) {
         return -1;
+    }
 
     // try to send the request and wait for a response from the host
     wifly_->clear();
@@ -214,7 +265,8 @@ int HttpClient::get(char* buffer, size_t bufferSize, const char* host,
  */
 uint32_t HttpClient::getContentLength(char* buffer, size_t bufferSize,
     const char* host, const char* path) {
-    if (!createRequest(buffer, bufferSize, host, path, (F_HEAD | F_KEEP_ALIVE)))
+    if (!createGetRequest(buffer, bufferSize, host, path,
+        (F_HEAD | F_KEEP_ALIVE)))
         return 0;
     wifly_->clear();
     if (!wifly_->print(buffer))
@@ -247,9 +299,10 @@ uint32_t HttpClient::getContentLength(char* buffer, size_t bufferSize,
 bool HttpClient::getRange(char* buffer, size_t bufferSize, const char* host,
     const char* path, uint32_t firstByte, uint32_t lastByte) {
     // generate the HTTP request
-    if (!createRequest(buffer, bufferSize, host, path, (F_GET | F_KEEP_ALIVE),
-        firstByte, lastByte))
+    if (!createGetRequest(buffer, bufferSize, host, path,
+        (F_GET | F_KEEP_ALIVE), firstByte, lastByte)) {
         return false;
+    }
 
     // try to send the request and wait for a response from the host
     wifly_->clear();
@@ -272,4 +325,42 @@ bool HttpClient::getRange(char* buffer, size_t bufferSize, const char* host,
     // write incoming data
     int nBytes = wifly_->readBytes(buffer, bufferSize);
     return (nBytes == (lastByte - firstByte + 1));
+}
+//------------------------------------------------------------------------------
+/**
+ * Send a POST request with data to the given URL.
+ *
+ * \param[out] buffer The buffer where the response will be written.
+ * \param[in] bufferSize The size of the output buffer.
+ * \param[in] host The remote host where the resource is located.
+ * \param[in] path The path of the desired resource on the host.
+ *
+ * \return The number of bytes actually received, -1 in case of failure.
+ *
+ * \note host can be either the domain name or the IP address of the host.
+ */
+int HttpClient::post(char* buffer, size_t bufferSize, const char* host,
+    const char* path, const char* content) {
+    // generate the HTTP request
+    if (!createPostRequest(buffer, bufferSize, host, path, content,
+        (F_POST | F_KEEP_ALIVE))) {
+        return -1;
+    }
+    // try to send the request and wait for a response from the host
+    wifly_->clear();
+    if (!wifly_->print(buffer))
+        return -1;
+    wifly_->flush();
+
+    // clear the buffer since it still holds the HTTP request
+    memset(buffer, 0x00, bufferSize);
+    if (!wifly_->awaitResponse())
+        return -1;
+
+    // skip the headers
+    if (!wifly_->find_P(HTTP_END_OF_HEADER))
+        return -1;
+
+    int nBytes = wifly_->readBytes(buffer, bufferSize);
+    return nBytes;
 }

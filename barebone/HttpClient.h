@@ -31,10 +31,12 @@
 uint8_t const F_HEAD = 0x01;
 /** Generate a GET request */
 uint8_t const F_GET = 0x02;
+/** Generate a POST request */
+uint8_t const F_POST = 0x04;
 /** Use a persistent HTTP connection */
-uint8_t const F_KEEP_ALIVE = 0x04;
+uint8_t const F_KEEP_ALIVE = 0x08;
 /** Close the HTTP connection after the request */
-uint8_t const F_CLOSE = 0x08;
+uint8_t const F_CLOSE = 0x10;
 //------------------------------------------------------------------------------
 /**
  * \class HttpClient
@@ -56,11 +58,15 @@ public:
         const char* path);
     bool getRange(char* buffer, size_t bufferSize, const char* host,
         const char* path, uint32_t firstByte, uint32_t lastByte);
+    int post(char* buffer, size_t bufferSize, const char* host,
+        const char* path, const char* content);
 //------------------------------------------------------------------------------
 protected:
-    bool createRequest(char* buffer, size_t bufferSize, const char* host,
+    bool createGetRequest(char* buffer, size_t bufferSize, const char* host,
         const char* path, uint8_t flags = (F_HEAD | F_CLOSE),
         uint32_t firstByte = 0, uint32_t lastByte = 0);
+    bool createPostRequest(char* buffer, size_t bufferSize, const char* host,
+        const char* path,  const char* content, uint8_t flags = (F_HEAD | F_CLOSE));
     /** WiFly module object */
     Wifly* wifly_;
 };

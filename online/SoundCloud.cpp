@@ -210,7 +210,7 @@ uint32_t SoundCloud::getLengthFromHeader(char* buffer, size_t bufferSize,
     url_t& url) {
     // create a partial GET request asking for only two bytes
     uint8_t flags = (F_GET | F_KEEP_ALIVE);
-    if (!createRequest(buffer, bufferSize, url.host, url.path, flags, 0, 1))
+    if (!createGetRequest(buffer, bufferSize, url.host, url.path, flags, 0, 1))
         return false;
     wifly_->clear();
     if (!wifly_->print(buffer))
