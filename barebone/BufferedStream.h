@@ -29,10 +29,11 @@
  * \class BufferedStream
  * \brief Encapsulates printing and parsing functions for buffered data.
  */
-class BufferedStream : public ExtendedStream {
+class BufferedStream : public ExtendedStream, public Printable {
 public:
     BufferedStream(char* buffer, size_t bufferSize = 0);
     virtual int available();
+    virtual size_t printTo(Print& p) const;
     virtual int read();
     virtual void rewind() { index_ = 0; }
     virtual size_t write(uint8_t);

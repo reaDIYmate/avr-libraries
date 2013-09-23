@@ -45,6 +45,18 @@ int BufferedStream::available() {
 }
 //------------------------------------------------------------------------------
 /**
+ * Prints the current contents of the buffer.
+ *
+ * \param[in] p The Print instance the buffer is to be printed to.
+ *
+ * \return The value returned is the number of bytes printed.
+ */
+size_t BufferedStream::printTo(Print& p) const {
+	return p.print(buffer_);
+}
+
+//------------------------------------------------------------------------------
+/**
  * Read one byte from the buffer.
  *
  * \return The received byte or -1 if a timeout occurs.
